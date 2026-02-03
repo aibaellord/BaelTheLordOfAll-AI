@@ -1,1 +1,1 @@
-"""BAEL - automated_flows module."""
+from .__init__ import *

@@ -1,1 +1,1 @@
-"""BAEL - infinite_context module."""
+from .__init__ import *

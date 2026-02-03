@@ -1,1 +1,1 @@
-"""BAEL - micro_agents module."""
+from .__init__ import *
