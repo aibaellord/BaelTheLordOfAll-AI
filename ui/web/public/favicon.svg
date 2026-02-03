@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="crownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#ef4444"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="#0a0a0f"/>
+
+  <!-- Mini crown -->
+  <path d="M10 8 L12 5 L14.5 7 L16 4 L17.5 7 L20 5 L22 8 Z" fill="url(#crownGrad)"/>
+
+  <!-- B Letter -->
+  <path d="M11 10 L11 26 L18 26 Q23 26 23 22 Q23 19 20 18 Q22 17 22 14 Q22 10 17 10 Z
+           M13 12 L16 12 Q19 12 19 14.5 Q19 17 16 17 L13 17 Z
+           M13 19 L17 19 Q20 19 20 22 Q20 24 17 24 L13 24 Z"
+        fill="url(#iconGradient)"/>
+
+  <!-- Flame accent -->
+  <path d="M8 24 Q7 21 9 18 Q8 21 10 23 Q9 22 8 24" fill="#ef4444" opacity="0.7"/>
+  <path d="M24 24 Q25 21 23 18 Q24 21 22 23 Q23 22 24 24" fill="#ef4444" opacity="0.7"/>
+</svg>

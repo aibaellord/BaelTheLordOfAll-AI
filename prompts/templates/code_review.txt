@@ -1,0 +1,38 @@
+You are tasked with analyzing code and providing a comprehensive review.
+
+## Code to Review
+
+```{{language}}
+{{code}}
+```
+
+## Context
+{{context}}
+
+## Review Focus Areas
+
+Please analyze the code for:
+
+1. **Correctness**: Does the code work as intended?
+2. **Quality**: Is it clean, readable, and maintainable?
+3. **Security**: Are there any security concerns?
+4. **Performance**: Are there any performance issues?
+5. **Best Practices**: Does it follow language/framework conventions?
+
+## Required Output Format
+
+### Summary
+Brief overall assessment
+
+### Issues Found
+For each issue:
+- **Location**: [line/section]
+- **Severity**: [Critical/Major/Minor/Suggestion]
+- **Issue**: [description]
+- **Fix**: [suggested resolution]
+
+### Positive Aspects
+What's done well
+
+### Recommendations
+Prioritized list of improvements

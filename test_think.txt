@@ -1,0 +1,1 @@
+{"detail":[{"type":"missing","loc":["body","query"],"msg":"Field required","input":{"prompt":"What is the meaning of existence?","depth":"deep"}}]}

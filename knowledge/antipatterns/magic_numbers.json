@@ -1,0 +1,50 @@
+{
+  "name": "Magic Numbers",
+  "category": "Code Quality",
+  "description": "Use of unexplained numeric literals in code instead of named constants.",
+  "symptoms": [
+    "Numbers appearing in conditions without explanation",
+    "Same number repeated in multiple places",
+    "Comments needed to explain what numbers mean",
+    "Difficulty understanding business rules"
+  ],
+  "causes": [
+    "Quick prototyping that becomes production",
+    "Copy-paste from specifications",
+    "Lack of code review",
+    "Not thinking about maintainability"
+  ],
+  "consequences": [
+    "Code is hard to understand",
+    "Changes require finding all occurrences",
+    "Easy to miss related values when changing",
+    "Business logic hidden in implementation"
+  ],
+  "example_bad": "def calculate_shipping(weight, distance):\n    if weight < 5:\n        base = 4.99\n    elif weight < 20:\n        base = 9.99\n    else:\n        base = 14.99\n    \n    if distance > 500:\n        return base * 1.5\n    elif distance > 100:\n        return base * 1.2\n    return base\n\ndef is_eligible_for_discount(age, years_member):\n    return age >= 65 or years_member >= 10",
+  "example_good": "# Shipping constants\nclass ShippingConfig:\n    LIGHT_WEIGHT_THRESHOLD = 5  # kg\n    MEDIUM_WEIGHT_THRESHOLD = 20  # kg\n    \n    LIGHT_PACKAGE_BASE = 4.99\n    MEDIUM_PACKAGE_BASE = 9.99\n    HEAVY_PACKAGE_BASE = 14.99\n    \n    LONG_DISTANCE_THRESHOLD = 500  # km\n    MEDIUM_DISTANCE_THRESHOLD = 100  # km\n    \n    LONG_DISTANCE_MULTIPLIER = 1.5\n    MEDIUM_DISTANCE_MULTIPLIER = 1.2\n\n# Discount eligibility\nclass DiscountConfig:\n    SENIOR_AGE_THRESHOLD = 65\n    LOYALTY_YEARS_THRESHOLD = 10\n\ndef calculate_shipping(weight, distance):\n    config = ShippingConfig\n    \n    if weight < config.LIGHT_WEIGHT_THRESHOLD:\n        base = config.LIGHT_PACKAGE_BASE\n    elif weight < config.MEDIUM_WEIGHT_THRESHOLD:\n        base = config.MEDIUM_PACKAGE_BASE\n    else:\n        base = config.HEAVY_PACKAGE_BASE\n    \n    if distance > config.LONG_DISTANCE_THRESHOLD:\n        return base * config.LONG_DISTANCE_MULTIPLIER\n    elif distance > config.MEDIUM_DISTANCE_THRESHOLD:\n        return base * config.MEDIUM_DISTANCE_MULTIPLIER\n    return base\n\ndef is_eligible_for_discount(age, years_member):\n    config = DiscountConfig\n    is_senior = age >= config.SENIOR_AGE_THRESHOLD\n    is_loyal = years_member >= config.LOYALTY_YEARS_THRESHOLD\n    return is_senior or is_loyal",
+  "refactoring_strategies": [
+    {
+      "name": "Extract Constant",
+      "description": "Replace magic number with named constant"
+    },
+    {
+      "name": "Configuration Class",
+      "description": "Group related constants in a configuration class"
+    },
+    {
+      "name": "Enum",
+      "description": "Use enums for discrete value sets"
+    }
+  ],
+  "prevention": [
+    "Always ask 'what does this number mean?'",
+    "Document the source of business values",
+    "Use linting rules to flag literals",
+    "Code review for unexplained numbers"
+  ],
+  "acceptable_exceptions": [
+    "0 and 1 in obvious contexts (initialization, increment)",
+    "Array indices in simple loops",
+    "Mathematical constants from well-known formulas"
+  ]
+}

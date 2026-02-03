@@ -1,0 +1,55 @@
+{
+  "name": "Repository",
+  "category": "Architectural",
+  "description": "Mediates between the domain and data mapping layers using a collection-like interface for accessing domain objects.",
+  "problem": "Need to abstract data access logic from business logic while providing a clean interface for querying domain objects.",
+  "solution": "Create a repository class that encapsulates data access logic and exposes domain objects through a collection-like interface.",
+  "when_to_use": [
+    "When you want to abstract persistence details from domain logic",
+    "When you have complex querying requirements",
+    "When you need to test business logic without database",
+    "When you might switch data stores"
+  ],
+  "when_not_to_use": [
+    "For simple CRUD applications with minimal business logic",
+    "When ORM already provides sufficient abstraction"
+  ],
+  "structure": {
+    "participants": [
+      {
+        "name": "Repository Interface",
+        "role": "Defines the contract for data access"
+      },
+      {
+        "name": "Concrete Repository",
+        "role": "Implements data access using specific data store"
+      },
+      {
+        "name": "Domain Entity",
+        "role": "The business object being persisted"
+      },
+      {
+        "name": "Data Mapper/ORM",
+        "role": "Maps between domain objects and data store"
+      }
+    ]
+  },
+  "implementation": {
+    "python": "from abc import ABC, abstractmethod\nfrom typing import List, Optional\nfrom dataclasses import dataclass\n\n@dataclass\nclass User:\n    id: Optional[int]\n    name: str\n    email: str\n\nclass UserRepository(ABC):\n    @abstractmethod\n    def find_by_id(self, id: int) -> Optional[User]:\n        pass\n    \n    @abstractmethod\n    def find_by_email(self, email: str) -> Optional[User]:\n        pass\n    \n    @abstractmethod\n    def find_all(self) -> List[User]:\n        pass\n    \n    @abstractmethod\n    def save(self, user: User) -> User:\n        pass\n    \n    @abstractmethod\n    def delete(self, id: int) -> bool:\n        pass\n\nclass SQLUserRepository(UserRepository):\n    def __init__(self, db_connection):\n        self.db = db_connection\n    \n    def find_by_id(self, id: int) -> Optional[User]:\n        row = self.db.execute(\n            'SELECT id, name, email FROM users WHERE id = ?', (id,)\n        ).fetchone()\n        return User(*row) if row else None\n    \n    def find_by_email(self, email: str) -> Optional[User]:\n        row = self.db.execute(\n            'SELECT id, name, email FROM users WHERE email = ?', (email,)\n        ).fetchone()\n        return User(*row) if row else None\n    \n    def find_all(self) -> List[User]:\n        rows = self.db.execute('SELECT id, name, email FROM users').fetchall()\n        return [User(*row) for row in rows]\n    \n    def save(self, user: User) -> User:\n        if user.id:\n            self.db.execute(\n                'UPDATE users SET name = ?, email = ? WHERE id = ?',\n                (user.name, user.email, user.id)\n            )\n        else:\n            cursor = self.db.execute(\n                'INSERT INTO users (name, email) VALUES (?, ?)',\n                (user.name, user.email)\n            )\n            user.id = cursor.lastrowid\n        return user\n    \n    def delete(self, id: int) -> bool:\n        result = self.db.execute('DELETE FROM users WHERE id = ?', (id,))\n        return result.rowcount > 0",
+    "typescript": "interface User {\n    id?: number;\n    name: string;\n    email: string;\n}\n\ninterface UserRepository {\n    findById(id: number): Promise<User | null>;\n    findByEmail(email: string): Promise<User | null>;\n    findAll(): Promise<User[]>;\n    save(user: User): Promise<User>;\n    delete(id: number): Promise<boolean>;\n}\n\nclass SQLUserRepository implements UserRepository {\n    constructor(private db: Database) {}\n    \n    async findById(id: number): Promise<User | null> {\n        return this.db.query<User>(\n            'SELECT * FROM users WHERE id = ?', [id]\n        ).then(rows => rows[0] || null);\n    }\n    \n    async findByEmail(email: string): Promise<User | null> {\n        return this.db.query<User>(\n            'SELECT * FROM users WHERE email = ?', [email]\n        ).then(rows => rows[0] || null);\n    }\n    \n    async findAll(): Promise<User[]> {\n        return this.db.query<User>('SELECT * FROM users');\n    }\n    \n    async save(user: User): Promise<User> {\n        if (user.id) {\n            await this.db.execute(\n                'UPDATE users SET name = ?, email = ? WHERE id = ?',\n                [user.name, user.email, user.id]\n            );\n        } else {\n            const result = await this.db.execute(\n                'INSERT INTO users (name, email) VALUES (?, ?)',\n                [user.name, user.email]\n            );\n            user.id = result.lastInsertId;\n        }\n        return user;\n    }\n    \n    async delete(id: number): Promise<boolean> {\n        const result = await this.db.execute(\n            'DELETE FROM users WHERE id = ?', [id]\n        );\n        return result.affectedRows > 0;\n    }\n}"
+  },
+  "related_patterns": ["Unit of Work", "Data Mapper", "Active Record"],
+  "trade_offs": {
+    "pros": [
+      "Centralized data access logic",
+      "Testable business logic",
+      "Flexibility to change data store",
+      "Clean separation of concerns"
+    ],
+    "cons": [
+      "Additional abstraction layer",
+      "Can become bloated with many query methods",
+      "Potential for leaky abstractions"
+    ]
+  }
+}

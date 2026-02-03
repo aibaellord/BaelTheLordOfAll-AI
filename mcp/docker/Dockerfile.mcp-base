@@ -1,0 +1,66 @@
+# =============================================================================
+# BAEL MCP Hub - Base Image for MCP Servers
+# =============================================================================
+# This base image provides common dependencies for all MCP server containers.
+# Individual MCP servers extend this image with their specific requirements.
+# =============================================================================
+
+FROM node:20-alpine AS base
+
+# Labels
+LABEL maintainer="BAEL AI System"
+LABEL description="Base image for MCP (Model Context Protocol) servers"
+LABEL version="1.0.0"
+
+# Install common system dependencies
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    git \
+    curl \
+    jq \
+    bash \
+    ca-certificates \
+    openssl \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user for security
+RUN addgroup -g 1001 mcp && \
+    adduser -u 1001 -G mcp -s /bin/bash -D mcp
+
+# Set working directory
+WORKDIR /app
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/config && \
+    chown -R mcp:mcp /app
+
+# Install global npm packages for MCP
+RUN npm install -g \
+    @anthropic-ai/sdk \
+    typescript \
+    ts-node \
+    && npm cache clean --force
+
+# Environment variables
+ENV NODE_ENV=production
+ENV MCP_TRANSPORT=sse
+ENV MCP_HOST=0.0.0.0
+ENV MCP_PORT=3000
+ENV LOG_LEVEL=info
+
+# Health check script
+COPY --chmod=755 <<EOF /usr/local/bin/health-check.sh
+#!/bin/bash
+curl -sf http://localhost:\${MCP_PORT:-3000}/health || exit 1
+EOF
+
+# Default health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD ["/usr/local/bin/health-check.sh"]
+
+# Switch to non-root user
+USER mcp
+
+# Default command (override in child images)
+CMD ["node", "server.js"]

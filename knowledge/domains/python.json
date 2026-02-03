@@ -1,0 +1,67 @@
+{
+  "name": "Python",
+  "category": "Programming Language",
+  "version": "3.11+",
+  "description": "High-level, interpreted programming language known for readability and versatility.",
+  "key_features": [
+    "Dynamic typing with optional type hints",
+    "Automatic memory management",
+    "Extensive standard library",
+    "Multiple paradigms (OOP, functional, procedural)",
+    "Strong community and ecosystem"
+  ],
+  "best_practices": {
+    "style": {
+      "follow_pep8": true,
+      "use_type_hints": true,
+      "max_line_length": 88,
+      "use_docstrings": true
+    },
+    "project_structure": {
+      "use_virtual_environments": true,
+      "pin_dependencies": true,
+      "separate_requirements": ["dev", "prod", "test"]
+    },
+    "code_quality": {
+      "tools": ["black", "isort", "mypy", "ruff", "pytest"],
+      "testing_framework": "pytest"
+    }
+  },
+  "common_patterns": {
+    "async": "Use asyncio for I/O-bound concurrent code",
+    "context_managers": "Use 'with' for resource management",
+    "generators": "Use generators for memory-efficient iteration",
+    "decorators": "Use decorators for cross-cutting concerns",
+    "dataclasses": "Use dataclasses for simple data containers"
+  },
+  "common_pitfalls": [
+    {
+      "issue": "Mutable default arguments",
+      "example_bad": "def func(items=[]):",
+      "example_good": "def func(items=None):\n    items = items or []"
+    },
+    {
+      "issue": "Late binding closures",
+      "example_bad": "funcs = [lambda: i for i in range(3)]",
+      "example_good": "funcs = [lambda i=i: i for i in range(3)]"
+    },
+    {
+      "issue": "Circular imports",
+      "solution": "Restructure code or use import inside function"
+    }
+  ],
+  "performance_tips": [
+    "Use list comprehensions over explicit loops",
+    "Use generators for large datasets",
+    "Consider using slots for memory-heavy classes",
+    "Profile before optimizing",
+    "Use appropriate data structures (set for membership, dict for lookup)"
+  ],
+  "ecosystem": {
+    "web_frameworks": ["FastAPI", "Django", "Flask"],
+    "data_science": ["pandas", "numpy", "scikit-learn"],
+    "async": ["asyncio", "aiohttp", "uvicorn"],
+    "testing": ["pytest", "unittest", "hypothesis"],
+    "typing": ["mypy", "pyright", "pydantic"]
+  }
+}

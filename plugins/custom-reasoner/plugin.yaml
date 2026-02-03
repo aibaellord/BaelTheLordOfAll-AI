@@ -1,0 +1,45 @@
+id: custom-reasoner
+name: Custom Reasoner
+version: 1.0.0
+description: Framework for implementing custom reasoning engines and logic systems
+author: BAEL Team
+license: MIT
+type: reasoning
+capabilities:
+  - custom_reasoning
+  - logic_inference
+  - rule_engine
+  - hypothesis_testing
+dependencies: []
+main_module: reasoner.py
+entry_point: register
+permissions:
+  - api:brain
+  - api:memory
+config_schema:
+  reasoning_mode:
+    type: string
+    required: false
+    default: "hybrid"
+    description: "Reasoning mode: deductive, inductive, abductive, hybrid"
+  max_depth:
+    type: number
+    required: false
+    default: 10
+    description: Maximum reasoning depth
+  confidence_threshold:
+    type: number
+    required: false
+    default: 0.7
+    description: Minimum confidence for conclusions (0-1)
+default_config:
+  reasoning_mode: hybrid
+  max_depth: 10
+  confidence_threshold: 0.7
+sandboxed: true
+tags:
+  - reasoning
+  - logic
+  - inference
+  - ai
+  - deduction

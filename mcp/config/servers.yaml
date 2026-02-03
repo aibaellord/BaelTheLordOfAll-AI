@@ -1,0 +1,553 @@
+# =============================================================================
+# BAEL MCP Hub - Server Configuration
+# =============================================================================
+# Configuration file for all MCP servers in the hub
+# =============================================================================
+
+# MCP Hub Version
+version: "1.0.0"
+
+# Gateway Configuration
+gateway:
+  host: "0.0.0.0"
+  port: 3100
+  health_check_interval: 30
+  request_timeout: 60
+  max_connections: 1000
+
+# Tier Definitions
+tiers:
+  essential:
+    description: "Core functionality for AI agents"
+    priority: 1
+    auto_start: true
+    servers:
+      - filesystem
+      - brave-search
+      - github
+      - sqlite
+      - memory
+
+  power:
+    description: "Advanced tools for development and automation"
+    priority: 2
+    auto_start: true
+    servers:
+      - playwright
+      - docker
+      - git
+      - postgres
+      - redis
+      - slack
+
+  enhanced:
+    description: "Extended capabilities and integrations"
+    priority: 3
+    auto_start: false
+    servers:
+      - fetch
+      - puppeteer
+      - sequential-thinking
+      - time
+      - exa
+      - firecrawl
+      - context7
+      - everything
+
+  specialized:
+    description: "Domain-specific tools and services"
+    priority: 4
+    auto_start: false
+    servers:
+      - youtube
+      - google-drive
+      - google-maps
+      - aws-kb
+      - s3
+      - cloudflare
+      - sentry
+      - raygun
+      - linear
+      - notion
+      - obsidian
+      - todoist
+      - e2b
+
+# Server Configurations
+servers:
+  # ==========================================================================
+  # ESSENTIAL TIER
+  # ==========================================================================
+
+  filesystem:
+    name: "Filesystem"
+    description: "File system operations"
+    package: "@modelcontextprotocol/server-filesystem"
+    transport: stdio
+    tools:
+      - read_file
+      - write_file
+      - list_directory
+      - search_files
+      - get_file_info
+      - create_directory
+      - move_file
+    resources:
+      - file://
+    config:
+      allowed_directories:
+        - /workspace
+        - /host
+
+  brave-search:
+    name: "Brave Search"
+    description: "Web search via Brave API"
+    package: "@modelcontextprotocol/server-brave-search"
+    transport: stdio
+    tools:
+      - brave_web_search
+      - brave_local_search
+    required_env:
+      - BRAVE_API_KEY
+
+  github:
+    name: "GitHub"
+    description: "GitHub repository management"
+    package: "@modelcontextprotocol/server-github"
+    transport: stdio
+    tools:
+      - create_repository
+      - search_repositories
+      - get_file_contents
+      - create_or_update_file
+      - push_files
+      - create_issue
+      - create_pull_request
+      - fork_repository
+      - create_branch
+      - list_commits
+      - list_branches
+    required_env:
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+
+  sqlite:
+    name: "SQLite"
+    description: "SQLite database operations"
+    package: "@modelcontextprotocol/server-sqlite"
+    transport: stdio
+    tools:
+      - read_query
+      - write_query
+      - create_table
+      - list_tables
+      - describe_table
+      - append_insight
+    resources:
+      - sqlite://
+    config:
+      db_path: /data/bael.db
+
+  memory:
+    name: "Memory"
+    description: "Persistent knowledge graph storage"
+    package: "@modelcontextprotocol/server-memory"
+    transport: stdio
+    tools:
+      - create_entities
+      - create_relations
+      - add_observations
+      - delete_entities
+      - delete_observations
+      - delete_relations
+      - read_graph
+      - search_nodes
+      - open_nodes
+    config:
+      memory_file: /data/memory.json
+
+  # ==========================================================================
+  # POWER TIER
+  # ==========================================================================
+
+  playwright:
+    name: "Playwright"
+    description: "Browser automation with Playwright"
+    package: "@executeautomation/playwright-mcp-server"
+    transport: stdio
+    tools:
+      - playwright_navigate
+      - playwright_screenshot
+      - playwright_click
+      - playwright_fill
+      - playwright_select
+      - playwright_hover
+      - playwright_evaluate
+    config:
+      browser: chromium
+      headless: true
+
+  docker:
+    name: "Docker"
+    description: "Docker container management"
+    package: "@modelcontextprotocol/server-docker"
+    transport: stdio
+    tools:
+      - list_containers
+      - create_container
+      - run_container
+      - stop_container
+      - remove_container
+      - get_logs
+      - list_images
+      - pull_image
+    config:
+      socket: /var/run/docker.sock
+
+  git:
+    name: "Git"
+    description: "Git version control operations"
+    package: "@modelcontextprotocol/server-git"
+    transport: stdio
+    tools:
+      - git_status
+      - git_diff
+      - git_commit
+      - git_add
+      - git_reset
+      - git_log
+      - git_create_branch
+      - git_checkout
+      - git_show
+    config:
+      repository: /workspace
+
+  postgres:
+    name: "PostgreSQL"
+    description: "PostgreSQL database operations"
+    package: "@modelcontextprotocol/server-postgres"
+    transport: stdio
+    tools:
+      - query
+      - execute
+      - list_tables
+      - describe_table
+    required_env:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+
+  redis:
+    name: "Redis"
+    description: "Redis cache and pub/sub"
+    package: "@modelcontextprotocol/server-redis"
+    transport: stdio
+    tools:
+      - get
+      - set
+      - delete
+      - list_keys
+      - publish
+      - subscribe
+      - hget
+      - hset
+      - lpush
+      - rpush
+      - lrange
+
+  slack:
+    name: "Slack"
+    description: "Slack team communication"
+    package: "@modelcontextprotocol/server-slack"
+    transport: stdio
+    tools:
+      - list_channels
+      - post_message
+      - reply_to_thread
+      - add_reaction
+      - get_channel_history
+      - get_thread_replies
+      - search_messages
+      - get_users
+      - get_user_profile
+    required_env:
+      - SLACK_BOT_TOKEN
+      - SLACK_TEAM_ID
+
+  # ==========================================================================
+  # ENHANCED TIER
+  # ==========================================================================
+
+  fetch:
+    name: "Fetch"
+    description: "HTTP request fetching"
+    package: "@modelcontextprotocol/server-fetch"
+    transport: stdio
+    tools:
+      - fetch
+
+  puppeteer:
+    name: "Puppeteer"
+    description: "Browser automation with Puppeteer"
+    package: "@modelcontextprotocol/server-puppeteer"
+    transport: stdio
+    tools:
+      - puppeteer_navigate
+      - puppeteer_screenshot
+      - puppeteer_click
+      - puppeteer_fill
+      - puppeteer_select
+      - puppeteer_hover
+      - puppeteer_evaluate
+    config:
+      headless: true
+
+  sequential-thinking:
+    name: "Sequential Thinking"
+    description: "Step-by-step reasoning enhancement"
+    package: "@modelcontextprotocol/server-sequential-thinking"
+    transport: stdio
+    tools:
+      - sequentialthinking
+
+  time:
+    name: "Time"
+    description: "Time and timezone operations"
+    package: "@modelcontextprotocol/server-time"
+    transport: stdio
+    tools:
+      - get_current_time
+      - convert_time
+
+  exa:
+    name: "Exa"
+    description: "Advanced semantic web search"
+    package: "@modelcontextprotocol/server-exa"
+    transport: stdio
+    tools:
+      - search
+      - find_similar
+      - get_contents
+    required_env:
+      - EXA_API_KEY
+
+  firecrawl:
+    name: "Firecrawl"
+    description: "Web scraping and crawling"
+    package: "firecrawl-mcp"
+    transport: stdio
+    tools:
+      - firecrawl_scrape
+      - firecrawl_map
+      - firecrawl_crawl
+      - firecrawl_check_crawl_status
+    required_env:
+      - FIRECRAWL_API_KEY
+
+  context7:
+    name: "Context7"
+    description: "Library documentation retrieval"
+    package: "@context7/mcp-server"
+    transport: stdio
+    tools:
+      - resolve-library-id
+      - get-library-docs
+
+  everything:
+    name: "Everything"
+    description: "File search and indexing"
+    package: "@modelcontextprotocol/server-everything"
+    transport: stdio
+    tools:
+      - search
+
+  # ==========================================================================
+  # SPECIALIZED TIER
+  # ==========================================================================
+
+  youtube:
+    name: "YouTube Transcript"
+    description: "YouTube video transcript extraction"
+    package: "@modelcontextprotocol/server-youtube-transcript"
+    transport: stdio
+    tools:
+      - get_transcript
+
+  google-drive:
+    name: "Google Drive"
+    description: "Google Drive file access"
+    package: "@modelcontextprotocol/server-gdrive"
+    transport: stdio
+    tools:
+      - search
+      - read_file
+      - list_folder
+    required_env:
+      - GOOGLE_CLIENT_ID
+      - GOOGLE_CLIENT_SECRET
+
+  google-maps:
+    name: "Google Maps"
+    description: "Google Maps and Places API"
+    package: "@modelcontextprotocol/server-google-maps"
+    transport: stdio
+    tools:
+      - maps_geocode
+      - maps_reverse_geocode
+      - maps_search_places
+      - maps_place_details
+      - maps_distance_matrix
+      - maps_directions
+      - maps_elevation
+    required_env:
+      - GOOGLE_MAPS_API_KEY
+
+  aws-kb:
+    name: "AWS Knowledge Base"
+    description: "AWS Bedrock knowledge base retrieval"
+    package: "@modelcontextprotocol/server-aws-kb-retrieval"
+    transport: stdio
+    tools:
+      - retrieve_from_knowledge_base
+    required_env:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+
+  s3:
+    name: "AWS S3"
+    description: "AWS S3 storage operations"
+    package: "@modelcontextprotocol/server-aws-s3"
+    transport: stdio
+    tools:
+      - list_buckets
+      - list_objects
+      - get_object
+      - put_object
+      - delete_object
+    required_env:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+
+  cloudflare:
+    name: "Cloudflare"
+    description: "Cloudflare Workers, KV, R2, D1"
+    package: "@cloudflare/mcp-server-cloudflare"
+    transport: stdio
+    tools:
+      - kv_get
+      - kv_put
+      - kv_list
+      - kv_delete
+      - r2_get
+      - r2_put
+      - r2_list
+      - r2_delete
+      - d1_query
+      - workers_list
+      - workers_deploy
+    required_env:
+      - CLOUDFLARE_API_TOKEN
+      - CLOUDFLARE_ACCOUNT_ID
+
+  sentry:
+    name: "Sentry"
+    description: "Sentry error monitoring"
+    package: "@modelcontextprotocol/server-sentry"
+    transport: stdio
+    tools:
+      - list_issues
+      - get_issue
+      - resolve_issue
+      - list_projects
+      - get_event
+    required_env:
+      - SENTRY_AUTH_TOKEN
+      - SENTRY_ORG
+
+  raygun:
+    name: "Raygun"
+    description: "Raygun crash reporting"
+    package: "@modelcontextprotocol/server-raygun"
+    transport: stdio
+    tools:
+      - list_errors
+      - get_error
+      - resolve_error
+    required_env:
+      - RAYGUN_API_KEY
+
+  linear:
+    name: "Linear"
+    description: "Linear issue tracking"
+    package: "@modelcontextprotocol/server-linear"
+    transport: stdio
+    tools:
+      - list_issues
+      - create_issue
+      - update_issue
+      - search_issues
+      - list_projects
+      - list_teams
+    required_env:
+      - LINEAR_API_KEY
+
+  notion:
+    name: "Notion"
+    description: "Notion workspace management"
+    package: "@modelcontextprotocol/server-notion"
+    transport: stdio
+    tools:
+      - search
+      - get_page
+      - create_page
+      - update_page
+      - list_databases
+      - query_database
+    required_env:
+      - NOTION_API_KEY
+
+  obsidian:
+    name: "Obsidian"
+    description: "Obsidian note management"
+    package: "@modelcontextprotocol/server-obsidian"
+    transport: stdio
+    tools:
+      - list_notes
+      - read_note
+      - create_note
+      - update_note
+      - search_notes
+      - get_tags
+    config:
+      vault_path: /vault
+
+  todoist:
+    name: "Todoist"
+    description: "Todoist task management"
+    package: "@modelcontextprotocol/server-todoist"
+    transport: stdio
+    tools:
+      - list_tasks
+      - create_task
+      - update_task
+      - complete_task
+      - list_projects
+      - create_project
+    required_env:
+      - TODOIST_API_TOKEN
+
+  e2b:
+    name: "E2B Sandbox"
+    description: "E2B code execution sandbox"
+    package: "@e2b/mcp-server"
+    transport: stdio
+    tools:
+      - create_sandbox
+      - run_code
+      - run_terminal_command
+      - read_file
+      - write_file
+      - list_files
+    required_env:
+      - E2B_API_KEY

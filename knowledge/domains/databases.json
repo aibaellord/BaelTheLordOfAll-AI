@@ -1,0 +1,139 @@
+{
+  "domain": "databases",
+  "version": "1.0.0",
+  "description": "Database design, querying, and optimization knowledge",
+  "concepts": [
+    {
+      "name": "ACID Properties",
+      "description": "Guarantees for database transactions",
+      "details": {
+        "atomicity": "Transactions are all-or-nothing",
+        "consistency": "Database moves from valid state to valid state",
+        "isolation": "Concurrent transactions don't interfere",
+        "durability": "Committed transactions survive system failures"
+      }
+    },
+    {
+      "name": "Normalization",
+      "description": "Organizing data to reduce redundancy",
+      "forms": {
+        "1NF": "Eliminate repeating groups, atomic values",
+        "2NF": "1NF + No partial dependencies on composite keys",
+        "3NF": "2NF + No transitive dependencies",
+        "BCNF": "3NF + Every determinant is a candidate key"
+      }
+    },
+    {
+      "name": "Indexing",
+      "description": "Data structures for faster queries",
+      "types": {
+        "b_tree": "Balanced tree for range queries and equality",
+        "hash": "O(1) lookup for equality queries only",
+        "gin": "Generalized inverted index for full-text search",
+        "gist": "Generalized search tree for spatial data"
+      }
+    }
+  ],
+  "best_practices": [
+    {
+      "name": "Query Optimization",
+      "guidelines": [
+        "Use EXPLAIN to understand query plans",
+        "Index columns used in WHERE, JOIN, ORDER BY",
+        "Avoid SELECT * - specify needed columns",
+        "Use covering indexes for frequently used queries",
+        "Consider query result caching",
+        "Batch bulk operations"
+      ]
+    },
+    {
+      "name": "Schema Design",
+      "guidelines": [
+        "Choose appropriate data types (not too large)",
+        "Use foreign keys for referential integrity",
+        "Consider denormalization for read-heavy workloads",
+        "Partition large tables appropriately",
+        "Plan for data growth"
+      ]
+    },
+    {
+      "name": "Connection Management",
+      "guidelines": [
+        "Use connection pooling",
+        "Set appropriate timeouts",
+        "Close connections properly",
+        "Monitor connection usage",
+        "Handle connection failures gracefully"
+      ]
+    }
+  ],
+  "query_patterns": {
+    "pagination": {
+      "offset_limit": "SELECT * FROM table LIMIT 10 OFFSET 20",
+      "cursor_based": "SELECT * FROM table WHERE id > :last_id LIMIT 10",
+      "keyset": "More efficient than OFFSET for large datasets"
+    },
+    "aggregation": {
+      "group_by": "SELECT category, COUNT(*) FROM items GROUP BY category",
+      "having": "Use HAVING for filtering grouped results",
+      "window_functions": "ROW_NUMBER(), RANK(), LAG(), LEAD()"
+    },
+    "joins": {
+      "inner": "Returns matching rows from both tables",
+      "left": "All rows from left, matching from right",
+      "right": "All rows from right, matching from left",
+      "full": "All rows from both tables",
+      "cross": "Cartesian product (rarely needed)"
+    }
+  },
+  "pitfalls": [
+    {
+      "name": "N+1 Query Problem",
+      "description": "Making N additional queries instead of one JOIN",
+      "example": "Fetching user then separately fetching each user's posts",
+      "solution": "Use JOINs or eager loading"
+    },
+    {
+      "name": "Missing Indexes",
+      "description": "Full table scans on large tables",
+      "symptoms": ["Slow queries", "High CPU on database"],
+      "solution": "Add appropriate indexes based on query patterns"
+    },
+    {
+      "name": "Unbounded Queries",
+      "description": "Queries that can return unlimited results",
+      "solution": "Always use LIMIT, even for 'expected' small results"
+    },
+    {
+      "name": "Lock Contention",
+      "description": "Too many transactions competing for locks",
+      "solution": "Keep transactions short, use appropriate isolation levels"
+    }
+  ],
+  "database_types": {
+    "relational": {
+      "examples": ["PostgreSQL", "MySQL", "SQLite"],
+      "use_when": "Structured data with relationships, ACID needed"
+    },
+    "document": {
+      "examples": ["MongoDB", "CouchDB"],
+      "use_when": "Flexible schema, embedded documents"
+    },
+    "key_value": {
+      "examples": ["Redis", "DynamoDB"],
+      "use_when": "Simple lookups, caching, high throughput"
+    },
+    "graph": {
+      "examples": ["Neo4j", "Amazon Neptune"],
+      "use_when": "Highly connected data, relationship queries"
+    },
+    "time_series": {
+      "examples": ["InfluxDB", "TimescaleDB"],
+      "use_when": "Metrics, IoT data, time-ordered data"
+    },
+    "vector": {
+      "examples": ["Pinecone", "Weaviate", "pgvector"],
+      "use_when": "Similarity search, embeddings, ML applications"
+    }
+  }
+}

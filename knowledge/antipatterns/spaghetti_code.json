@@ -1,0 +1,53 @@
+{
+  "name": "Spaghetti Code",
+  "category": "Code Structure",
+  "description": "Code with complex, tangled control structure that is difficult to follow and maintain.",
+  "symptoms": [
+    "Deep nesting of conditionals and loops",
+    "Goto-like jumps in control flow",
+    "Methods spanning hundreds of lines",
+    "No clear separation of concerns",
+    "Difficult to trace execution path"
+  ],
+  "causes": [
+    "Lack of planning before coding",
+    "Incremental additions without refactoring",
+    "Copy-paste programming",
+    "Lack of modularization",
+    "Premature optimization attempts"
+  ],
+  "consequences": [
+    "Extremely difficult to debug",
+    "High risk of introducing bugs when changing",
+    "Impossible to unit test",
+    "Developer frustration and burnout",
+    "Knowledge silos (only original author understands)"
+  ],
+  "example_bad": "def process_data(data):\n    result = []\n    for item in data:\n        if item['type'] == 'A':\n            if item['status'] == 'active':\n                if item['priority'] > 5:\n                    if item['owner']:\n                        if validate_owner(item['owner']):\n                            temp = transform_a(item)\n                            if temp:\n                                if temp['valid']:\n                                    result.append(temp)\n                                else:\n                                    if item['fallback']:\n                                        result.append(item['fallback'])\n        elif item['type'] == 'B':\n            # Similar deep nesting...\n    return result",
+  "example_good": "def process_data(data):\n    return [process_item(item) for item in data if should_process(item)]\n\ndef should_process(item):\n    return (\n        item['status'] == 'active' and\n        item['priority'] > 5 and\n        has_valid_owner(item)\n    )\n\ndef has_valid_owner(item):\n    return item.get('owner') and validate_owner(item['owner'])\n\ndef process_item(item):\n    processors = {\n        'A': process_type_a,\n        'B': process_type_b,\n    }\n    processor = processors.get(item['type'], process_default)\n    return processor(item)\n\ndef process_type_a(item):\n    result = transform_a(item)\n    if result and result.get('valid'):\n        return result\n    return item.get('fallback')",
+  "refactoring_strategies": [
+    {
+      "name": "Extract Method",
+      "description": "Pull out logical sections into named methods"
+    },
+    {
+      "name": "Replace Conditional with Polymorphism",
+      "description": "Use strategy pattern instead of long conditionals"
+    },
+    {
+      "name": "Guard Clauses",
+      "description": "Use early returns to reduce nesting"
+    },
+    {
+      "name": "Decompose Conditionals",
+      "description": "Extract condition and branches into methods"
+    }
+  ],
+  "prevention": [
+    "Keep methods small (max 20-30 lines)",
+    "Maximum 2-3 levels of nesting",
+    "Use early returns for validation",
+    "Apply single responsibility principle",
+    "Regular refactoring sessions"
+  ]
+}

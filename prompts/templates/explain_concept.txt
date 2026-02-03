@@ -1,0 +1,56 @@
+You are tasked with explaining a complex technical concept.
+
+## Topic to Explain
+{{topic}}
+
+## Target Audience
+- Experience level: {{experience_level}}
+- Background: {{background}}
+- Learning goals: {{learning_goals}}
+
+## Explanation Task
+
+Please provide a clear explanation covering:
+
+1. **Hook**
+   - Why should they care about this?
+   - Real-world relevance
+   - Problems it solves
+
+2. **Prerequisites**
+   - What they need to know first
+   - Related concepts to understand
+   - Quick refreshers if needed
+
+3. **Core Concept**
+   - Simple definition
+   - Analogy to familiar concept
+   - Key principles
+
+4. **How It Works**
+   - Step-by-step breakdown
+   - Visual representation (ASCII diagram)
+   - Example walkthrough
+
+5. **Practical Examples**
+   - Code example (if applicable)
+   ```{{language}}
+   // Example code here
+   ```
+   - Real-world use case
+   - Common patterns
+
+6. **Common Mistakes**
+   - What beginners get wrong
+   - Misconceptions to avoid
+   - Edge cases to remember
+
+7. **Going Deeper**
+   - Advanced aspects
+   - Related topics to explore
+   - Resources for further learning
+
+8. **Summary**
+   - Key takeaways (3-5 points)
+   - Quick reference
+   - Practice suggestions

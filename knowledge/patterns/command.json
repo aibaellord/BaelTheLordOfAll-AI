@@ -1,0 +1,41 @@
+{
+  "name": "command",
+  "category": "behavioral",
+  "description": "Encapsulates a request as an object, letting you parameterize clients with different requests, queue or log requests, and support undoable operations.",
+  "when_to_use": [
+    "Parameterize objects with operations",
+    "Queue operations, schedule execution, or execute remotely",
+    "Implement reversible operations (undo/redo)",
+    "Structure a system around high-level operations built on primitive operations"
+  ],
+  "structure": {
+    "command": "Declares an interface for executing an operation",
+    "concrete_command": "Defines a binding between a Receiver and an action",
+    "client": "Creates a ConcreteCommand and sets its receiver",
+    "invoker": "Asks the command to carry out the request",
+    "receiver": "Knows how to perform the operations associated with a request"
+  },
+  "implementation": {
+    "python": "from abc import ABC, abstractmethod\nfrom typing import List\n\nclass Command(ABC):\n    \"\"\"Command interface.\"\"\"\n    \n    @abstractmethod\n    def execute(self) -> None:\n        pass\n    \n    @abstractmethod\n    def undo(self) -> None:\n        pass\n\nclass Receiver:\n    \"\"\"Contains business logic.\"\"\"\n    \n    def do_something(self, a: str) -> None:\n        print(f\"Receiver: Working on ({a})\")\n    \n    def do_something_else(self, b: str) -> None:\n        print(f\"Receiver: Also working on ({b})\")\n\nclass SimpleCommand(Command):\n    \"\"\"Simple command with no receiver.\"\"\"\n    \n    def __init__(self, payload: str):\n        self._payload = payload\n    \n    def execute(self) -> None:\n        print(f\"SimpleCommand: {self._payload}\")\n    \n    def undo(self) -> None:\n        print(f\"SimpleCommand: Undoing {self._payload}\")\n\nclass ComplexCommand(Command):\n    \"\"\"Delegates to receiver.\"\"\"\n    \n    def __init__(self, receiver: Receiver, a: str, b: str):\n        self._receiver = receiver\n        self._a = a\n        self._b = b\n    \n    def execute(self) -> None:\n        self._receiver.do_something(self._a)\n        self._receiver.do_something_else(self._b)\n    \n    def undo(self) -> None:\n        print(f\"ComplexCommand: Undoing operations\")\n\nclass Invoker:\n    \"\"\"Stores and executes commands.\"\"\"\n    \n    def __init__(self):\n        self._history: List[Command] = []\n    \n    def execute_command(self, command: Command) -> None:\n        command.execute()\n        self._history.append(command)\n    \n    def undo_last(self) -> None:\n        if self._history:\n            command = self._history.pop()\n            command.undo()",
+    "typescript": "interface Command {\n    execute(): void;\n    undo(): void;\n}\n\nclass Receiver {\n    public doSomething(a: string): void {\n        console.log(`Receiver: Working on (${a})`);\n    }\n\n    public doSomethingElse(b: string): void {\n        console.log(`Receiver: Also working on (${b})`);\n    }\n}\n\nclass SimpleCommand implements Command {\n    private payload: string;\n\n    constructor(payload: string) {\n        this.payload = payload;\n    }\n\n    public execute(): void {\n        console.log(`SimpleCommand: ${this.payload}`);\n    }\n\n    public undo(): void {\n        console.log(`SimpleCommand: Undoing ${this.payload}`);\n    }\n}\n\nclass ComplexCommand implements Command {\n    private receiver: Receiver;\n    private a: string;\n    private b: string;\n\n    constructor(receiver: Receiver, a: string, b: string) {\n        this.receiver = receiver;\n        this.a = a;\n        this.b = b;\n    }\n\n    public execute(): void {\n        this.receiver.doSomething(this.a);\n        this.receiver.doSomethingElse(this.b);\n    }\n\n    public undo(): void {\n        console.log('ComplexCommand: Undoing operations');\n    }\n}\n\nclass Invoker {\n    private history: Command[] = [];\n\n    public executeCommand(command: Command): void {\n        command.execute();\n        this.history.push(command);\n    }\n\n    public undoLast(): void {\n        const command = this.history.pop();\n        if (command) {\n            command.undo();\n        }\n    }\n}"
+  },
+  "trade_offs": {
+    "advantages": [
+      "Single Responsibility: Decouple invoker from receiver",
+      "Open/Closed: Introduce new commands without breaking existing code",
+      "Implement undo/redo",
+      "Implement deferred execution",
+      "Assemble simple commands into complex ones"
+    ],
+    "disadvantages": [
+      "Code may become more complicated with additional layer",
+      "Many small classes"
+    ]
+  },
+  "real_world_examples": [
+    "GUI button and menu actions",
+    "Text editor undo/redo",
+    "Task queues and job schedulers"
+  ],
+  "related_patterns": ["composite", "memento", "prototype"]
+}

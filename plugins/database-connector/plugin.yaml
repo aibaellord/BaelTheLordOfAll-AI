@@ -1,0 +1,58 @@
+id: database-connector
+name: Database Connector
+version: 1.0.0
+description: Generic database connector for SQL and NoSQL databases
+author: BAEL Team
+license: MIT
+type: integration
+capabilities:
+  - database_access
+  - query_execution
+  - data_persistence
+dependencies:
+  - name: sqlalchemy
+    version: ">=2.0.0"
+    optional: false
+  - name: pymongo
+    version: ">=4.0.0"
+    optional: true
+  - name: redis
+    version: ">=4.5.0"
+    optional: true
+main_module: db_connector.py
+entry_point: register
+permissions:
+  - network:*.database.com
+  - network:localhost:5432
+  - network:localhost:27017
+  - network:localhost:6379
+  - filesystem:/var/lib/bael/data
+config_schema:
+  database_type:
+    type: string
+    required: true
+    description: "Type of database: postgresql, mysql, mongodb, redis"
+  connection_string:
+    type: string
+    required: true
+    description: Database connection URL
+  max_connections:
+    type: number
+    required: false
+    default: 10
+    description: Maximum connection pool size
+  timeout:
+    type: number
+    required: false
+    default: 30
+    description: Query timeout in seconds
+default_config:
+  max_connections: 10
+  timeout: 30
+sandboxed: true
+tags:
+  - database
+  - integration
+  - persistence
+  - sql
+  - nosql

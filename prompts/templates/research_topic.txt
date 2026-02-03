@@ -1,0 +1,55 @@
+You are tasked with researching a topic and providing a comprehensive analysis.
+
+## Research Topic
+{{topic}}
+
+## Research Questions
+{{questions}}
+
+## Scope
+- Depth: {{depth}} (surface/moderate/deep)
+- Time range: {{time_range}}
+- Source types: {{source_types}}
+
+## Context
+{{context}}
+
+## Research Task
+
+Please provide a comprehensive analysis covering:
+
+1. **Executive Summary**
+   - Key findings (3-5 bullet points)
+   - Main conclusions
+   - Recommended actions
+
+2. **Background**
+   - Context and relevance
+   - Historical perspective
+   - Current state
+
+3. **Key Findings**
+   - Finding 1: [with evidence]
+   - Finding 2: [with evidence]
+   - Finding 3: [with evidence]
+
+4. **Analysis**
+   - Patterns and trends
+   - Implications
+   - Risks and opportunities
+
+5. **Recommendations**
+   - Prioritized action items
+   - Next steps
+   - Further research areas
+
+6. **Sources & Methodology**
+   - Sources consulted
+   - Methodology notes
+   - Confidence levels
+
+## Output Format
+- Use clear headings and structure
+- Cite sources appropriately
+- Distinguish fact from interpretation
+- Note limitations and gaps

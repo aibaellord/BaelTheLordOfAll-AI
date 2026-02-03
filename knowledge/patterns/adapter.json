@@ -1,0 +1,37 @@
+{
+  "name": "adapter",
+  "category": "structural",
+  "description": "Converts the interface of a class into another interface clients expect. Adapter lets classes work together that couldn't otherwise because of incompatible interfaces.",
+  "when_to_use": [
+    "Using an existing class with an incompatible interface",
+    "Creating a reusable class that cooperates with unrelated classes",
+    "Need to use several existing subclasses without subclassing each one"
+  ],
+  "structure": {
+    "target": "Defines the domain-specific interface that Client uses",
+    "client": "Collaborates with objects conforming to the Target interface",
+    "adaptee": "Defines an existing interface that needs adapting",
+    "adapter": "Adapts the interface of Adaptee to the Target interface"
+  },
+  "implementation": {
+    "python": "from abc import ABC, abstractmethod\n\nclass Target(ABC):\n    \"\"\"The interface that the client expects.\"\"\"\n    \n    @abstractmethod\n    def request(self) -> str:\n        pass\n\nclass Adaptee:\n    \"\"\"Contains useful behavior but has an incompatible interface.\"\"\"\n    \n    def specific_request(self) -> str:\n        return \".eetpadA eht fo roivaheb laicepS\"\n\nclass Adapter(Target):\n    \"\"\"Makes Adaptee's interface compatible with Target.\"\"\"\n    \n    def __init__(self, adaptee: Adaptee):\n        self._adaptee = adaptee\n    \n    def request(self) -> str:\n        return f\"Adapter: (TRANSLATED) {self._adaptee.specific_request()[::-1]}\"\n\n# Usage\ndef client_code(target: Target) -> None:\n    print(target.request())\n\n# Adaptee can be used through the Adapter\nadaptee = Adaptee()\nadapter = Adapter(adaptee)\nclient_code(adapter)",
+    "typescript": "interface Target {\n    request(): string;\n}\n\nclass Adaptee {\n    public specificRequest(): string {\n        return '.eetpadA eht fo roivaheb laicepS';\n    }\n}\n\nclass Adapter implements Target {\n    private adaptee: Adaptee;\n\n    constructor(adaptee: Adaptee) {\n        this.adaptee = adaptee;\n    }\n\n    public request(): string {\n        const result = this.adaptee\n            .specificRequest()\n            .split('')\n            .reverse()\n            .join('');\n        return `Adapter: (TRANSLATED) ${result}`;\n    }\n}\n\n// Usage\nfunction clientCode(target: Target) {\n    console.log(target.request());\n}\n\nconst adaptee = new Adaptee();\nconst adapter = new Adapter(adaptee);\nclientCode(adapter);"
+  },
+  "trade_offs": {
+    "advantages": [
+      "Single Responsibility: Separate interface conversion from business logic",
+      "Open/Closed: Introduce new adapters without changing existing code",
+      "Allows reuse of existing functionality"
+    ],
+    "disadvantages": [
+      "Increased overall complexity",
+      "Sometimes simpler to change the service class directly"
+    ]
+  },
+  "real_world_examples": [
+    "Database driver adapters",
+    "Legacy system integration",
+    "API version compatibility layers"
+  ],
+  "related_patterns": ["bridge", "decorator", "proxy"]
+}

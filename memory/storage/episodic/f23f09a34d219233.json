@@ -1,0 +1,32 @@
+{
+  "id": "f23f09a34d219233",
+  "type": "episodic",
+  "content": {
+    "session_id": "bael-20260131-144554-75c26135",
+    "task_id": "task-20260131190314438653",
+    "task_type": "general",
+    "description": "\n\n\n\nUser: hey",
+    "result": {
+      "success": true,
+      "response": "Error: No API key configured. Please set the appropriate environment variable.",
+      "approach": "iterative",
+      "iterations": 1,
+      "validation": {
+        "valid": true,
+        "feedback": "Response generated"
+      },
+      "reflection": "Error: No API key configured. Please set the appropriate environment variable.",
+      "reflected": true
+    },
+    "timestamp": "2026-01-31T19:03:14.448967"
+  },
+  "metadata": {},
+  "importance": 0.6,
+  "access_count": 0,
+  "last_accessed": "2026-01-31T19:03:14.455533",
+  "created_at": "2026-01-31T19:03:14.455535",
+  "tags": [
+    "general",
+    "session"
+  ]
+}

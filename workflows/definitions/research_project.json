@@ -1,0 +1,78 @@
+{
+  "name": "research_project",
+  "description": "Comprehensive research workflow for exploring topics",
+  "version": "1.0.0",
+  "tags": ["research", "analysis", "learning"],
+  "steps": [
+    {
+      "id": "define_scope",
+      "name": "Define Research Scope",
+      "persona": "researcher",
+      "template": null,
+      "inputs": ["topic", "research_questions", "constraints"],
+      "outputs": ["research_plan", "key_areas"],
+      "timeout_seconds": 300
+    },
+    {
+      "id": "gather_sources",
+      "name": "Gather Sources",
+      "persona": "researcher",
+      "template": null,
+      "inputs": ["research_plan", "key_areas"],
+      "outputs": ["sources", "source_summaries"],
+      "timeout_seconds": 900
+    },
+    {
+      "id": "analyze_sources",
+      "name": "Analyze Sources",
+      "persona": "analyst",
+      "template": null,
+      "inputs": ["sources", "research_questions"],
+      "outputs": ["analysis", "key_findings"],
+      "timeout_seconds": 900
+    },
+    {
+      "id": "synthesize",
+      "name": "Synthesize Findings",
+      "persona": "researcher",
+      "template": "research_topic",
+      "inputs": ["key_findings", "research_questions"],
+      "outputs": ["synthesis", "conclusions"],
+      "timeout_seconds": 600
+    },
+    {
+      "id": "review_quality",
+      "name": "Review Quality",
+      "persona": "reviewer",
+      "template": null,
+      "inputs": ["synthesis", "sources"],
+      "outputs": ["quality_assessment", "gaps_identified"],
+      "timeout_seconds": 300
+    },
+    {
+      "id": "fill_gaps",
+      "name": "Fill Research Gaps",
+      "persona": "researcher",
+      "template": null,
+      "inputs": ["gaps_identified", "key_areas"],
+      "outputs": ["additional_findings"],
+      "condition": "len(gaps_identified) > 0",
+      "timeout_seconds": 600
+    },
+    {
+      "id": "create_report",
+      "name": "Create Final Report",
+      "persona": "teacher",
+      "template": null,
+      "inputs": ["synthesis", "conclusions", "additional_findings"],
+      "outputs": ["final_report", "executive_summary"],
+      "timeout_seconds": 600
+    }
+  ],
+  "output": {
+    "report": "final_report",
+    "summary": "executive_summary",
+    "findings": "key_findings",
+    "sources": "sources"
+  }
+}

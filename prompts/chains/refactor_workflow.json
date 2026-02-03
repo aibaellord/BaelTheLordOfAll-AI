@@ -1,0 +1,57 @@
+{
+  "name": "refactor_workflow",
+  "description": "Safe refactoring with testing and documentation",
+  "steps": [
+    {
+      "id": "analyze",
+      "name": "Analyze Code",
+      "persona": "reviewer",
+      "template": "code_review",
+      "inputs": ["code"],
+      "outputs": ["code_issues", "improvement_suggestions"]
+    },
+    {
+      "id": "design_refactor",
+      "name": "Design Refactoring",
+      "persona": "architect",
+      "inputs": ["code", "code_issues", "improvement_suggestions"],
+      "outputs": ["refactoring_plan"]
+    },
+    {
+      "id": "write_baseline_tests",
+      "name": "Write Baseline Tests",
+      "persona": "coder",
+      "template": "write_tests",
+      "inputs": ["code"],
+      "outputs": ["baseline_tests"]
+    },
+    {
+      "id": "refactor",
+      "name": "Refactor Code",
+      "persona": "coder",
+      "template": "refactor_code",
+      "inputs": ["code", "refactoring_plan"],
+      "outputs": ["refactored_code"]
+    },
+    {
+      "id": "verify",
+      "name": "Verify Refactoring",
+      "persona": "reviewer",
+      "inputs": ["refactored_code", "baseline_tests"],
+      "outputs": ["verification_result"]
+    },
+    {
+      "id": "document",
+      "name": "Document Changes",
+      "persona": "teacher",
+      "inputs": ["code", "refactored_code", "refactoring_plan"],
+      "outputs": ["refactoring_documentation"]
+    }
+  ],
+  "output": {
+    "original_issues": "code_issues",
+    "refactored_code": "refactored_code",
+    "tests": "baseline_tests",
+    "documentation": "refactoring_documentation"
+  }
+}

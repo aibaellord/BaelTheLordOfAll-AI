@@ -1,0 +1,27 @@
+# =============================================================================
+# BAEL MCP Hub - Health Monitor Dockerfile
+# =============================================================================
+# Monitors all MCP containers and reports status to BAEL API
+# =============================================================================
+
+FROM python:3.11-alpine
+
+LABEL maintainer="BAEL AI System"
+LABEL description="Health monitor for BAEL MCP Hub"
+
+# Install dependencies
+RUN apk add --no-cache curl docker-cli && \
+    pip install --no-cache-dir httpx docker pyyaml
+
+WORKDIR /app
+
+# Copy health monitor script
+COPY health_monitor.py /app/
+
+# Create non-root user
+RUN addgroup -g 1001 monitor && \
+    adduser -u 1001 -G monitor -s /bin/sh -D monitor
+
+USER monitor
+
+CMD ["python", "health_monitor.py"]

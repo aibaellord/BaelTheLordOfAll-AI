@@ -1,0 +1,264 @@
+# BAEL Configuration Settings
+# Copy this file to settings.yaml and customize for your environment
+
+# =============================================================================
+# GENERAL SETTINGS
+# =============================================================================
+
+general:
+  name: "BAEL"
+  version: "1.0.0"
+  environment: "development"  # development, staging, production
+  debug: true
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+# =============================================================================
+# LLM PROVIDER SETTINGS
+# =============================================================================
+
+llm:
+  default_provider: "openai"
+  default_model: "gpt-4"
+
+  providers:
+    openai:
+      enabled: true
+      models:
+        - "gpt-4"
+        - "gpt-4-turbo"
+        - "gpt-3.5-turbo"
+      default_model: "gpt-4"
+      temperature: 0.7
+      max_tokens: 4096
+
+    anthropic:
+      enabled: true
+      models:
+        - "claude-3-opus-20240229"
+        - "claude-3-sonnet-20240229"
+        - "claude-3-haiku-20240307"
+      default_model: "claude-3-sonnet-20240229"
+      temperature: 0.7
+      max_tokens: 4096
+
+    groq:
+      enabled: false
+      models:
+        - "llama-3.1-70b-versatile"
+        - "llama-3.1-8b-instant"
+        - "mixtral-8x7b-32768"
+      default_model: "llama-3.1-70b-versatile"
+
+    openrouter:
+      enabled: false
+      models:
+        - "openai/gpt-4"
+        - "anthropic/claude-3-opus"
+      default_model: "openai/gpt-4"
+
+# =============================================================================
+# ULTIMATE ORCHESTRATOR SETTINGS
+# =============================================================================
+
+orchestrator:
+  default_mode: "standard"  # minimal, standard, maximum, autonomous
+
+  modes:
+    minimal:
+      max_iterations: 1
+      capabilities: ["basic_completion"]
+
+    standard:
+      max_iterations: 5
+      capabilities:
+        - "basic_completion"
+        - "web_search"
+        - "file_operations"
+        - "code_execution"
+
+    maximum:
+      max_iterations: 20
+      capabilities:
+        - "basic_completion"
+        - "web_search"
+        - "file_operations"
+        - "code_execution"
+        - "multi_agent"
+        - "research"
+        - "analysis"
+
+    autonomous:
+      max_iterations: 50
+      capabilities: "all"
+      requires_approval: false
+
+# =============================================================================
+# MEMORY SETTINGS
+# =============================================================================
+
+memory:
+  base_path: "memory"
+
+  working:
+    capacity: 50
+    cleanup_interval: 60  # seconds
+
+  episodic:
+    db_path: "memory/episodic/episodes.db"
+    consolidation_hours: 168  # 1 week
+    decay_rate: 0.01
+
+  semantic:
+    db_path: "memory/semantic/concepts.db"
+    cache_size: 500
+
+  procedural:
+    db_path: "memory/procedural/procedures.db"
+    cache_size: 200
+
+  vector:
+    db_path: "memory/vector/vectors.db"
+    dimension: 1536  # OpenAI ada-002
+    metric: "cosine"
+
+# =============================================================================
+# PERSONA SETTINGS
+# =============================================================================
+
+personas:
+  default: "orchestrator"
+
+  available:
+    - name: "orchestrator"
+      description: "Master coordinator for complex tasks"
+      enabled: true
+
+    - name: "architect"
+      description: "System design and architecture"
+      enabled: true
+
+    - name: "coder"
+      description: "Code implementation"
+      enabled: true
+
+    - name: "researcher"
+      description: "Research and information gathering"
+      enabled: true
+
+    - name: "analyst"
+      description: "Data analysis and problem solving"
+      enabled: true
+
+    - name: "reviewer"
+      description: "Code and design review"
+      enabled: true
+
+    - name: "debugger"
+      description: "Bug diagnosis and fixing"
+      enabled: true
+
+    - name: "teacher"
+      description: "Explanation and education"
+      enabled: true
+
+# =============================================================================
+# TOOL SETTINGS
+# =============================================================================
+
+tools:
+  web:
+    enabled: true
+    timeout: 30
+    max_results: 10
+    user_agent: "BAEL-AI/1.0"
+
+  code:
+    enabled: true
+    formatters:
+      python: "black"
+      javascript: "prettier"
+    linters:
+      python: ["ruff", "mypy"]
+      javascript: ["eslint"]
+
+  file:
+    enabled: true
+    max_file_size: 10485760  # 10MB
+    allowed_extensions:
+      - ".py"
+      - ".js"
+      - ".ts"
+      - ".json"
+      - ".yaml"
+      - ".yml"
+      - ".md"
+      - ".txt"
+
+  database:
+    enabled: true
+    default_type: "sqlite"
+
+  ai:
+    enabled: true
+    embedding_model: "text-embedding-ada-002"
+
+  api:
+    enabled: true
+    timeout: 30
+    max_retries: 3
+
+# =============================================================================
+# MCP SERVER SETTINGS
+# =============================================================================
+
+mcp:
+  enabled: true
+  host: "localhost"
+  port: 8765
+  auth_required: false
+  max_connections: 10
+
+# =============================================================================
+# API SERVER SETTINGS
+# =============================================================================
+
+api:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8000
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+
+# =============================================================================
+# INTEGRATION SETTINGS
+# =============================================================================
+
+integrations:
+  github:
+    enabled: false
+    default_owner: ""
+
+  slack:
+    enabled: false
+    default_channel: ""
+
+# =============================================================================
+# SECURITY SETTINGS
+# =============================================================================
+
+security:
+  encryption:
+    enabled: true
+    algorithm: "AES-256-GCM"
+
+  secrets:
+    storage: "keyring"  # keyring, env, file
+    encryption_key_env: "BAEL_ENCRYPTION_KEY"
+
+  audit:
+    enabled: true
+    log_path: "logs/audit.log"

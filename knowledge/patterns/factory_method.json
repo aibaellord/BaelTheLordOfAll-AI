@@ -1,0 +1,52 @@
+{
+  "name": "Factory Method",
+  "category": "Creational",
+  "description": "Define an interface for creating an object, but let subclasses decide which class to instantiate.",
+  "problem": "A class can't anticipate the class of objects it must create, or wants to delegate responsibility to subclasses.",
+  "solution": "Define a factory method that subclasses can override to create specific product types.",
+  "when_to_use": [
+    "When a class can't anticipate the type of objects it needs to create",
+    "When a class wants subclasses to specify the objects it creates",
+    "When you want to localize the knowledge of which class gets created"
+  ],
+  "when_not_to_use": [
+    "When object creation is simple and doesn't vary",
+    "When there's only one type of object to create"
+  ],
+  "structure": {
+    "participants": [
+      {
+        "name": "Product",
+        "role": "Defines the interface of objects the factory method creates"
+      },
+      {
+        "name": "ConcreteProduct",
+        "role": "Implements the Product interface"
+      },
+      {
+        "name": "Creator",
+        "role": "Declares the factory method which returns a Product object"
+      },
+      {
+        "name": "ConcreteCreator",
+        "role": "Overrides factory method to return a ConcreteProduct instance"
+      }
+    ]
+  },
+  "implementation": {
+    "python": "from abc import ABC, abstractmethod\n\nclass Product(ABC):\n    @abstractmethod\n    def operation(self) -> str:\n        pass\n\nclass ConcreteProductA(Product):\n    def operation(self) -> str:\n        return 'Product A'\n\nclass Creator(ABC):\n    @abstractmethod\n    def factory_method(self) -> Product:\n        pass\n    \n    def some_operation(self) -> str:\n        product = self.factory_method()\n        return product.operation()\n\nclass ConcreteCreatorA(Creator):\n    def factory_method(self) -> Product:\n        return ConcreteProductA()",
+    "typescript": "interface Product {\n    operation(): string;\n}\n\nclass ConcreteProductA implements Product {\n    operation(): string {\n        return 'Product A';\n    }\n}\n\nabstract class Creator {\n    abstract factoryMethod(): Product;\n    \n    someOperation(): string {\n        const product = this.factoryMethod();\n        return product.operation();\n    }\n}\n\nclass ConcreteCreatorA extends Creator {\n    factoryMethod(): Product {\n        return new ConcreteProductA();\n    }\n}"
+  },
+  "related_patterns": ["Abstract Factory", "Template Method", "Prototype"],
+  "trade_offs": {
+    "pros": [
+      "Eliminates need to bind application-specific classes",
+      "Provides hooks for subclasses",
+      "Connects parallel class hierarchies"
+    ],
+    "cons": [
+      "May require creating a subclass just to create a product",
+      "Can increase overall complexity"
+    ]
+  }
+}

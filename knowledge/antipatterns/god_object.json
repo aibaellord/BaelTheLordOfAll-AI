@@ -1,0 +1,49 @@
+{
+  "name": "God Object",
+  "category": "Design",
+  "description": "A class that knows too much or does too much, violating the single responsibility principle.",
+  "symptoms": [
+    "One class with hundreds or thousands of lines",
+    "Class that imports almost everything",
+    "Class that other classes heavily depend on",
+    "Methods that handle unrelated functionality",
+    "Difficult to name because it does everything"
+  ],
+  "causes": [
+    "Lack of planning or design",
+    "Quick fixes that pile up",
+    "Fear of creating new classes",
+    "Misunderstanding of OOP principles",
+    "Tight deadlines leading to shortcuts"
+  ],
+  "consequences": [
+    "Difficult to understand and maintain",
+    "Hard to test in isolation",
+    "Changes have unexpected side effects",
+    "Poor reusability",
+    "Merge conflicts in team development"
+  ],
+  "example_bad": "class Application:\n    def __init__(self):\n        self.db = Database()\n        self.users = []\n        self.orders = []\n        self.products = []\n        self.config = {}\n    \n    def create_user(self, name, email): ...\n    def delete_user(self, id): ...\n    def authenticate(self, email, password): ...\n    def create_order(self, user_id, items): ...\n    def process_payment(self, order_id, payment_info): ...\n    def ship_order(self, order_id): ...\n    def add_product(self, name, price): ...\n    def update_inventory(self, product_id, quantity): ...\n    def send_email(self, to, subject, body): ...\n    def generate_report(self, type): ...\n    def log_event(self, event): ...\n    # ... 100 more methods",
+  "example_good": "class UserService:\n    def create(self, name, email): ...\n    def delete(self, id): ...\n\nclass AuthService:\n    def authenticate(self, email, password): ...\n\nclass OrderService:\n    def create(self, user_id, items): ...\n    def process_payment(self, order_id, payment_info): ...\n    def ship(self, order_id): ...\n\nclass ProductService:\n    def add(self, name, price): ...\n    def update_inventory(self, product_id, quantity): ...\n\nclass NotificationService:\n    def send_email(self, to, subject, body): ...\n\nclass ReportingService:\n    def generate(self, type): ...",
+  "refactoring_strategies": [
+    {
+      "name": "Extract Class",
+      "description": "Identify related methods and fields, extract into new class"
+    },
+    {
+      "name": "Single Responsibility Split",
+      "description": "Identify distinct responsibilities and create a class for each"
+    },
+    {
+      "name": "Facade Introduction",
+      "description": "Keep god object as facade, delegate to specialized classes"
+    }
+  ],
+  "prevention": [
+    "Follow Single Responsibility Principle",
+    "Use SOLID principles",
+    "Regular code reviews",
+    "Set class size limits in linting",
+    "Think before adding methods to existing classes"
+  ]
+}

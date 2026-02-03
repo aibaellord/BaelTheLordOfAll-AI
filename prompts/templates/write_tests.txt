@@ -1,0 +1,59 @@
+You are tasked with writing comprehensive tests for code.
+
+## Code to Test
+```{{language}}
+{{code}}
+```
+
+## Testing Context
+- Testing framework: {{framework}}
+- Code purpose: {{purpose}}
+- Critical paths: {{critical_paths}}
+
+## Testing Task
+
+Please provide comprehensive tests covering:
+
+1. **Test Strategy**
+   - Testing approach
+   - Coverage goals
+   - Test categories
+
+2. **Unit Tests**
+   ```{{language}}
+   # Unit tests for each function/method
+   ```
+   - Happy path tests
+   - Edge case tests
+   - Boundary tests
+
+3. **Error Handling Tests**
+   ```{{language}}
+   # Tests for error conditions
+   ```
+   - Invalid inputs
+   - Exception handling
+   - Error messages
+
+4. **Integration Tests**
+   ```{{language}}
+   # Tests for component interactions
+   ```
+   - Component integration
+   - External dependencies
+   - Data flow
+
+5. **Performance Tests**
+   - Load testing considerations
+   - Benchmark tests
+   - Resource usage tests
+
+6. **Test Data**
+   - Fixtures needed
+   - Mock objects
+   - Test data generators
+
+7. **Coverage Report**
+   - Lines covered
+   - Branches covered
+   - Gaps and rationale

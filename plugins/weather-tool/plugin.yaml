@@ -1,0 +1,38 @@
+id: weather-tool
+name: Weather Tool Plugin
+version: 1.0.0
+description: Fetches current weather data for any city
+author: BAEL Team
+license: MIT
+homepage: https://github.com/bael/plugins/weather-tool
+type: tool
+capabilities:
+  - weather_data
+  - location_services
+dependencies:
+  - name: requests
+    version: ">=2.31.0"
+    optional: false
+python_version: ">=3.8"
+main_module: weather.py
+entry_point: register
+config_schema:
+  api_key:
+    type: string
+    required: true
+    description: OpenWeatherMap API key
+  units:
+    type: string
+    required: false
+    default: metric
+    description: Units for temperature (metric/imperial)
+default_config:
+  units: metric
+  timeout: 10
+permissions:
+  - network:api.openweathermap.org
+sandboxed: true
+tags:
+  - weather
+  - api
+  - tools

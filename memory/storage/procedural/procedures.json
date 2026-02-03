@@ -1,0 +1,232 @@
+{
+  "procedures": {
+    "1651bf1bd0f37524": {
+      "id": "1651bf1bd0f37524",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-29T05:49:57.454870"
+      },
+      "created_at": "2026-01-29T05:49:57.454935",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "e2962a87c0565132": {
+      "id": "e2962a87c0565132",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-29T05:52:37.602531"
+      },
+      "created_at": "2026-01-29T05:52:37.602577",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "a4a5760cc699ff24": {
+      "id": "a4a5760cc699ff24",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-29T05:52:39.231435"
+      },
+      "created_at": "2026-01-29T05:52:39.231468",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "37943d661e25dd45": {
+      "id": "37943d661e25dd45",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-29T05:53:22.323511"
+      },
+      "created_at": "2026-01-29T05:53:22.323548",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "2d1c7de9b1a09484": {
+      "id": "2d1c7de9b1a09484",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-29T05:53:23.369390"
+      },
+      "created_at": "2026-01-29T05:53:23.369418",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "405370a16ef7f509": {
+      "id": "405370a16ef7f509",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-29T11:17:53.998855"
+      },
+      "created_at": "2026-01-29T11:17:53.998911",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "0b0a51447716aa29": {
+      "id": "0b0a51447716aa29",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-29T18:02:02.813349"
+      },
+      "created_at": "2026-01-29T18:02:02.813380",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "c74ac11ab69ed13e": {
+      "id": "c74ac11ab69ed13e",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-29T20:18:58.557005"
+      },
+      "created_at": "2026-01-29T20:18:58.557095",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "cfd7d0f23d2a5493": {
+      "id": "cfd7d0f23d2a5493",
+      "pattern": {
+        "task_type": "testing",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-30T16:15:05.965916"
+      },
+      "created_at": "2026-01-30T16:15:05.966037",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "7d89f330c84e081b": {
+      "id": "7d89f330c84e081b",
+      "pattern": {
+        "task_type": "general",
+        "approach": "iterative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-31T19:03:17.741468"
+      },
+      "created_at": "2026-01-31T19:03:17.741508",
+      "success_count": 1,
+      "failure_count": 0
+    },
+    "b0aee930eb661aa4": {
+      "id": "b0aee930eb661aa4",
+      "pattern": {
+        "task_type": "general",
+        "approach": "collaborative",
+        "personas_used": [],
+        "success_factors": "Error: No API key configured. Please set the appropriate environment variable.",
+        "learned_at": "2026-01-31T19:03:32.659719"
+      },
+      "created_at": "2026-01-31T19:03:32.659781",
+      "success_count": 1,
+      "failure_count": 0
+    }
+  },
+  "skills": {
+    "general": [
+      "1651bf1bd0f37524",
+      "e2962a87c0565132",
+      "a4a5760cc699ff24",
+      "37943d661e25dd45",
+      "2d1c7de9b1a09484",
+      "405370a16ef7f509",
+      "0b0a51447716aa29",
+      "c74ac11ab69ed13e",
+      "7d89f330c84e081b",
+      "b0aee930eb661aa4"
+    ],
+    "testing": [
+      "cfd7d0f23d2a5493"
+    ]
+  },
+  "success_patterns": [
+    {
+      "procedure_id": "1651bf1bd0f37524",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-29T05:49:57.454945"
+    },
+    {
+      "procedure_id": "e2962a87c0565132",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-29T05:52:37.602591"
+    },
+    {
+      "procedure_id": "a4a5760cc699ff24",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-29T05:52:39.231472"
+    },
+    {
+      "procedure_id": "37943d661e25dd45",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-29T05:53:22.323551"
+    },
+    {
+      "procedure_id": "2d1c7de9b1a09484",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-29T05:53:23.369421"
+    },
+    {
+      "procedure_id": "405370a16ef7f509",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-29T11:17:53.998916"
+    },
+    {
+      "procedure_id": "0b0a51447716aa29",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-29T18:02:02.813383"
+    },
+    {
+      "procedure_id": "c74ac11ab69ed13e",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-29T20:18:58.557105"
+    },
+    {
+      "procedure_id": "cfd7d0f23d2a5493",
+      "task_type": "testing",
+      "approach": "iterative",
+      "timestamp": "2026-01-30T16:15:05.966049"
+    },
+    {
+      "procedure_id": "7d89f330c84e081b",
+      "task_type": "general",
+      "approach": "iterative",
+      "timestamp": "2026-01-31T19:03:17.741511"
+    },
+    {
+      "procedure_id": "b0aee930eb661aa4",
+      "task_type": "general",
+      "approach": "collaborative",
+      "timestamp": "2026-01-31T19:03:32.659786"
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "domain": "security",
+  "version": "1.0.0",
+  "description": "Application security principles, vulnerabilities, and defensive practices",
+  "principles": {
+    "defense_in_depth": {
+      "description": "Multiple layers of security controls",
+      "layers": ["Network", "Application", "Data", "User"]
+    },
+    "least_privilege": {
+      "description": "Grant minimum permissions necessary",
+      "applications": ["User roles", "Service accounts", "API tokens"]
+    },
+    "fail_secure": {
+      "description": "Default to secure state on failure",
+      "example": "Deny access if auth service is unavailable"
+    },
+    "secure_by_default": {
+      "description": "Ship with secure configurations",
+      "example": "Require explicit opt-in for dangerous features"
+    }
+  },
+  "owasp_top_10": [
+    {
+      "name": "Broken Access Control",
+      "description": "Users can access resources they shouldn't",
+      "prevention": [
+        "Deny by default",
+        "Implement access control checks consistently",
+        "Rate limit API access"
+      ]
+    },
+    {
+      "name": "Cryptographic Failures",
+      "description": "Weak or missing encryption",
+      "prevention": [
+        "Use strong, modern algorithms",
+        "Encrypt data at rest and in transit",
+        "Never roll your own crypto"
+      ]
+    },
+    {
+      "name": "Injection",
+      "description": "Untrusted data sent to interpreter",
+      "types": ["SQL", "NoSQL", "OS Command", "LDAP"],
+      "prevention": [
+        "Use parameterized queries",
+        "Validate and sanitize input",
+        "Use ORMs properly"
+      ]
+    },
+    {
+      "name": "Insecure Design",
+      "description": "Missing or ineffective security controls",
+      "prevention": [
+        "Threat modeling",
+        "Secure design patterns",
+        "Security requirements in development"
+      ]
+    },
+    {
+      "name": "Security Misconfiguration",
+      "description": "Insecure default configurations",
+      "prevention": [
+        "Hardening guidelines",
+        "Remove unused features",
+        "Automated configuration checks"
+      ]
+    }
+  ],
+  "authentication": {
+    "password_security": {
+      "hashing": "Use bcrypt, Argon2, or scrypt",
+      "requirements": "Length > complexity",
+      "storage": "Never store plaintext passwords"
+    },
+    "multi_factor": {
+      "types": ["TOTP", "SMS (less secure)", "Hardware keys"],
+      "recommendation": "Require for sensitive operations"
+    },
+    "session_management": {
+      "token_storage": "HttpOnly, Secure cookies",
+      "expiration": "Reasonable timeouts",
+      "invalidation": "Allow logout, revocation"
+    },
+    "oauth_oidc": {
+      "use_when": "Third-party authentication",
+      "pitfalls": ["State parameter required", "Validate tokens properly"]
+    }
+  },
+  "authorization": {
+    "models": {
+      "rbac": "Role-Based Access Control",
+      "abac": "Attribute-Based Access Control",
+      "pbac": "Policy-Based Access Control"
+    },
+    "implementation": [
+      "Centralize authorization logic",
+      "Check permissions on every request",
+      "Don't rely on client-side checks"
+    ]
+  },
+  "input_validation": {
+    "principles": [
+      "Validate on server side (never trust client)",
+      "Whitelist over blacklist",
+      "Validate type, length, format, range",
+      "Encode output appropriately"
+    ],
+    "sanitization": {
+      "html": "Use proper escaping or sanitization libraries",
+      "sql": "Parameterized queries only",
+      "shell": "Avoid shell commands with user input"
+    }
+  },
+  "secrets_management": {
+    "never": [
+      "Commit secrets to version control",
+      "Log secrets",
+      "Pass secrets in URLs"
+    ],
+    "best_practices": [
+      "Use secrets manager (Vault, AWS Secrets Manager)",
+      "Rotate secrets regularly",
+      "Audit secret access",
+      "Use environment variables for local development"
+    ]
+  },
+  "logging_monitoring": {
+    "what_to_log": [
+      "Authentication attempts",
+      "Authorization failures",
+      "Input validation failures",
+      "Application errors"
+    ],
+    "what_not_to_log": [
+      "Passwords or credentials",
+      "Session tokens",
+      "PII without necessity"
+    ],
+    "monitoring": [
+      "Set up alerts for suspicious patterns",
+      "Monitor for brute force attempts",
+      "Track unusual access patterns"
+    ]
+  },
+  "common_vulnerabilities": {
+    "xss": {
+      "name": "Cross-Site Scripting",
+      "prevention": "Encode output, CSP headers"
+    },
+    "csrf": {
+      "name": "Cross-Site Request Forgery",
+      "prevention": "CSRF tokens, SameSite cookies"
+    },
+    "ssrf": {
+      "name": "Server-Side Request Forgery",
+      "prevention": "Validate URLs, allowlist hosts"
+    },
+    "idor": {
+      "name": "Insecure Direct Object Reference",
+      "prevention": "Authorization checks, UUIDs"
+    }
+  }
+}

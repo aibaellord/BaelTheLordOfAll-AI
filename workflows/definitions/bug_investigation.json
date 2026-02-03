@@ -1,0 +1,86 @@
+{
+  "name": "bug_investigation",
+  "description": "Systematic bug investigation and fix workflow",
+  "version": "1.0.0",
+  "tags": ["debugging", "bug", "fix"],
+  "steps": [
+    {
+      "id": "gather_info",
+      "name": "Gather Information",
+      "persona": "debugger",
+      "template": null,
+      "inputs": ["bug_report", "logs", "error_messages"],
+      "outputs": ["problem_summary", "affected_areas"],
+      "timeout_seconds": 300
+    },
+    {
+      "id": "reproduce",
+      "name": "Reproduce Issue",
+      "persona": "debugger",
+      "template": null,
+      "inputs": ["problem_summary", "steps_to_reproduce"],
+      "outputs": ["reproduction_confirmed", "actual_behavior"],
+      "timeout_seconds": 600
+    },
+    {
+      "id": "analyze_root_cause",
+      "name": "Root Cause Analysis",
+      "persona": "debugger",
+      "template": "debug_issue",
+      "inputs": ["problem_summary", "affected_areas", "code"],
+      "outputs": ["root_cause", "affected_files"],
+      "timeout_seconds": 900
+    },
+    {
+      "id": "design_fix",
+      "name": "Design Fix",
+      "persona": "architect",
+      "template": null,
+      "inputs": ["root_cause", "affected_files"],
+      "outputs": ["fix_approach", "risk_assessment"],
+      "timeout_seconds": 300
+    },
+    {
+      "id": "implement_fix",
+      "name": "Implement Fix",
+      "persona": "coder",
+      "template": null,
+      "inputs": ["root_cause", "fix_approach", "code"],
+      "outputs": ["fixed_code", "changes_made"],
+      "timeout_seconds": 600
+    },
+    {
+      "id": "write_regression_test",
+      "name": "Write Regression Test",
+      "persona": "coder",
+      "template": "write_tests",
+      "inputs": ["fixed_code", "root_cause"],
+      "outputs": ["regression_tests"],
+      "timeout_seconds": 300
+    },
+    {
+      "id": "verify_fix",
+      "name": "Verify Fix",
+      "persona": "debugger",
+      "template": null,
+      "inputs": ["fixed_code", "regression_tests", "steps_to_reproduce"],
+      "outputs": ["fix_verified", "verification_results"],
+      "timeout_seconds": 300
+    },
+    {
+      "id": "review_fix",
+      "name": "Review Fix",
+      "persona": "reviewer",
+      "template": "code_review",
+      "inputs": ["fixed_code", "regression_tests", "root_cause"],
+      "outputs": ["review_approved", "review_comments"],
+      "timeout_seconds": 300
+    }
+  ],
+  "output": {
+    "root_cause": "root_cause",
+    "fixed_code": "fixed_code",
+    "regression_tests": "regression_tests",
+    "verification": "verification_results"
+  }
+}

@@ -1,0 +1,70 @@
+You are tasked with designing the architecture for a software system.
+
+## Project Overview
+{{project_description}}
+
+## Requirements
+
+### Functional Requirements
+{{functional_requirements}}
+
+### Non-Functional Requirements
+- Scalability: {{scalability_requirements}}
+- Performance: {{performance_requirements}}
+- Security: {{security_requirements}}
+- Availability: {{availability_requirements}}
+
+### Constraints
+{{constraints}}
+
+## Architecture Task
+
+Please design a comprehensive architecture covering:
+
+1. **System Overview**
+   - High-level architecture diagram (ASCII)
+   - Key components and their responsibilities
+   - Technology stack recommendations
+
+2. **Component Design**
+   For each major component:
+   - Purpose and responsibility
+   - Interface definitions
+   - Internal structure
+   - Dependencies
+
+3. **Data Architecture**
+   - Data models
+   - Database choices
+   - Data flow
+   - Caching strategy
+
+4. **Integration Points**
+   - External systems
+   - APIs and protocols
+   - Message formats
+   - Error handling
+
+5. **Infrastructure**
+   - Deployment architecture
+   - Scaling strategy
+   - Monitoring and observability
+   - Disaster recovery
+
+6. **Security Architecture**
+   - Authentication/Authorization
+   - Data protection
+   - Network security
+   - Audit logging
+
+7. **Trade-offs & Decisions**
+   - Key architectural decisions
+   - Alternatives considered
+   - Trade-offs made
+   - Risks and mitigations
+
+8. **Implementation Roadmap**
+   - Phase 1: MVP
+   - Phase 2: Enhanced
+   - Phase 3: Scaled
+   - Dependencies between phases

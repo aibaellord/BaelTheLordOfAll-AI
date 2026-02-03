@@ -1,0 +1,36 @@
+id: github-integration
+name: GitHub Integration Plugin
+version: 1.0.0
+description: Integrates with GitHub API for repository operations
+author: BAEL Team
+license: MIT
+type: integration
+capabilities:
+  - github_repos
+  - code_review
+  - issue_tracking
+dependencies:
+  - name: PyGithub
+    version: ">=2.1.0"
+    optional: false
+python_version: ">=3.8"
+main_module: github_plugin.py
+entry_point: register
+config_schema:
+  token:
+    type: string
+    required: true
+    description: GitHub personal access token
+  default_repo:
+    type: string
+    required: false
+default_config:
+  per_page: 30
+permissions:
+  - network:api.github.com
+  - network:github.com
+sandboxed: true
+tags:
+  - github
+  - integration
+  - vcs

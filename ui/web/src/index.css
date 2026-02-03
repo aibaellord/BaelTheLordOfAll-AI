@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #0a0a0f;
+  color: #e0e0e0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #12121a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2d2d3d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3d3d4d;
+}
+
+/* Terminal styling */
+.xterm {
+  padding: 8px;
+}
+
+.xterm-viewport {
+  background-color: #0a0a0f !important;
+}
+
+/* Code highlighting */
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* Button base */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bael-bg;
+}
+
+.btn-primary {
+  @apply bg-bael-primary text-white hover:bg-opacity-90;
+  @apply focus:ring-bael-primary;
+}
+
+.btn-secondary {
+  @apply bg-bael-surface border border-bael-border text-bael-text;
+  @apply hover:bg-bael-border focus:ring-bael-border;
+}
+
+/* Card component */
+.card {
+  @apply bg-bael-surface border border-bael-border rounded-xl;
+}
+
+/* Input styling */
+.input {
+  @apply w-full px-4 py-2 bg-bael-bg border border-bael-border rounded-lg;
+  @apply text-bael-text placeholder-bael-muted;
+  @apply focus:outline-none focus:ring-2 focus:ring-bael-primary focus:border-transparent;
+  @apply transition-all duration-200;
+}
+
+/* Glass effect */
+.glass {
+  @apply bg-bael-surface/80 backdrop-blur-xl;
+}
+
+/* Gradient text */
+.gradient-text {
+  @apply bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-bael-primary via-bael-secondary to-bael-accent;
+}
+
+/* Animation utilities */
+.animate-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Status indicators */
+.status-dot {
+  @apply w-2 h-2 rounded-full;
+}
+
+.status-online {
+  @apply bg-bael-success;
+}
+
+.status-offline {
+  @apply bg-bael-error;
+}
+
+.status-pending {
+  @apply bg-bael-warning animate-pulse;
+}

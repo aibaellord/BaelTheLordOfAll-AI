@@ -1,0 +1,1 @@
+{"success":true,"data":{"mode":"transcendent","uptime_seconds":3.529891,"total_invocations":0,"capabilities_loaded":30,"capabilities_available":63,"active_tasks":0,"domains":{"orchestration":3,"collective":3,"reasoning":5,"memory":0,"cognition":7,"perception":3,"learning":1,"resources":3,"knowledge":2,"tools":3}},"error":null,"mode":"transcendent"}

@@ -1,0 +1,27 @@
+id: sentiment-analyzer
+name: Sentiment Analysis Plugin
+version: 1.0.0
+description: Analyzes sentiment of text using basic NLP
+author: BAEL Team
+license: MIT
+type: reasoning
+capabilities:
+  - sentiment_analysis
+  - text_classification
+dependencies: []
+python_version: ">=3.8"
+main_module: sentiment.py
+entry_point: register
+config_schema:
+  threshold:
+    type: number
+    required: false
+    default: 0.5
+default_config:
+  threshold: 0.5
+permissions: []
+sandboxed: true
+tags:
+  - nlp
+  - sentiment
+  - reasoning

@@ -1,0 +1,572 @@
+# =============================================================================
+# BAEL MCP Hub - Docker Compose Configuration
+# =============================================================================
+# 33 MCP Servers organized into tiers for AI Agent development
+# Deploy with: docker-compose -f docker-compose.mcp.yml up -d
+# =============================================================================
+
+version: '3.9'
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  mcp-network:
+    driver: bridge
+    name: bael-mcp-network
+  bael-network:
+    external: true
+    name: baelthelordofall-ai_default
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  mcp-shared-workspace:
+    name: bael-mcp-workspace
+  mcp-shared-cache:
+    name: bael-mcp-cache
+  mcp-memory-data:
+    name: bael-mcp-memory
+  mcp-sqlite-data:
+    name: bael-mcp-sqlite
+  mcp-postgres-data:
+    name: bael-mcp-postgres
+  mcp-redis-data:
+    name: bael-mcp-redis
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+services:
+
+  # ===========================================================================
+  # MCP GATEWAY - Central routing and health monitoring
+  # ===========================================================================
+  mcp-gateway:
+    image: nginx:alpine
+    container_name: bael-mcp-gateway
+    ports:
+      - "3100:80"
+    volumes:
+      - ../gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../gateway/mcp-routes.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - mcp-network
+      - bael-network
+    depends_on:
+      - mcp-filesystem
+      - mcp-memory
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================================================
+  # TIER 1: ESSENTIAL MCPs (5)
+  # ===========================================================================
+
+  # Filesystem MCP - File operations
+  mcp-filesystem:
+    image: node:20-alpine
+    container_name: bael-mcp-filesystem
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-filesystem /workspace
+    volumes:
+      - mcp-shared-workspace:/workspace
+      - ${PWD}:/host:ro
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Brave Search MCP - Web search
+  mcp-brave-search:
+    image: node:20-alpine
+    container_name: bael-mcp-brave-search
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # GitHub MCP - Repository management
+  mcp-github:
+    image: node:20-alpine
+    container_name: bael-mcp-github
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-github
+    environment:
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # SQLite MCP - Database operations
+  mcp-sqlite:
+    image: node:20-alpine
+    container_name: bael-mcp-sqlite
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-sqlite --db-path /data/bael.db
+    volumes:
+      - mcp-sqlite-data:/data
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Memory MCP - Persistent knowledge storage
+  mcp-memory:
+    image: node:20-alpine
+    container_name: bael-mcp-memory
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-memory
+    volumes:
+      - mcp-memory-data:/data
+    environment:
+      - MCP_TRANSPORT=stdio
+      - MEMORY_FILE_PATH=/data/memory.json
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 2: POWER TOOLS MCPs (7)
+  # ===========================================================================
+
+  # Playwright MCP - Browser automation
+  mcp-playwright:
+    image: mcr.microsoft.com/playwright:v1.40.0-focal
+    container_name: bael-mcp-playwright
+    working_dir: /app
+    command: npx -y @executeautomation/playwright-mcp-server
+    environment:
+      - MCP_TRANSPORT=stdio
+      - BROWSER=chromium
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    shm_size: 2gb
+
+  # Docker MCP - Container management
+  mcp-docker:
+    image: node:20-alpine
+    container_name: bael-mcp-docker
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    privileged: true
+
+  # Git MCP - Git operations
+  mcp-git:
+    image: node:20-alpine
+    container_name: bael-mcp-git
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-git --repository /workspace
+    volumes:
+      - mcp-shared-workspace:/workspace
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # PostgreSQL MCP - Advanced database
+  mcp-postgres:
+    image: node:20-alpine
+    container_name: bael-mcp-postgres
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-postgres postgresql://${POSTGRES_USER:-bael}:${POSTGRES_PASSWORD:-bael}@postgres:5432/${POSTGRES_DB:-bael}
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    depends_on:
+      - postgres-db
+    restart: unless-stopped
+
+  # Postgres Database (backing service)
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: bael-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-bael}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-bael}
+      - POSTGRES_DB=${POSTGRES_DB:-bael}
+    volumes:
+      - mcp-postgres-data:/var/lib/postgresql/data
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bael}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis MCP - Cache and pub/sub
+  mcp-redis:
+    image: node:20-alpine
+    container_name: bael-mcp-redis
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-redis redis://redis:6379
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    depends_on:
+      - redis-db
+    restart: unless-stopped
+
+  # Redis Database (backing service)
+  redis-db:
+    image: redis:7-alpine
+    container_name: bael-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - mcp-redis-data:/data
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Slack MCP - Team communication
+  mcp-slack:
+    image: node:20-alpine
+    container_name: bael-mcp-slack
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-slack
+    environment:
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+      - SLACK_TEAM_ID=${SLACK_TEAM_ID:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 3: ENHANCED MCPs (8)
+  # ===========================================================================
+
+  # Fetch MCP - HTTP requests
+  mcp-fetch:
+    image: node:20-alpine
+    container_name: bael-mcp-fetch
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-fetch
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Puppeteer MCP - Alternative browser automation
+  mcp-puppeteer:
+    image: ghcr.io/puppeteer/puppeteer:latest
+    container_name: bael-mcp-puppeteer
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-puppeteer
+    environment:
+      - MCP_TRANSPORT=stdio
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    shm_size: 2gb
+
+  # Sequential Thinking MCP - Reasoning enhancement
+  mcp-sequential-thinking:
+    image: node:20-alpine
+    container_name: bael-mcp-sequential-thinking
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-sequential-thinking
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Time MCP - Time/timezone handling
+  mcp-time:
+    image: node:20-alpine
+    container_name: bael-mcp-time
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-time
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Exa MCP - Advanced web search
+  mcp-exa:
+    image: node:20-alpine
+    container_name: bael-mcp-exa
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-exa
+    environment:
+      - EXA_API_KEY=${EXA_API_KEY:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Firecrawl MCP - Web scraping
+  mcp-firecrawl:
+    image: node:20-alpine
+    container_name: bael-mcp-firecrawl
+    working_dir: /app
+    command: npx -y firecrawl-mcp
+    environment:
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Context7 MCP - Context management
+  mcp-context7:
+    image: node:20-alpine
+    container_name: bael-mcp-context7
+    working_dir: /app
+    command: npx -y @context7/mcp-server
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Everything MCP - File indexing
+  mcp-everything:
+    image: node:20-alpine
+    container_name: bael-mcp-everything
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-everything
+    volumes:
+      - mcp-shared-workspace:/workspace
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 4: SPECIALIZED MCPs (13)
+  # ===========================================================================
+
+  # YouTube Transcript MCP
+  mcp-youtube:
+    image: node:20-alpine
+    container_name: bael-mcp-youtube
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-youtube-transcript
+    environment:
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Google Drive MCP
+  mcp-google-drive:
+    image: node:20-alpine
+    container_name: bael-mcp-google-drive
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-gdrive
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - MCP_TRANSPORT=stdio
+    volumes:
+      - ../config/gdrive-credentials.json:/app/credentials.json:ro
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Google Maps MCP
+  mcp-google-maps:
+    image: node:20-alpine
+    container_name: bael-mcp-google-maps
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-google-maps
+    environment:
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # AWS Knowledge Base MCP
+  mcp-aws-kb:
+    image: node:20-alpine
+    container_name: bael-mcp-aws-kb
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-aws-kb-retrieval
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # S3 MCP - AWS storage
+  mcp-s3:
+    image: node:20-alpine
+    container_name: bael-mcp-s3
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-aws-s3
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Cloudflare MCP
+  mcp-cloudflare:
+    image: node:20-alpine
+    container_name: bael-mcp-cloudflare
+    working_dir: /app
+    command: npx -y @cloudflare/mcp-server-cloudflare
+    environment:
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN:-}
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Sentry MCP - Error monitoring
+  mcp-sentry:
+    image: node:20-alpine
+    container_name: bael-mcp-sentry
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-sentry
+    environment:
+      - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN:-}
+      - SENTRY_ORG=${SENTRY_ORG:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Raygun MCP - Crash reporting
+  mcp-raygun:
+    image: node:20-alpine
+    container_name: bael-mcp-raygun
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-raygun
+    environment:
+      - RAYGUN_API_KEY=${RAYGUN_API_KEY:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Linear MCP - Issue tracking
+  mcp-linear:
+    image: node:20-alpine
+    container_name: bael-mcp-linear
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-linear
+    environment:
+      - LINEAR_API_KEY=${LINEAR_API_KEY:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Notion MCP
+  mcp-notion:
+    image: node:20-alpine
+    container_name: bael-mcp-notion
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-notion
+    environment:
+      - NOTION_API_KEY=${NOTION_API_KEY:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Obsidian MCP - Note management
+  mcp-obsidian:
+    image: node:20-alpine
+    container_name: bael-mcp-obsidian
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-obsidian
+    volumes:
+      - ${OBSIDIAN_VAULT_PATH:-./data/obsidian}:/vault
+    environment:
+      - VAULT_PATH=/vault
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Todoist MCP - Task management
+  mcp-todoist:
+    image: node:20-alpine
+    container_name: bael-mcp-todoist
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-todoist
+    environment:
+      - TODOIST_API_TOKEN=${TODOIST_API_TOKEN:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # E2B Sandbox MCP - Code execution sandbox
+  mcp-e2b:
+    image: node:20-alpine
+    container_name: bael-mcp-e2b
+    working_dir: /app
+    command: npx -y @e2b/mcp-server
+    environment:
+      - E2B_API_KEY=${E2B_API_KEY:-}
+      - MCP_TRANSPORT=stdio
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # MCP HEALTH MONITOR
+  # ===========================================================================
+  mcp-health-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.health-monitor
+    container_name: bael-mcp-health-monitor
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - CHECK_INTERVAL=30
+      - BAEL_API_URL=http://bael:8000
+    networks:
+      - mcp-network
+      - bael-network
+    restart: unless-stopped
+    depends_on:
+      - mcp-gateway

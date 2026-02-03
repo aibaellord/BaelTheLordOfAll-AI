@@ -1,0 +1,41 @@
+{
+  "name": "decorator",
+  "category": "structural",
+  "description": "Attaches additional responsibilities to an object dynamically. Decorators provide a flexible alternative to subclassing for extending functionality.",
+  "when_to_use": [
+    "Adding responsibilities to objects dynamically and transparently",
+    "Responsibilities can be withdrawn",
+    "Extension by subclassing is impractical or impossible",
+    "Need to add features to individual objects, not an entire class"
+  ],
+  "structure": {
+    "component": "Defines the interface for objects that can have responsibilities added",
+    "concrete_component": "Defines an object to which additional responsibilities can be attached",
+    "decorator": "Maintains a reference to a Component object and defines an interface conforming to Component",
+    "concrete_decorator": "Adds responsibilities to the component"
+  },
+  "implementation": {
+    "python": "from abc import ABC, abstractmethod\nfrom typing import Optional\n\nclass Component(ABC):\n    \"\"\"Interface for objects that can have responsibilities added.\"\"\"\n    \n    @abstractmethod\n    def operation(self) -> str:\n        pass\n\nclass ConcreteComponent(Component):\n    \"\"\"Defines an object to which additional responsibilities can be attached.\"\"\"\n    \n    def operation(self) -> str:\n        return \"ConcreteComponent\"\n\nclass Decorator(Component):\n    \"\"\"Maintains a reference to a Component object.\"\"\"\n    \n    def __init__(self, component: Component):\n        self._component = component\n    \n    @property\n    def component(self) -> Component:\n        return self._component\n    \n    def operation(self) -> str:\n        return self._component.operation()\n\nclass ConcreteDecoratorA(Decorator):\n    \"\"\"Adds responsibilities to the component.\"\"\"\n    \n    def operation(self) -> str:\n        return f\"ConcreteDecoratorA({self.component.operation()})\"\n\nclass ConcreteDecoratorB(Decorator):\n    \"\"\"Adds additional behaviors.\"\"\"\n    \n    def operation(self) -> str:\n        return f\"ConcreteDecoratorB({self.component.operation()})\"\n    \n    def added_behavior(self) -> str:\n        return \"Added behavior from DecoratorB\"",
+    "typescript": "interface Component {\n    operation(): string;\n}\n\nclass ConcreteComponent implements Component {\n    public operation(): string {\n        return 'ConcreteComponent';\n    }\n}\n\nclass Decorator implements Component {\n    protected component: Component;\n\n    constructor(component: Component) {\n        this.component = component;\n    }\n\n    public operation(): string {\n        return this.component.operation();\n    }\n}\n\nclass ConcreteDecoratorA extends Decorator {\n    public operation(): string {\n        return `ConcreteDecoratorA(${super.operation()})`;\n    }\n}\n\nclass ConcreteDecoratorB extends Decorator {\n    public operation(): string {\n        return `ConcreteDecoratorB(${super.operation()})`;\n    }\n\n    public addedBehavior(): string {\n        return 'Added behavior from DecoratorB';\n    }\n}"
+  },
+  "trade_offs": {
+    "advantages": [
+      "More flexible than static inheritance",
+      "Avoids feature-laden classes high up in hierarchy",
+      "Decorators can be combined in many ways",
+      "Easy to add new decorators"
+    ],
+    "disadvantages": [
+      "Lots of small objects that look alike",
+      "Can be difficult to debug",
+      "Order of decorator application matters",
+      "Component identity can be confusing"
+    ]
+  },
+  "real_world_examples": [
+    "Python function decorators (@decorator)",
+    "Java I/O streams (BufferedInputStream)",
+    "GUI component borders and scrollbars"
+  ],
+  "related_patterns": ["composite", "strategy", "adapter"]
+}

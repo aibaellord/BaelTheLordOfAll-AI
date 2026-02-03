@@ -1,0 +1,54 @@
+{
+  "name": "Observer",
+  "category": "Behavioral",
+  "description": "Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.",
+  "problem": "Need to notify multiple objects about changes without making them tightly coupled.",
+  "solution": "Define Subject and Observer interfaces. Subject maintains list of observers and notifies them of changes.",
+  "when_to_use": [
+    "When change to one object requires changing others, and you don't know how many",
+    "When an object should be able to notify others without knowing who they are",
+    "When you need broadcast communication"
+  ],
+  "when_not_to_use": [
+    "When order of notification matters",
+    "When observers need to know about each other",
+    "When notification chains could cause performance issues"
+  ],
+  "structure": {
+    "participants": [
+      {
+        "name": "Subject",
+        "role": "Knows its observers, provides interface for attaching/detaching"
+      },
+      {
+        "name": "Observer",
+        "role": "Defines updating interface for objects that should be notified"
+      },
+      {
+        "name": "ConcreteSubject",
+        "role": "Stores state of interest, sends notification when state changes"
+      },
+      {
+        "name": "ConcreteObserver",
+        "role": "Maintains reference to ConcreteSubject, implements Observer update interface"
+      }
+    ]
+  },
+  "implementation": {
+    "python": "from abc import ABC, abstractmethod\nfrom typing import List\n\nclass Observer(ABC):\n    @abstractmethod\n    def update(self, subject: 'Subject') -> None:\n        pass\n\nclass Subject:\n    def __init__(self):\n        self._observers: List[Observer] = []\n        self._state: int = 0\n    \n    def attach(self, observer: Observer) -> None:\n        self._observers.append(observer)\n    \n    def detach(self, observer: Observer) -> None:\n        self._observers.remove(observer)\n    \n    def notify(self) -> None:\n        for observer in self._observers:\n            observer.update(self)\n    \n    @property\n    def state(self) -> int:\n        return self._state\n    \n    @state.setter\n    def state(self, value: int) -> None:\n        self._state = value\n        self.notify()\n\nclass ConcreteObserver(Observer):\n    def update(self, subject: Subject) -> None:\n        print(f'Observer received: {subject.state}')",
+    "typescript": "interface Observer {\n    update(subject: Subject): void;\n}\n\nclass Subject {\n    private observers: Observer[] = [];\n    private state: number = 0;\n    \n    attach(observer: Observer): void {\n        this.observers.push(observer);\n    }\n    \n    detach(observer: Observer): void {\n        const index = this.observers.indexOf(observer);\n        if (index > -1) {\n            this.observers.splice(index, 1);\n        }\n    }\n    \n    notify(): void {\n        for (const observer of this.observers) {\n            observer.update(this);\n        }\n    }\n    \n    getState(): number { return this.state; }\n    setState(state: number): void {\n        this.state = state;\n        this.notify();\n    }\n}"
+  },
+  "related_patterns": ["Mediator", "Singleton", "Event Aggregator"],
+  "trade_offs": {
+    "pros": [
+      "Loose coupling between subject and observers",
+      "Support for broadcast communication",
+      "Dynamic relationships"
+    ],
+    "cons": [
+      "Unexpected updates",
+      "Memory leaks if observers not properly detached",
+      "Debugging can be difficult"
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "name": "code_to_production",
+  "description": "Complete flow from code implementation to production-ready state",
+  "steps": [
+    {
+      "id": "implement",
+      "name": "Implement Feature",
+      "persona": "coder",
+      "template": "implement_feature",
+      "inputs": ["feature_description", "requirements", "tech_stack"],
+      "outputs": ["implementation_code"]
+    },
+    {
+      "id": "review",
+      "name": "Code Review",
+      "persona": "reviewer",
+      "template": "code_review",
+      "inputs": ["implementation_code"],
+      "outputs": ["review_feedback", "issues_found"]
+    },
+    {
+      "id": "fix_issues",
+      "name": "Address Review Feedback",
+      "persona": "coder",
+      "template": null,
+      "condition": "issues_found.length > 0",
+      "inputs": ["implementation_code", "review_feedback"],
+      "outputs": ["revised_code"]
+    },
+    {
+      "id": "write_tests",
+      "name": "Write Tests",
+      "persona": "coder",
+      "template": "write_tests",
+      "inputs": ["revised_code OR implementation_code"],
+      "outputs": ["test_code", "coverage_report"]
+    },
+    {
+      "id": "document",
+      "name": "Documentation",
+      "persona": "teacher",
+      "template": "explain_concept",
+      "inputs": ["revised_code OR implementation_code"],
+      "outputs": ["documentation"]
+    },
+    {
+      "id": "final_review",
+      "name": "Final Review",
+      "persona": "reviewer",
+      "inputs": [
+        "revised_code OR implementation_code",
+        "test_code",
+        "documentation"
+      ],
+      "outputs": ["approval", "final_feedback"]
+    }
+  ],
+  "output": {
+    "code": "revised_code OR implementation_code",
+    "tests": "test_code",
+    "documentation": "documentation",
+    "review": "final_feedback"
+  }
+}

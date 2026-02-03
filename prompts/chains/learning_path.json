@@ -1,0 +1,57 @@
+{
+  "name": "learning_path",
+  "description": "Comprehensive learning path for a new topic",
+  "steps": [
+    {
+      "id": "research_topic",
+      "name": "Research Topic",
+      "persona": "researcher",
+      "template": "research_topic",
+      "inputs": ["topic"],
+      "outputs": ["research_findings", "key_concepts"]
+    },
+    {
+      "id": "create_curriculum",
+      "name": "Create Learning Curriculum",
+      "persona": "teacher",
+      "inputs": ["research_findings", "key_concepts", "learner_level"],
+      "outputs": ["curriculum", "learning_objectives"]
+    },
+    {
+      "id": "explain_fundamentals",
+      "name": "Explain Fundamentals",
+      "persona": "teacher",
+      "template": "explain_concept",
+      "inputs": ["key_concepts", "learner_level"],
+      "outputs": ["fundamental_explanations"]
+    },
+    {
+      "id": "create_examples",
+      "name": "Create Practical Examples",
+      "persona": "coder",
+      "inputs": ["key_concepts"],
+      "outputs": ["code_examples"]
+    },
+    {
+      "id": "create_exercises",
+      "name": "Create Practice Exercises",
+      "persona": "teacher",
+      "inputs": ["curriculum", "code_examples"],
+      "outputs": ["practice_exercises", "solutions"]
+    },
+    {
+      "id": "compile_resources",
+      "name": "Compile Learning Resources",
+      "persona": "researcher",
+      "inputs": ["topic", "curriculum"],
+      "outputs": ["additional_resources"]
+    }
+  ],
+  "output": {
+    "curriculum": "curriculum",
+    "explanations": "fundamental_explanations",
+    "examples": "code_examples",
+    "exercises": "practice_exercises",
+    "resources": "additional_resources"
+  }
+}

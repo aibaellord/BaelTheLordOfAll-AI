@@ -1,0 +1,223 @@
+# =============================================================================
+# BAEL - The Lord of All AI Agents
+# Docker Compose Configuration
+# =============================================================================
+
+version: '3.9'
+
+services:
+  # ===========================================================================
+  # BAEL Core Agent
+  # ===========================================================================
+  bael:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: bael-core
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # API
+      - "8080:8080"  # Web UI
+    volumes:
+      - ./:/app
+      - bael-memory:/app/memory/storage
+      - bael-outputs:/app/outputs
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - BAEL_ENV=production
+      - CHROMADB_HOST=chromadb
+      - REDIS_HOST=redis
+    depends_on:
+      - chromadb
+      - redis
+    networks:
+      - bael-network
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+  # ===========================================================================
+  # ChromaDB - Vector Database for Memory
+  # ===========================================================================
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: bael-chromadb
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb-data:/chroma/chroma
+    environment:
+      - ANONYMIZED_TELEMETRY=false
+      - ALLOW_RESET=true
+    networks:
+      - bael-network
+
+  # ===========================================================================
+  # Redis - Caching & Message Queue
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: bael-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - bael-network
+
+  # ===========================================================================
+  # PostgreSQL - Persistent Storage (Optional)
+  # ===========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: bael-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=bael
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-bael_secure_password}
+      - POSTGRES_DB=bael
+    networks:
+      - bael-network
+    profiles:
+      - full
+
+  # ===========================================================================
+  # Ollama - Local LLM (Optional)
+  # ===========================================================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: bael-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    networks:
+      - bael-network
+    profiles:
+      - local-llm
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ===========================================================================
+  # Web UI Service
+  # ===========================================================================
+  webui:
+    build:
+      context: ./ui/web
+      dockerfile: Dockerfile
+    container_name: bael-webui
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - BAEL_API_URL=http://bael:8000
+    depends_on:
+      - bael
+    networks:
+      - bael-network
+    profiles:
+      - webui
+
+  # ===========================================================================
+  # Playwright - Browser Automation
+  # ===========================================================================
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.40.0-jammy
+    container_name: bael-playwright
+    restart: unless-stopped
+    shm_size: 2gb
+    volumes:
+      - ./tools/browser:/app
+    working_dir: /app
+    command: sleep infinity
+    networks:
+      - bael-network
+    profiles:
+      - browser
+
+  # ===========================================================================
+  # Monitoring - Prometheus (Optional)
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: bael-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - bael-network
+    profiles:
+      - monitoring
+
+  # ===========================================================================
+  # Monitoring - Grafana (Optional)
+  # ===========================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: bael-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    depends_on:
+      - prometheus
+    networks:
+      - bael-network
+    profiles:
+      - monitoring
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  bael-memory:
+    driver: local
+  bael-outputs:
+    driver: local
+  chromadb-data:
+    driver: local
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  ollama-models:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  bael-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

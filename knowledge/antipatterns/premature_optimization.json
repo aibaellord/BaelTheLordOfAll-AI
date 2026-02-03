@@ -1,0 +1,79 @@
+{
+  "name": "premature_optimization",
+  "category": "process",
+  "description": "Optimizing code before measuring and proving it's actually a bottleneck, often at the cost of readability and maintainability.",
+  "symptoms": [
+    "Complex code without proven performance need",
+    "Sacrificing readability for 'speed'",
+    "Spending time optimizing rarely-used code paths",
+    "Using clever tricks instead of clear code",
+    "Optimizing before profiling"
+  ],
+  "causes": [
+    "Assumptions about performance without measurement",
+    "Over-engineering mentality",
+    "Showing off technical skills",
+    "Fear of future performance issues",
+    "Lack of profiling tools knowledge"
+  ],
+  "consequences": [
+    "Harder to read and maintain code",
+    "More bugs due to complexity",
+    "Wasted development time",
+    "Harder to optimize the actual bottlenecks",
+    "Reduced developer productivity"
+  ],
+  "famous_quote": {
+    "text": "Premature optimization is the root of all evil",
+    "author": "Donald Knuth",
+    "context": "97% of the time; we should forget about small efficiencies"
+  },
+  "bad_example": {
+    "description": "Over-optimized before knowing if it matters",
+    "code": "# Bad: Complex bit manipulation without proven need\ndef is_even(n):\n    return not (n & 1)\n\n# Bad: Inline caching without profiling\n_cache = {}\ndef get_user(id):\n    if id not in _cache:\n        _cache[id] = expensive_db_call(id)\n    return _cache[id]"
+  },
+  "good_example": {
+    "description": "Clear code, optimize when needed",
+    "code": "# Good: Clear and readable\ndef is_even(n):\n    return n % 2 == 0\n\n# Good: Add caching AFTER profiling shows it's needed\n@functools.lru_cache(maxsize=1000)\ndef get_user(id):\n    return expensive_db_call(id)"
+  },
+  "correct_approach": [
+    {
+      "step": 1,
+      "action": "Write clear, correct code first",
+      "reason": "Correctness before speed"
+    },
+    {
+      "step": 2,
+      "action": "Measure actual performance",
+      "reason": "Identify real bottlenecks"
+    },
+    {
+      "step": 3,
+      "action": "Profile to find hot spots",
+      "tools": ["cProfile", "py-spy", "perf", "flamegraphs"]
+    },
+    {
+      "step": 4,
+      "action": "Optimize only the proven bottlenecks",
+      "reason": "Maximum impact for effort"
+    },
+    {
+      "step": 5,
+      "action": "Measure again",
+      "reason": "Verify improvement"
+    }
+  ],
+  "legitimate_early_optimizations": [
+    "Choosing appropriate data structures (O(n) vs O(1) lookup)",
+    "Database indexing for known query patterns",
+    "Avoiding obviously wasteful operations",
+    "Algorithmic complexity improvements"
+  ],
+  "prevention": [
+    "Profile before optimizing",
+    "Set performance budgets and test against them",
+    "Prefer readability until proven otherwise",
+    "Document why optimization was needed",
+    "Keep original readable version in comments if complex"
+  ]
+}

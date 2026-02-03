@@ -1,0 +1,963 @@
+# =============================================================================
+# BAEL ULTIMATE MCP HUB - COMPLETE CONFIGURATION
+# =============================================================================
+# 52+ MCP Servers organized into 9 tiers
+# Full integration with BAEL APEX Orchestrator
+# =============================================================================
+
+version: "2.0.0"
+
+# =============================================================================
+# GATEWAY CONFIGURATION
+# =============================================================================
+gateway:
+  host: "0.0.0.0"
+  port: 3100
+  admin_port: 3101
+  metrics_port: 3102
+  health_check_interval: 10
+  request_timeout: 120
+  max_connections: 5000
+  rate_limit:
+    requests_per_second: 1000
+    burst: 2000
+
+# =============================================================================
+# TIER DEFINITIONS
+# =============================================================================
+tiers:
+  infrastructure:
+    description: "Core infrastructure services"
+    priority: 0
+    auto_start: true
+    required: true
+    servers:
+      - redis
+      - postgres
+      - mongodb
+
+  essential:
+    description: "Core AI agent functionality"
+    priority: 1
+    auto_start: true
+    required: true
+    servers:
+      - filesystem
+      - brave-search
+      - github
+      - sqlite
+      - memory
+
+  power:
+    description: "Development and automation tools"
+    priority: 2
+    auto_start: true
+    servers:
+      - playwright
+      - docker
+      - git
+      - kubernetes
+      - postgres-server
+      - redis-server
+      - slack
+      - discord
+
+  enhanced:
+    description: "Extended search and processing"
+    priority: 3
+    auto_start: false
+    servers:
+      - fetch
+      - puppeteer
+      - sequential-thinking
+      - time
+      - exa
+      - firecrawl
+      - tavily
+      - perplexity
+      - wolfram
+      - weather
+
+  ai-ml:
+    description: "AI and ML model integrations"
+    priority: 4
+    auto_start: false
+    servers:
+      - openai
+      - anthropic
+      - replicate
+      - huggingface
+      - stability
+      - langchain
+      - llamaindex
+      - embeddings
+
+  cloud:
+    description: "Cloud provider integrations"
+    priority: 5
+    auto_start: false
+    servers:
+      - aws
+      - gcp
+      - azure
+      - cloudflare
+      - vercel
+      - netlify
+      - terraform
+      - pulumi
+
+  productivity:
+    description: "Productivity and collaboration tools"
+    priority: 6
+    auto_start: false
+    servers:
+      - notion
+      - linear
+      - jira
+      - asana
+      - todoist
+      - google-drive
+      - obsidian
+      - airtable
+
+  monitoring:
+    description: "Observability and monitoring"
+    priority: 7
+    auto_start: false
+    servers:
+      - sentry
+      - datadog
+      - grafana
+      - prometheus
+      - loki
+
+  vector:
+    description: "Vector databases and knowledge stores"
+    priority: 8
+    auto_start: false
+    servers:
+      - qdrant
+      - chromadb
+      - neo4j
+      - elasticsearch
+
+# =============================================================================
+# SERVER CONFIGURATIONS (52 Servers)
+# =============================================================================
+servers:
+  # =========================================================================
+  # TIER 0: INFRASTRUCTURE
+  # =========================================================================
+
+  redis:
+    name: "Redis"
+    description: "In-memory data store for caching and messaging"
+    image: redis:7-alpine
+    port: 6379
+    internal: true
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+
+  postgres:
+    name: "PostgreSQL"
+    description: "Relational database for structured data"
+    image: postgres:16-alpine
+    port: 5432
+    internal: true
+    required_env:
+      - POSTGRES_PASSWORD
+
+  mongodb:
+    name: "MongoDB"
+    description: "Document database for flexible data"
+    image: mongo:7
+    port: 27017
+    internal: true
+    required_env:
+      - MONGO_PASSWORD
+
+  # =========================================================================
+  # TIER 1: ESSENTIAL
+  # =========================================================================
+
+  filesystem:
+    name: "Filesystem"
+    description: "File system operations"
+    package: "@modelcontextprotocol/server-filesystem"
+    transport: stdio
+    tools:
+      - read_file
+      - write_file
+      - list_directory
+      - search_files
+      - get_file_info
+      - create_directory
+      - move_file
+      - delete_file
+    resources:
+      - file://
+    config:
+      allowed_directories:
+        - /workspace
+        - /host
+
+  brave-search:
+    name: "Brave Search"
+    description: "Privacy-focused web search"
+    package: "@modelcontextprotocol/server-brave-search"
+    transport: stdio
+    tools:
+      - brave_web_search
+      - brave_local_search
+    required_env:
+      - BRAVE_API_KEY
+
+  github:
+    name: "GitHub"
+    description: "GitHub repository management"
+    package: "@modelcontextprotocol/server-github"
+    transport: stdio
+    tools:
+      - create_repository
+      - search_repositories
+      - get_file_contents
+      - create_or_update_file
+      - push_files
+      - create_issue
+      - create_pull_request
+      - fork_repository
+      - create_branch
+      - list_commits
+      - list_branches
+      - search_code
+      - search_issues
+    required_env:
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+
+  sqlite:
+    name: "SQLite"
+    description: "Lightweight SQL database"
+    package: "@modelcontextprotocol/server-sqlite"
+    transport: stdio
+    tools:
+      - read_query
+      - write_query
+      - create_table
+      - list_tables
+      - describe_table
+      - append_insight
+    config:
+      db_path: /data/bael.db
+
+  memory:
+    name: "Memory"
+    description: "Persistent knowledge graph"
+    package: "@modelcontextprotocol/server-memory"
+    transport: stdio
+    tools:
+      - create_entities
+      - create_relations
+      - add_observations
+      - delete_entities
+      - delete_observations
+      - delete_relations
+      - read_graph
+      - search_nodes
+      - open_nodes
+    config:
+      memory_file: /data/memory.json
+
+  # =========================================================================
+  # TIER 2: POWER TOOLS
+  # =========================================================================
+
+  playwright:
+    name: "Playwright"
+    description: "Browser automation"
+    package: "@executeautomation/playwright-mcp-server"
+    transport: stdio
+    tools:
+      - playwright_navigate
+      - playwright_screenshot
+      - playwright_click
+      - playwright_fill
+      - playwright_select
+      - playwright_hover
+      - playwright_evaluate
+      - playwright_wait
+    config:
+      browser: chromium
+      headless: true
+
+  docker:
+    name: "Docker"
+    description: "Container management"
+    package: "@modelcontextprotocol/server-docker"
+    transport: stdio
+    tools:
+      - list_containers
+      - create_container
+      - run_container
+      - stop_container
+      - remove_container
+      - get_logs
+      - exec_command
+      - build_image
+      - pull_image
+
+  git:
+    name: "Git"
+    description: "Git version control"
+    package: "@modelcontextprotocol/server-git"
+    transport: stdio
+    tools:
+      - git_status
+      - git_diff
+      - git_commit
+      - git_push
+      - git_pull
+      - git_branch
+      - git_checkout
+      - git_log
+      - git_stash
+
+  kubernetes:
+    name: "Kubernetes"
+    description: "K8s cluster management"
+    package: "@modelcontextprotocol/server-kubernetes"
+    transport: stdio
+    tools:
+      - get_pods
+      - get_deployments
+      - get_services
+      - apply_manifest
+      - delete_resource
+      - get_logs
+      - exec_command
+      - scale_deployment
+
+  postgres-server:
+    name: "PostgreSQL MCP"
+    description: "PostgreSQL database operations"
+    package: "@modelcontextprotocol/server-postgres"
+    transport: stdio
+    tools:
+      - query
+      - execute
+      - list_tables
+      - describe_table
+      - get_schema
+
+  redis-server:
+    name: "Redis MCP"
+    description: "Redis cache operations"
+    package: "@modelcontextprotocol/server-redis"
+    transport: stdio
+    tools:
+      - get
+      - set
+      - delete
+      - keys
+      - hget
+      - hset
+      - lpush
+      - lpop
+      - publish
+      - subscribe
+
+  slack:
+    name: "Slack"
+    description: "Slack messaging"
+    package: "@modelcontextprotocol/server-slack"
+    transport: stdio
+    tools:
+      - post_message
+      - list_channels
+      - list_users
+      - get_messages
+      - add_reaction
+      - upload_file
+    required_env:
+      - SLACK_BOT_TOKEN
+      - SLACK_TEAM_ID
+
+  discord:
+    name: "Discord"
+    description: "Discord messaging"
+    package: "mcp-discord"
+    transport: stdio
+    tools:
+      - send_message
+      - list_channels
+      - list_servers
+      - get_messages
+    required_env:
+      - DISCORD_TOKEN
+
+  # =========================================================================
+  # TIER 3: ENHANCED CAPABILITIES
+  # =========================================================================
+
+  fetch:
+    name: "Fetch"
+    description: "HTTP requests"
+    package: "@modelcontextprotocol/server-fetch"
+    transport: stdio
+    tools:
+      - fetch
+      - fetch_json
+      - fetch_html
+
+  puppeteer:
+    name: "Puppeteer"
+    description: "Headless Chrome automation"
+    package: "@modelcontextprotocol/server-puppeteer"
+    transport: stdio
+    tools:
+      - puppeteer_navigate
+      - puppeteer_screenshot
+      - puppeteer_click
+      - puppeteer_fill
+      - puppeteer_pdf
+
+  sequential-thinking:
+    name: "Sequential Thinking"
+    description: "Step-by-step reasoning"
+    package: "@modelcontextprotocol/server-sequential-thinking"
+    transport: stdio
+    tools:
+      - think_step_by_step
+      - analyze_problem
+      - generate_solution
+
+  time:
+    name: "Time"
+    description: "Time operations"
+    package: "@modelcontextprotocol/server-time"
+    transport: stdio
+    tools:
+      - get_current_time
+      - convert_timezone
+      - calculate_duration
+
+  exa:
+    name: "Exa"
+    description: "Neural search engine"
+    package: "@exa/mcp-server"
+    transport: stdio
+    tools:
+      - search
+      - search_and_contents
+      - find_similar
+      - get_contents
+    required_env:
+      - EXA_API_KEY
+
+  firecrawl:
+    name: "Firecrawl"
+    description: "Web scraping and crawling"
+    package: "firecrawl-mcp"
+    transport: stdio
+    tools:
+      - scrape_url
+      - crawl_url
+      - map_url
+    required_env:
+      - FIRECRAWL_API_KEY
+
+  tavily:
+    name: "Tavily"
+    description: "AI-powered search"
+    package: "tavily-mcp"
+    transport: stdio
+    tools:
+      - search
+      - search_context
+      - qna_search
+    required_env:
+      - TAVILY_API_KEY
+
+  perplexity:
+    name: "Perplexity"
+    description: "Perplexity AI search"
+    package: "perplexity-mcp"
+    transport: stdio
+    tools:
+      - search
+      - ask
+    required_env:
+      - PERPLEXITY_API_KEY
+
+  wolfram:
+    name: "Wolfram Alpha"
+    description: "Computational knowledge engine"
+    package: "@modelcontextprotocol/server-wolfram"
+    transport: stdio
+    tools:
+      - query
+      - simple_answer
+      - compute
+    required_env:
+      - WOLFRAM_APP_ID
+
+  weather:
+    name: "Weather"
+    description: "Weather data"
+    package: "@modelcontextprotocol/server-weather"
+    transport: stdio
+    tools:
+      - get_current_weather
+      - get_forecast
+    required_env:
+      - OPENWEATHER_API_KEY
+
+  # =========================================================================
+  # TIER 4: AI & ML TOOLS
+  # =========================================================================
+
+  openai:
+    name: "OpenAI"
+    description: "OpenAI API integration"
+    package: "openai-mcp"
+    transport: stdio
+    tools:
+      - chat_completion
+      - create_embedding
+      - create_image
+      - transcribe_audio
+      - text_to_speech
+    required_env:
+      - OPENAI_API_KEY
+
+  anthropic:
+    name: "Anthropic"
+    description: "Anthropic Claude API"
+    package: "anthropic-mcp"
+    transport: stdio
+    tools:
+      - message
+      - stream_message
+    required_env:
+      - ANTHROPIC_API_KEY
+
+  replicate:
+    name: "Replicate"
+    description: "ML model hosting"
+    package: "replicate-mcp"
+    transport: stdio
+    tools:
+      - run_model
+      - get_prediction
+      - list_models
+    required_env:
+      - REPLICATE_API_TOKEN
+
+  huggingface:
+    name: "Hugging Face"
+    description: "Hugging Face models"
+    package: "huggingface-mcp"
+    transport: stdio
+    tools:
+      - inference
+      - list_models
+      - get_model_info
+    required_env:
+      - HUGGINGFACE_TOKEN
+
+  stability:
+    name: "Stability AI"
+    description: "Stable Diffusion API"
+    package: "stability-ai-mcp"
+    transport: stdio
+    tools:
+      - generate_image
+      - upscale_image
+      - inpaint
+    required_env:
+      - STABILITY_API_KEY
+
+  langchain:
+    name: "LangChain"
+    description: "LangChain framework"
+    custom: true
+    transport: stdio
+    tools:
+      - run_chain
+      - create_chain
+      - run_agent
+
+  llamaindex:
+    name: "LlamaIndex"
+    description: "LlamaIndex framework"
+    custom: true
+    transport: stdio
+    tools:
+      - query_index
+      - build_index
+      - retrieve
+
+  embeddings:
+    name: "Embeddings"
+    description: "Vector embeddings"
+    custom: true
+    transport: stdio
+    tools:
+      - create_embedding
+      - similarity_search
+      - batch_embed
+
+  # =========================================================================
+  # TIER 5: CLOUD PROVIDERS
+  # =========================================================================
+
+  aws:
+    name: "AWS"
+    description: "Amazon Web Services"
+    package: "@aws/mcp-server-aws"
+    transport: stdio
+    tools:
+      - s3_upload
+      - s3_download
+      - s3_list
+      - lambda_invoke
+      - dynamodb_query
+      - sqs_send
+      - sns_publish
+    required_env:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+
+  gcp:
+    name: "Google Cloud"
+    description: "Google Cloud Platform"
+    package: "gcp-mcp"
+    transport: stdio
+    tools:
+      - storage_upload
+      - storage_download
+      - bigquery_query
+      - functions_invoke
+    required_env:
+      - GOOGLE_APPLICATION_CREDENTIALS
+
+  azure:
+    name: "Azure"
+    description: "Microsoft Azure"
+    package: "azure-mcp"
+    transport: stdio
+    tools:
+      - blob_upload
+      - blob_download
+      - function_invoke
+      - cosmos_query
+    required_env:
+      - AZURE_SUBSCRIPTION_ID
+      - AZURE_TENANT_ID
+      - AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET
+
+  cloudflare:
+    name: "Cloudflare"
+    description: "Cloudflare services"
+    package: "@cloudflare/mcp-server-cloudflare"
+    transport: stdio
+    tools:
+      - workers_deploy
+      - kv_get
+      - kv_put
+      - r2_upload
+      - dns_update
+    required_env:
+      - CLOUDFLARE_API_TOKEN
+      - CLOUDFLARE_ACCOUNT_ID
+
+  vercel:
+    name: "Vercel"
+    description: "Vercel deployments"
+    package: "vercel-mcp"
+    transport: stdio
+    tools:
+      - deploy
+      - list_deployments
+      - get_deployment
+      - redeploy
+    required_env:
+      - VERCEL_TOKEN
+
+  netlify:
+    name: "Netlify"
+    description: "Netlify deployments"
+    package: "netlify-mcp"
+    transport: stdio
+    tools:
+      - deploy_site
+      - list_sites
+      - get_deploy
+    required_env:
+      - NETLIFY_AUTH_TOKEN
+
+  terraform:
+    name: "Terraform"
+    description: "Infrastructure as code"
+    package: "terraform-mcp"
+    transport: stdio
+    tools:
+      - plan
+      - apply
+      - destroy
+      - state_list
+
+  pulumi:
+    name: "Pulumi"
+    description: "Cloud infrastructure"
+    package: "pulumi-mcp"
+    transport: stdio
+    tools:
+      - preview
+      - up
+      - destroy
+      - stack_output
+    required_env:
+      - PULUMI_ACCESS_TOKEN
+
+  # =========================================================================
+  # TIER 6: PRODUCTIVITY
+  # =========================================================================
+
+  notion:
+    name: "Notion"
+    description: "Notion workspace"
+    package: "@notionhq/mcp-server"
+    transport: stdio
+    tools:
+      - search_pages
+      - get_page
+      - create_page
+      - update_page
+      - query_database
+      - create_database
+    required_env:
+      - NOTION_API_KEY
+
+  linear:
+    name: "Linear"
+    description: "Linear issue tracking"
+    package: "linear-mcp"
+    transport: stdio
+    tools:
+      - create_issue
+      - update_issue
+      - list_issues
+      - search_issues
+      - get_issue
+    required_env:
+      - LINEAR_API_KEY
+
+  jira:
+    name: "Jira"
+    description: "Jira project management"
+    package: "jira-mcp"
+    transport: stdio
+    tools:
+      - create_issue
+      - update_issue
+      - search_issues
+      - get_issue
+      - add_comment
+    required_env:
+      - JIRA_URL
+      - JIRA_EMAIL
+      - JIRA_API_TOKEN
+
+  asana:
+    name: "Asana"
+    description: "Asana task management"
+    package: "asana-mcp"
+    transport: stdio
+    tools:
+      - create_task
+      - update_task
+      - list_tasks
+      - get_task
+    required_env:
+      - ASANA_ACCESS_TOKEN
+
+  todoist:
+    name: "Todoist"
+    description: "Todoist tasks"
+    package: "todoist-mcp"
+    transport: stdio
+    tools:
+      - add_task
+      - update_task
+      - complete_task
+      - list_tasks
+      - get_task
+    required_env:
+      - TODOIST_API_TOKEN
+
+  google-drive:
+    name: "Google Drive"
+    description: "Google Drive files"
+    package: "@anthropics/google-drive-mcp"
+    transport: stdio
+    tools:
+      - list_files
+      - search_files
+      - get_file
+      - create_file
+      - update_file
+    required_env:
+      - GOOGLE_CLIENT_ID
+      - GOOGLE_CLIENT_SECRET
+
+  obsidian:
+    name: "Obsidian"
+    description: "Obsidian vault"
+    package: "obsidian-mcp"
+    transport: stdio
+    tools:
+      - read_note
+      - write_note
+      - search_notes
+      - list_notes
+      - get_backlinks
+
+  airtable:
+    name: "Airtable"
+    description: "Airtable databases"
+    package: "airtable-mcp"
+    transport: stdio
+    tools:
+      - list_records
+      - get_record
+      - create_record
+      - update_record
+      - delete_record
+    required_env:
+      - AIRTABLE_API_KEY
+
+  # =========================================================================
+  # TIER 7: MONITORING
+  # =========================================================================
+
+  sentry:
+    name: "Sentry"
+    description: "Error tracking"
+    package: "@sentry/mcp-server"
+    transport: stdio
+    tools:
+      - list_issues
+      - get_issue
+      - resolve_issue
+      - list_events
+    required_env:
+      - SENTRY_AUTH_TOKEN
+      - SENTRY_ORG
+
+  datadog:
+    name: "Datadog"
+    description: "Monitoring and analytics"
+    package: "datadog-mcp"
+    transport: stdio
+    tools:
+      - query_metrics
+      - list_monitors
+      - get_dashboard
+      - create_event
+    required_env:
+      - DD_API_KEY
+      - DD_APP_KEY
+
+  grafana:
+    name: "Grafana"
+    description: "Visualization platform"
+    image: grafana/grafana:latest
+    port: 3000
+    internal: false
+
+  prometheus:
+    name: "Prometheus"
+    description: "Metrics collection"
+    image: prom/prometheus:latest
+    port: 9090
+    internal: false
+
+  loki:
+    name: "Loki"
+    description: "Log aggregation"
+    image: grafana/loki:latest
+    port: 3100
+    internal: true
+
+  # =========================================================================
+  # TIER 8: VECTOR & KNOWLEDGE
+  # =========================================================================
+
+  qdrant:
+    name: "Qdrant"
+    description: "Vector similarity search"
+    image: qdrant/qdrant:latest
+    ports:
+      - 6333
+      - 6334
+    tools:
+      - create_collection
+      - upsert_points
+      - search
+      - delete_points
+
+  chromadb:
+    name: "ChromaDB"
+    description: "Embedding database"
+    image: chromadb/chroma:latest
+    port: 8000
+    tools:
+      - create_collection
+      - add
+      - query
+      - delete
+
+  neo4j:
+    name: "Neo4j"
+    description: "Graph database"
+    image: neo4j:5
+    ports:
+      - 7474
+      - 7687
+    required_env:
+      - NEO4J_PASSWORD
+    tools:
+      - query
+      - create_node
+      - create_relationship
+      - match_pattern
+
+  elasticsearch:
+    name: "Elasticsearch"
+    description: "Search and analytics"
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    port: 9200
+    tools:
+      - search
+      - index
+      - bulk
+      - delete
+
+# =============================================================================
+# TOTAL: 52 MCP SERVERS
+# =============================================================================
+# Tier 0: Infrastructure (3)
+# Tier 1: Essential (5)
+# Tier 2: Power (8)
+# Tier 3: Enhanced (10)
+# Tier 4: AI/ML (8)
+# Tier 5: Cloud (8)
+# Tier 6: Productivity (8)
+# Tier 7: Monitoring (5)
+# Tier 8: Vector/Knowledge (4)
+# =============================================================================
+# Total Tools: 200+
+# =============================================================================

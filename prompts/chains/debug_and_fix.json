@@ -1,0 +1,49 @@
+{
+  "name": "debug_and_fix",
+  "description": "Comprehensive debugging workflow from diagnosis to verified fix",
+  "steps": [
+    {
+      "id": "diagnose",
+      "name": "Diagnose Issue",
+      "persona": "debugger",
+      "template": "debug_issue",
+      "inputs": ["problem_description", "error_message", "code"],
+      "outputs": ["root_cause", "proposed_fix"]
+    },
+    {
+      "id": "implement_fix",
+      "name": "Implement Fix",
+      "persona": "coder",
+      "inputs": ["code", "proposed_fix"],
+      "outputs": ["fixed_code"]
+    },
+    {
+      "id": "review_fix",
+      "name": "Review Fix",
+      "persona": "reviewer",
+      "template": "code_review",
+      "inputs": ["fixed_code", "root_cause"],
+      "outputs": ["review_feedback", "approved"]
+    },
+    {
+      "id": "write_regression_test",
+      "name": "Write Regression Test",
+      "persona": "coder",
+      "inputs": ["fixed_code", "root_cause", "problem_description"],
+      "outputs": ["regression_test"]
+    },
+    {
+      "id": "document_fix",
+      "name": "Document Fix",
+      "persona": "teacher",
+      "inputs": ["root_cause", "fixed_code", "regression_test"],
+      "outputs": ["fix_documentation"]
+    }
+  ],
+  "output": {
+    "root_cause": "root_cause",
+    "fixed_code": "fixed_code",
+    "regression_test": "regression_test",
+    "documentation": "fix_documentation"
+  }
+}

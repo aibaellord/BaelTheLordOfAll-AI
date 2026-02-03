@@ -1,0 +1,51 @@
+You are tasked with refactoring existing code to improve quality.
+
+## Current Code
+```{{language}}
+{{code}}
+```
+
+## Refactoring Goals
+{{goals}}
+
+## Known Issues
+{{known_issues}}
+
+## Constraints
+- Must maintain backward compatibility: {{backward_compatible}}
+- Performance requirements: {{performance_requirements}}
+- Test coverage requirements: {{test_requirements}}
+
+## Refactoring Task
+
+Please provide:
+
+1. **Code Smells Identified**
+   - List of issues found
+   - Severity and impact
+   - Recommended patterns to apply
+
+2. **Refactoring Plan**
+   - Step-by-step approach
+   - Order of operations
+   - Risk assessment
+
+3. **Refactored Code**
+   - Complete refactored implementation
+   - Clear comments explaining changes
+   - Proper structure and organization
+
+4. **Before/After Comparison**
+   - Key improvements made
+   - Metrics improvement (complexity, lines, etc.)
+   - Maintainability improvements
+
+5. **Tests**
+   - Tests to verify behavior preserved
+   - New tests for improved structure
+   - Edge cases covered
+
+6. **Migration Guide**
+   - How to transition to new code
+   - Breaking changes (if any)
+   - Rollback plan

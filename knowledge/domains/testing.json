@@ -1,0 +1,151 @@
+{
+  "domain": "testing",
+  "version": "1.0.0",
+  "description": "Software testing methodologies, strategies, and best practices",
+  "test_types": {
+    "unit": {
+      "description": "Tests individual units of code in isolation",
+      "scope": "Single function, method, or class",
+      "characteristics": ["Fast", "Isolated", "Deterministic"],
+      "tools": ["pytest", "Jest", "JUnit", "xUnit"]
+    },
+    "integration": {
+      "description": "Tests interaction between components",
+      "scope": "Multiple units working together",
+      "characteristics": ["Slower than unit", "May use real dependencies"],
+      "examples": ["API with database", "Service to service"]
+    },
+    "end_to_end": {
+      "description": "Tests complete user workflows",
+      "scope": "Full system from user perspective",
+      "characteristics": ["Slowest", "Most realistic", "Most fragile"],
+      "tools": ["Selenium", "Cypress", "Playwright"]
+    },
+    "performance": {
+      "description": "Tests system under load",
+      "types": {
+        "load": "Expected concurrent users",
+        "stress": "Beyond normal capacity",
+        "spike": "Sudden traffic increases",
+        "endurance": "Sustained load over time"
+      },
+      "tools": ["JMeter", "Locust", "k6", "Gatling"]
+    },
+    "security": {
+      "description": "Tests for vulnerabilities",
+      "types": ["SAST", "DAST", "Penetration testing"],
+      "tools": ["OWASP ZAP", "Burp Suite", "SonarQube"]
+    }
+  },
+  "best_practices": [
+    {
+      "name": "Test Pyramid",
+      "description": "More unit tests, fewer E2E tests",
+      "rationale": "Fast feedback, maintainability",
+      "proportions": {
+        "unit": "70%",
+        "integration": "20%",
+        "e2e": "10%"
+      }
+    },
+    {
+      "name": "FIRST Principles",
+      "description": "Properties of good unit tests",
+      "principles": {
+        "fast": "Tests should run quickly",
+        "isolated": "Tests don't depend on each other",
+        "repeatable": "Same results every time",
+        "self_validating": "Pass or fail, no manual inspection",
+        "timely": "Written before or with the code"
+      }
+    },
+    {
+      "name": "Arrange-Act-Assert",
+      "description": "Standard test structure",
+      "phases": {
+        "arrange": "Set up test data and preconditions",
+        "act": "Execute the code under test",
+        "assert": "Verify the results"
+      }
+    },
+    {
+      "name": "Given-When-Then",
+      "description": "BDD test structure",
+      "phases": {
+        "given": "Initial context/state",
+        "when": "Action or event",
+        "then": "Expected outcome"
+      }
+    }
+  ],
+  "patterns": {
+    "test_doubles": {
+      "mock": "Object with pre-programmed expectations",
+      "stub": "Provides canned answers to calls",
+      "spy": "Records calls for later verification",
+      "fake": "Working implementation with shortcuts",
+      "dummy": "Object passed but never used"
+    },
+    "test_data": {
+      "builders": "Fluent API for creating test objects",
+      "fixtures": "Shared setup data",
+      "factories": "Generate test data programmatically",
+      "mother": "Factory that creates common test objects"
+    }
+  },
+  "antipatterns": [
+    {
+      "name": "Testing Implementation Details",
+      "description": "Tests break when refactoring",
+      "solution": "Test behavior, not implementation"
+    },
+    {
+      "name": "Flaky Tests",
+      "description": "Tests that sometimes pass, sometimes fail",
+      "causes": [
+        "Race conditions",
+        "External dependencies",
+        "Time-sensitive code"
+      ],
+      "solution": "Isolate tests, control time, mock externals"
+    },
+    {
+      "name": "Slow Tests",
+      "description": "Test suite takes too long",
+      "causes": ["Real I/O", "Sleep statements", "Complex setup"],
+      "solution": "Mock dependencies, parallelize, optimize"
+    },
+    {
+      "name": "Testing Everything",
+      "description": "Wasting effort on trivial code",
+      "solution": "Focus on complex logic, edge cases, regressions"
+    }
+  ],
+  "coverage": {
+    "types": {
+      "line": "Percentage of lines executed",
+      "branch": "Percentage of branches taken",
+      "function": "Percentage of functions called",
+      "statement": "Percentage of statements executed"
+    },
+    "guidelines": [
+      "Don't chase 100% coverage blindly",
+      "Focus on critical paths",
+      "Use coverage to find untested code, not as a goal",
+      "Branch coverage more valuable than line coverage"
+    ]
+  },
+  "tdd_workflow": {
+    "steps": [
+      "Write a failing test (Red)",
+      "Write minimal code to pass (Green)",
+      "Refactor while keeping tests green (Refactor)"
+    ],
+    "benefits": [
+      "Better test coverage",
+      "Simpler design",
+      "Documentation through tests",
+      "Confidence in refactoring"
+    ]
+  }
+}

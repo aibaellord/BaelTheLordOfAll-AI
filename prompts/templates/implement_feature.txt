@@ -1,0 +1,46 @@
+You are tasked with implementing a new feature.
+
+## Feature Request
+{{feature_description}}
+
+## Requirements
+{{requirements}}
+
+## Existing Code Context
+```{{language}}
+{{existing_code}}
+```
+
+## Technical Constraints
+- Language/Framework: {{tech_stack}}
+- Performance requirements: {{performance_requirements}}
+- Compatibility requirements: {{compatibility_requirements}}
+
+## Implementation Task
+
+Please provide:
+
+1. **Design Overview**
+   - High-level approach
+   - Key components/classes
+   - Data flow
+
+2. **Implementation**
+   - Complete, production-ready code
+   - Proper error handling
+   - Type annotations
+   - Docstrings
+
+3. **Tests**
+   - Unit tests for key functionality
+   - Edge case coverage
+   - Integration test suggestions
+
+4. **Usage Example**
+   - How to use the new feature
+   - Example inputs/outputs
+
+5. **Documentation**
+   - API documentation
+   - Configuration options
+   - Migration notes (if applicable)

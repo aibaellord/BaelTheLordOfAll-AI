@@ -1,0 +1,123 @@
+# BAEL Developer Profile
+# Customize for individual developer preferences
+
+profile:
+  name: "developer"
+  description: "Default developer profile"
+
+# =============================================================================
+# PREFERENCES
+# =============================================================================
+
+preferences:
+  # Coding preferences
+  coding:
+    language: "python"
+    style_guide: "pep8"
+    formatter: "black"
+    line_length: 88
+    use_type_hints: true
+    docstring_style: "google"
+
+  # Editor preferences
+  editor:
+    theme: "dark"
+    font_size: 14
+    tab_size: 4
+    use_spaces: true
+
+  # Communication preferences
+  communication:
+    verbosity: "normal"  # minimal, normal, detailed
+    code_explanation: true
+    show_alternatives: true
+    include_examples: true
+
+# =============================================================================
+# PERSONA PREFERENCES
+# =============================================================================
+
+personas:
+  preferred_order:
+    - "coder"
+    - "architect"
+    - "reviewer"
+    - "debugger"
+
+  overrides:
+    coder:
+      temperature: 0.5  # More deterministic for coding
+
+    researcher:
+      temperature: 0.8  # More creative for research
+
+# =============================================================================
+# TOOL PREFERENCES
+# =============================================================================
+
+tools:
+  # Preferred tools for each category
+  preferred:
+    version_control: "git"
+    package_manager: "pip"
+    test_runner: "pytest"
+    linter: "ruff"
+    formatter: "black"
+
+  # Tool-specific settings
+  git:
+    auto_commit_message: false
+    branch_naming: "feature/{description}"
+
+  pytest:
+    verbose: true
+    coverage: true
+    fail_fast: false
+
+# =============================================================================
+# WORKFLOW PREFERENCES
+# =============================================================================
+
+workflows:
+  # Auto-run tests after code changes
+  auto_test: true
+
+  # Auto-format code
+  auto_format: true
+
+  # Auto-lint code
+  auto_lint: true
+
+  # Review requirements
+  require_review: false
+  self_review: true
+
+# =============================================================================
+# NOTIFICATION PREFERENCES
+# =============================================================================
+
+notifications:
+  enabled: true
+
+  channels:
+    - type: "console"
+      enabled: true
+
+    - type: "slack"
+      enabled: false
+      channel: "#dev-notifications"
+
+  events:
+    task_completed: true
+    error_occurred: true
+    review_requested: true
+
+# =============================================================================
+# KEYBOARD SHORTCUTS (for CLI)
+# =============================================================================
+
+shortcuts:
+  quick_commit: "Ctrl+G"
+  run_tests: "Ctrl+T"
+  format_code: "Ctrl+Shift+F"
+  switch_persona: "Ctrl+P"

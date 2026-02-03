@@ -1,0 +1,71 @@
+{
+  "name": "circular_dependency",
+  "category": "design",
+  "description": "When two or more modules depend on each other, creating a cycle that makes the system harder to understand, test, and maintain.",
+  "symptoms": [
+    "Import errors or circular import warnings",
+    "Difficulty understanding module relationships",
+    "Changes in one module unexpectedly affect others",
+    "Cannot test modules in isolation",
+    "Tight coupling between modules"
+  ],
+  "causes": [
+    "Poor separation of concerns",
+    "Modules doing too much",
+    "Missing abstraction layer",
+    "Convenience over architecture",
+    "Feature creep without refactoring"
+  ],
+  "consequences": [
+    "Initialization order problems",
+    "Harder to understand codebase",
+    "Difficult to test modules individually",
+    "Changes propagate unexpectedly",
+    "Harder to reuse modules"
+  ],
+  "bad_example": {
+    "description": "A and B directly depend on each other",
+    "code": "# module_a.py\nfrom module_b import B\n\nclass A:\n    def do_something(self, b: B):\n        b.process(self)\n\n# module_b.py\nfrom module_a import A\n\nclass B:\n    def process(self, a: A):\n        a.do_something(self)"
+  },
+  "good_example": {
+    "description": "Introduce interface/abstraction to break cycle",
+    "code": "# interfaces.py\nfrom abc import ABC, abstractmethod\n\nclass IProcessable(ABC):\n    @abstractmethod\n    def do_something(self, processor): pass\n\nclass IProcessor(ABC):\n    @abstractmethod\n    def process(self, item): pass\n\n# module_a.py\nfrom interfaces import IProcessable, IProcessor\n\nclass A(IProcessable):\n    def do_something(self, processor: IProcessor):\n        processor.process(self)\n\n# module_b.py\nfrom interfaces import IProcessable, IProcessor\n\nclass B(IProcessor):\n    def process(self, item: IProcessable):\n        item.do_something(self)"
+  },
+  "refactoring_strategies": [
+    {
+      "name": "Dependency Inversion",
+      "description": "Depend on abstractions, not concretions",
+      "steps": [
+        "Identify the cycle",
+        "Create interfaces for the crossing dependencies",
+        "Have both modules depend on the interface"
+      ]
+    },
+    {
+      "name": "Move Shared Code",
+      "description": "Extract shared functionality to new module",
+      "steps": [
+        "Identify what both modules need",
+        "Create a third module with shared code",
+        "Have both modules import from the new module"
+      ]
+    },
+    {
+      "name": "Merge Modules",
+      "description": "If modules are tightly coupled, they may belong together",
+      "when_to_use": "Modules always change together"
+    },
+    {
+      "name": "Lazy Import",
+      "description": "Import at use time instead of module load",
+      "caveat": "Workaround, not a real fix"
+    }
+  ],
+  "prevention": [
+    "Follow dependency inversion principle",
+    "Design clear module boundaries",
+    "Use dependency visualization tools",
+    "Review imports during code review",
+    "Run static analysis tools"
+  ]
+}

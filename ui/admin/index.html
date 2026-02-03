@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAEL - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e1b4b;
+            --darker: #0f0e24;
+            --card-bg: rgba(30, 27, 75, 0.6);
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: rgba(99, 102, 241, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: rgba(99, 102, 241, 0.2);
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .search-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 300px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            outline: none;
+            width: 100%;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.agents { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .stat-icon.tasks { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .stat-icon.messages { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .stat-icon.cost { background: rgba(139, 92, 246, 0.2); color: var(--secondary); }
+
+        .stat-change {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+
+        .stat-change.positive {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Agents List */
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(15, 14, 36, 0.5);
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .agent-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .agent-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .agent-persona {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .agent-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-idle {
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-muted);
+        }
+
+        /* Tasks List */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            padding: 16px;
+            background: rgba(15, 14, 36, 0.5);
+            border-radius: 12px;
+            border-left: 3px solid transparent;
+        }
+
+        .task-item.priority-1 { border-left-color: var(--text-muted); }
+        .task-item.priority-2 { border-left-color: var(--primary); }
+        .task-item.priority-3 { border-left-color: var(--warning); }
+        .task-item.priority-4 { border-left-color: var(--danger); }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .task-name {
+            font-weight: 500;
+        }
+
+        .task-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        .task-status.pending { background: rgba(148, 163, 184, 0.2); }
+        .task-status.in_progress { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .task-status.completed { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+
+        .task-progress {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .task-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 12px;
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.info { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .activity-icon.success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .activity-icon.warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Chart placeholder */
+        .chart-container {
+            height: 200px;
+            background: rgba(15, 14, 36, 0.5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">👁️</div>
+                <span class="logo-text">BAEL</span>
+            </div>
+
+            <nav class="nav-section">
+                <div class="nav-title">Main</div>
+                <a href="#" class="nav-link active">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-robot"></i>
+                    Agents
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-tasks"></i>
+                    Tasks
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-comments"></i>
+                    Chat
+                </a>
+            </nav>
+
+            <nav class="nav-section">
+                <div class="nav-title">Analytics</div>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-chart-line"></i>
+                    Overview
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-dollar-sign"></i>
+                    Costs
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-history"></i>
+                    Logs
+                </a>
+            </nav>
+
+            <nav class="nav-section">
+                <div class="nav-title">System</div>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-plug"></i>
+                    Integrations
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-users"></i>
+                    Users
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <h1 class="page-title">Dashboard</h1>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search" style="color: var(--text-muted);"></i>
+                        <input type="text" placeholder="Search...">
+                    </div>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        New Agent
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon agents">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <span class="stat-change positive">+12%</span>
+                    </div>
+                    <div class="stat-value" id="stat-agents">3</div>
+                    <div class="stat-label">Active Agents</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon tasks">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <span class="stat-change positive">+8%</span>
+                    </div>
+                    <div class="stat-value" id="stat-tasks">237</div>
+                    <div class="stat-label">Tasks Completed</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon messages">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <span class="stat-change positive">+24%</span>
+                    </div>
+                    <div class="stat-value" id="stat-messages">1,547</div>
+                    <div class="stat-label">Messages Today</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon cost">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <span class="stat-change negative">-5%</span>
+                    </div>
+                    <div class="stat-value" id="stat-cost">$23.45</div>
+                    <div class="stat-label">Today's Cost</div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Active Agents</h2>
+                        <a href="#" style="color: var(--primary); text-decoration: none;">View All</a>
+                    </div>
+                    <div class="agent-list" id="agent-list">
+                        <!-- Agents populated by JS -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Activity</h2>
+                    </div>
+                    <div class="activity-feed" id="activity-feed">
+                        <!-- Activity populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid" style="margin-top: 24px;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Current Tasks</h2>
+                        <a href="#" style="color: var(--primary); text-decoration: none;">View All</a>
+                    </div>
+                    <div class="task-list" id="task-list">
+                        <!-- Tasks populated by JS -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">API Usage</h2>
+                    </div>
+                    <div class="chart-container">
+                        <span>📊 Chart visualization</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // API base URL
+        const API_BASE = 'http://localhost:8080/api';
+
+        // Sample data (would come from API)
+        const agents = [
+            { id: 'agent-001', name: 'Atlas', persona: 'Architect', status: 'active', color: '#6366f1' },
+            { id: 'agent-002', name: 'Nova', persona: 'Coder', status: 'active', color: '#10b981' },
+            { id: 'agent-003', name: 'Sage', persona: 'Researcher', status: 'idle', color: '#f59e0b' }
+        ];
+
+        const tasks = [
+            { name: 'Code Review PR #42', status: 'in_progress', priority: 2, progress: 65 },
+            { name: 'Research ML Papers', status: 'completed', priority: 1, progress: 100 },
+            { name: 'Design Architecture', status: 'pending', priority: 3, progress: 0 }
+        ];
+
+        const activities = [
+            { icon: 'success', text: 'Nova completed code review task', time: '2 minutes ago' },
+            { icon: 'info', text: 'Atlas started new task: System Design', time: '15 minutes ago' },
+            { icon: 'warning', text: 'API rate limit at 80%', time: '1 hour ago' },
+            { icon: 'success', text: 'Sage finished research analysis', time: '2 hours ago' }
+        ];
+
+        // Render agents
+        function renderAgents() {
+            const container = document.getElementById('agent-list');
+            container.innerHTML = agents.map(agent => `
+                <div class="agent-item">
+                    <div class="agent-avatar" style="background: ${agent.color}20; color: ${agent.color};">
+                        ${agent.name[0]}
+                    </div>
+                    <div class="agent-info">
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-persona">${agent.persona}</div>
+                    </div>
+                    <span class="agent-status status-${agent.status}">${agent.status}</span>
+                </div>
+            `).join('');
+        }
+
+        // Render tasks
+        function renderTasks() {
+            const container = document.getElementById('task-list');
+            container.innerHTML = tasks.map(task => `
+                <div class="task-item priority-${task.priority}">
+                    <div class="task-header">
+                        <span class="task-name">${task.name}</span>
+                        <span class="task-status ${task.status}">${task.status.replace('_', ' ')}</span>
+                    </div>
+                    <div class="task-progress">
+                        <div class="task-progress-bar" style="width: ${task.progress}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render activities
+        function renderActivities() {
+            const container = document.getElementById('activity-feed');
+            container.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon ${activity.icon}">
+                        <i class="fas fa-${activity.icon === 'success' ? 'check' : activity.icon === 'warning' ? 'exclamation' : 'info'}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">${activity.text}</div>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAgents();
+            renderTasks();
+            renderActivities();
+
+            // Animate stats
+            animateValue('stat-agents', 0, 3, 1000);
+            animateValue('stat-tasks', 0, 237, 1500);
+            animateValue('stat-messages', 0, 1547, 2000);
+        });
+
+        // Animate number values
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            const range = end - start;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const value = Math.floor(start + (range * progress));
+                obj.textContent = value.toLocaleString();
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        // WebSocket connection for real-time updates
+        function connectWebSocket() {
+            try {
+                const ws = new WebSocket('ws://localhost:8080/ws');
+
+                ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    ws.send(JSON.stringify({ type: 'subscribe', channel: 'dashboard' }));
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log('WS message:', data);
+                    // Handle real-time updates
+                };
+
+                ws.onclose = () => {
+                    console.log('WebSocket disconnected, reconnecting...');
+                    setTimeout(connectWebSocket, 5000);
+                };
+            } catch (e) {
+                console.log('WebSocket not available');
+            }
+        }
+
+        // Connect after page load
+        setTimeout(connectWebSocket, 1000);
+    </script>
+</body>
+</html>

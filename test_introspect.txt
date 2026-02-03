@@ -1,0 +1,1 @@
+{"success":false,"data":null,"error":"MetacognitionEngine.introspect() missing 1 required positional argument: 'query'","mode":null}

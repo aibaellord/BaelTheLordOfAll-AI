@@ -1,0 +1,844 @@
+# =============================================================================
+# BAEL ULTIMATE MCP HUB - 50+ MAXIMUM POWER MCP SERVERS
+# =============================================================================
+# The most comprehensive MCP deployment ever assembled
+# Integrates with all 200+ BAEL core modules
+# =============================================================================
+
+version: "3.9"
+
+networks:
+  bael-ultimate:
+    name: bael-ultimate-network
+    driver: bridge
+  mcp-mesh:
+    name: mcp-mesh-network
+    driver: bridge
+
+volumes:
+  # Core Data
+  mcp-unified-workspace:
+  mcp-knowledge-graph:
+  mcp-memory-store:
+
+  # Databases
+  postgres-data:
+  redis-data:
+  mongodb-data:
+  neo4j-data:
+  qdrant-data:
+  chromadb-data:
+  elasticsearch-data:
+
+  # Storage
+  s3-data:
+  minio-data:
+
+  # Logs & Metrics
+  prometheus-data:
+  grafana-data:
+  loki-data:
+
+services:
+  # ===========================================================================
+  # APEX GATEWAY - UNIFIED ENTRY POINT
+  # ===========================================================================
+
+  mcp-apex-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.apex-gateway
+    container_name: mcp-apex-gateway
+    ports:
+      - "3100:80"           # Main gateway
+      - "3101:3101"         # Admin API
+      - "3102:3102"         # Metrics
+    volumes:
+      - ../gateway/nginx-ultimate.conf:/etc/nginx/nginx.conf:ro
+      - ../gateway/mcp-routes-ultimate.conf:/etc/nginx/conf.d/mcp-routes.conf:ro
+    networks:
+      - bael-ultimate
+      - mcp-mesh
+    depends_on:
+      - mcp-orchestrator
+      - mcp-health-sentinel
+    restart: unless-stopped
+
+  # ===========================================================================
+  # ORCHESTRATION LAYER - INTELLIGENT ROUTING
+  # ===========================================================================
+
+  mcp-orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    container_name: mcp-orchestrator
+    environment:
+      - BAEL_API_URL=http://host.docker.internal:8000
+      - REDIS_URL=redis://mcp-redis:6379
+      - MCP_REGISTRY_URL=http://mcp-registry:8080
+    volumes:
+      - ../config:/config:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - bael-ultimate
+      - mcp-mesh
+    depends_on:
+      - mcp-redis
+      - mcp-registry
+    restart: unless-stopped
+
+  mcp-registry:
+    image: registry:2
+    container_name: mcp-registry
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./registry-data:/var/lib/registry
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-health-sentinel:
+    build:
+      context: .
+      dockerfile: Dockerfile.health-sentinel
+    container_name: mcp-health-sentinel
+    environment:
+      - BAEL_API_URL=http://host.docker.internal:8000
+      - CHECK_INTERVAL=10
+      - ALERT_THRESHOLD=3
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - bael-ultimate
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 0: INFRASTRUCTURE (Always On)
+  # ===========================================================================
+
+  mcp-redis:
+    image: redis:7-alpine
+    container_name: mcp-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mcp-postgres:
+    image: postgres:16-alpine
+    container_name: mcp-postgres
+    environment:
+      POSTGRES_USER: bael
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bael_secure_2026}
+      POSTGRES_DB: bael_mcp
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bael"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mcp-mongodb:
+    image: mongo:7
+    container_name: mcp-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: bael
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-bael_secure_2026}
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 1: ESSENTIAL (5 Servers) - Core Functionality
+  # ===========================================================================
+
+  mcp-filesystem:
+    image: node:20-alpine
+    container_name: mcp-filesystem
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-filesystem /workspace /host
+    volumes:
+      - mcp-unified-workspace:/workspace
+      - /Volumes/SSD320/BaelTheLordOfAll-AI:/host:ro
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-github:
+    image: node:20-alpine
+    container_name: mcp-github
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-github
+    environment:
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-brave-search:
+    image: node:20-alpine
+    container_name: mcp-brave-search
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-memory:
+    image: node:20-alpine
+    container_name: mcp-memory
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-memory
+    volumes:
+      - mcp-memory-store:/data
+    environment:
+      - MEMORY_FILE=/data/bael-memory.json
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-sqlite:
+    image: node:20-alpine
+    container_name: mcp-sqlite
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-sqlite --db-path /data/bael.db
+    volumes:
+      - mcp-knowledge-graph:/data
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 2: POWER TOOLS (8 Servers) - Development & Automation
+  # ===========================================================================
+
+  mcp-playwright:
+    image: mcr.microsoft.com/playwright:v1.40.0-jammy
+    container_name: mcp-playwright
+    working_dir: /app
+    command: npx -y @executeautomation/playwright-mcp-server
+    environment:
+      - HEADLESS=true
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-docker:
+    image: node:20-alpine
+    container_name: mcp-docker
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-git:
+    image: node:20-alpine
+    container_name: mcp-git
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-git --repository /repo
+    volumes:
+      - /Volumes/SSD320/BaelTheLordOfAll-AI:/repo
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-kubernetes:
+    image: node:20-alpine
+    container_name: mcp-kubernetes
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-kubernetes
+    volumes:
+      - ~/.kube:/root/.kube:ro
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-postgres-server:
+    image: node:20-alpine
+    container_name: mcp-postgres-server
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-postgres postgresql://bael:${POSTGRES_PASSWORD:-bael_secure_2026}@mcp-postgres:5432/bael_mcp
+    networks:
+      - mcp-mesh
+    depends_on:
+      - mcp-postgres
+    restart: unless-stopped
+
+  mcp-redis-server:
+    image: node:20-alpine
+    container_name: mcp-redis-server
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-redis redis://mcp-redis:6379
+    networks:
+      - mcp-mesh
+    depends_on:
+      - mcp-redis
+    restart: unless-stopped
+
+  mcp-slack:
+    image: node:20-alpine
+    container_name: mcp-slack
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-slack
+    environment:
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_TEAM_ID=${SLACK_TEAM_ID}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-discord:
+    image: node:20-alpine
+    container_name: mcp-discord
+    working_dir: /app
+    command: npx -y mcp-discord
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 3: ENHANCED CAPABILITIES (10 Servers) - Advanced Features
+  # ===========================================================================
+
+  mcp-fetch:
+    image: node:20-alpine
+    container_name: mcp-fetch
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-fetch
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-puppeteer:
+    image: node:20-alpine
+    container_name: mcp-puppeteer
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-puppeteer
+    environment:
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-sequential-thinking:
+    image: node:20-alpine
+    container_name: mcp-sequential-thinking
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-sequential-thinking
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-time:
+    image: node:20-alpine
+    container_name: mcp-time
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-time
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-exa:
+    image: node:20-alpine
+    container_name: mcp-exa
+    working_dir: /app
+    command: npx -y @exa/mcp-server
+    environment:
+      - EXA_API_KEY=${EXA_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-firecrawl:
+    image: node:20-alpine
+    container_name: mcp-firecrawl
+    working_dir: /app
+    command: npx -y firecrawl-mcp
+    environment:
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-tavily:
+    image: node:20-alpine
+    container_name: mcp-tavily
+    working_dir: /app
+    command: npx -y tavily-mcp
+    environment:
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-perplexity:
+    image: node:20-alpine
+    container_name: mcp-perplexity
+    working_dir: /app
+    command: npx -y perplexity-mcp
+    environment:
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-wolfram:
+    image: node:20-alpine
+    container_name: mcp-wolfram
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-wolfram
+    environment:
+      - WOLFRAM_APP_ID=${WOLFRAM_APP_ID}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-weather:
+    image: node:20-alpine
+    container_name: mcp-weather
+    working_dir: /app
+    command: npx -y @modelcontextprotocol/server-weather
+    environment:
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 4: AI & ML TOOLS (8 Servers) - Intelligence Layer
+  # ===========================================================================
+
+  mcp-openai:
+    image: node:20-alpine
+    container_name: mcp-openai
+    working_dir: /app
+    command: npx -y openai-mcp
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-anthropic:
+    image: node:20-alpine
+    container_name: mcp-anthropic
+    working_dir: /app
+    command: npx -y anthropic-mcp
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-replicate:
+    image: node:20-alpine
+    container_name: mcp-replicate
+    working_dir: /app
+    command: npx -y replicate-mcp
+    environment:
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-huggingface:
+    image: node:20-alpine
+    container_name: mcp-huggingface
+    working_dir: /app
+    command: npx -y huggingface-mcp
+    environment:
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-stability:
+    image: node:20-alpine
+    container_name: mcp-stability
+    working_dir: /app
+    command: npx -y stability-ai-mcp
+    environment:
+      - STABILITY_API_KEY=${STABILITY_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-langchain:
+    image: python:3.11-slim
+    container_name: mcp-langchain
+    working_dir: /app
+    command: python -m langchain_mcp
+    volumes:
+      - ../servers/langchain:/app
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-llamaindex:
+    image: python:3.11-slim
+    container_name: mcp-llamaindex
+    working_dir: /app
+    command: python -m llamaindex_mcp
+    volumes:
+      - ../servers/llamaindex:/app
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-embeddings:
+    image: python:3.11-slim
+    container_name: mcp-embeddings
+    working_dir: /app
+    command: python -m embedding_mcp
+    volumes:
+      - ../servers/embeddings:/app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 5: CLOUD & INFRASTRUCTURE (8 Servers)
+  # ===========================================================================
+
+  mcp-aws:
+    image: node:20-alpine
+    container_name: mcp-aws
+    working_dir: /app
+    command: npx -y @aws/mcp-server-aws
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-gcp:
+    image: node:20-alpine
+    container_name: mcp-gcp
+    working_dir: /app
+    command: npx -y gcp-mcp
+    volumes:
+      - ~/.config/gcloud:/root/.config/gcloud:ro
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-azure:
+    image: node:20-alpine
+    container_name: mcp-azure
+    working_dir: /app
+    command: npx -y azure-mcp
+    environment:
+      - AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-cloudflare:
+    image: node:20-alpine
+    container_name: mcp-cloudflare
+    working_dir: /app
+    command: npx -y @cloudflare/mcp-server-cloudflare
+    environment:
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-vercel:
+    image: node:20-alpine
+    container_name: mcp-vercel
+    working_dir: /app
+    command: npx -y vercel-mcp
+    environment:
+      - VERCEL_TOKEN=${VERCEL_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-netlify:
+    image: node:20-alpine
+    container_name: mcp-netlify
+    working_dir: /app
+    command: npx -y netlify-mcp
+    environment:
+      - NETLIFY_AUTH_TOKEN=${NETLIFY_AUTH_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-terraform:
+    image: hashicorp/terraform:latest
+    container_name: mcp-terraform
+    working_dir: /workspace
+    command: npx -y terraform-mcp
+    volumes:
+      - mcp-unified-workspace:/workspace
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-pulumi:
+    image: node:20-alpine
+    container_name: mcp-pulumi
+    working_dir: /app
+    command: npx -y pulumi-mcp
+    environment:
+      - PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 6: PRODUCTIVITY & COLLABORATION (8 Servers)
+  # ===========================================================================
+
+  mcp-notion:
+    image: node:20-alpine
+    container_name: mcp-notion
+    working_dir: /app
+    command: npx -y @notionhq/mcp-server
+    environment:
+      - NOTION_API_KEY=${NOTION_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-linear:
+    image: node:20-alpine
+    container_name: mcp-linear
+    working_dir: /app
+    command: npx -y linear-mcp
+    environment:
+      - LINEAR_API_KEY=${LINEAR_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-jira:
+    image: node:20-alpine
+    container_name: mcp-jira
+    working_dir: /app
+    command: npx -y jira-mcp
+    environment:
+      - JIRA_URL=${JIRA_URL}
+      - JIRA_EMAIL=${JIRA_EMAIL}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-asana:
+    image: node:20-alpine
+    container_name: mcp-asana
+    working_dir: /app
+    command: npx -y asana-mcp
+    environment:
+      - ASANA_ACCESS_TOKEN=${ASANA_ACCESS_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-todoist:
+    image: node:20-alpine
+    container_name: mcp-todoist
+    working_dir: /app
+    command: npx -y todoist-mcp
+    environment:
+      - TODOIST_API_TOKEN=${TODOIST_API_TOKEN}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-google-drive:
+    image: node:20-alpine
+    container_name: mcp-google-drive
+    working_dir: /app
+    command: npx -y @anthropics/google-drive-mcp
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-obsidian:
+    image: node:20-alpine
+    container_name: mcp-obsidian
+    working_dir: /app
+    command: npx -y obsidian-mcp
+    volumes:
+      - ~/Documents/Obsidian:/vault:ro
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-airtable:
+    image: node:20-alpine
+    container_name: mcp-airtable
+    working_dir: /app
+    command: npx -y airtable-mcp
+    environment:
+      - AIRTABLE_API_KEY=${AIRTABLE_API_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 7: MONITORING & OBSERVABILITY (5 Servers)
+  # ===========================================================================
+
+  mcp-sentry:
+    image: node:20-alpine
+    container_name: mcp-sentry
+    working_dir: /app
+    command: npx -y @sentry/mcp-server
+    environment:
+      - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+      - SENTRY_ORG=${SENTRY_ORG}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-datadog:
+    image: node:20-alpine
+    container_name: mcp-datadog
+    working_dir: /app
+    command: npx -y datadog-mcp
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_APP_KEY=${DD_APP_KEY}
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-grafana:
+    image: grafana/grafana:latest
+    container_name: mcp-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-prometheus:
+    image: prom/prometheus:latest
+    container_name: mcp-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-loki:
+    image: grafana/loki:latest
+    container_name: mcp-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TIER 8: VECTOR & KNOWLEDGE (4 Servers)
+  # ===========================================================================
+
+  mcp-qdrant:
+    image: qdrant/qdrant:latest
+    container_name: mcp-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-chromadb:
+    image: chromadb/chroma:latest
+    container_name: mcp-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadb-data:/chroma/chroma
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-neo4j:
+    image: neo4j:5
+    container_name: mcp-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-bael_secure_2026}
+    volumes:
+      - neo4j-data:/data
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+  mcp-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: mcp-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - mcp-mesh
+    restart: unless-stopped
+
+# =============================================================================
+# TOTAL: 52 MCP SERVERS
+# =============================================================================
+# Tier 0: Infrastructure (3) - Redis, Postgres, MongoDB
+# Tier 1: Essential (5) - Filesystem, GitHub, Brave, Memory, SQLite
+# Tier 2: Power (8) - Playwright, Docker, Git, K8s, Postgres, Redis, Slack, Discord
+# Tier 3: Enhanced (10) - Fetch, Puppeteer, Sequential, Time, Exa, Firecrawl, Tavily, Perplexity, Wolfram, Weather
+# Tier 4: AI/ML (8) - OpenAI, Anthropic, Replicate, HuggingFace, Stability, LangChain, LlamaIndex, Embeddings
+# Tier 5: Cloud (8) - AWS, GCP, Azure, Cloudflare, Vercel, Netlify, Terraform, Pulumi
+# Tier 6: Productivity (8) - Notion, Linear, Jira, Asana, Todoist, Google Drive, Obsidian, Airtable
+# Tier 7: Monitoring (5) - Sentry, Datadog, Grafana, Prometheus, Loki
+# Tier 8: Vector/Knowledge (4) - Qdrant, ChromaDB, Neo4j, Elasticsearch
+# =============================================================================

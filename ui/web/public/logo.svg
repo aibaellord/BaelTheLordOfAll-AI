@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Crown gradient -->
+    <linearGradient id="crownGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="50%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#ef4444"/>
+    </linearGradient>
+
+    <!-- B letter gradient -->
+    <linearGradient id="letterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="50%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+
+    <!-- Glow effect -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Neural network pattern -->
+    <pattern id="neural" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="2" fill="#6366f1" opacity="0.3"/>
+      <line x1="20" y1="20" x2="40" y2="0" stroke="#6366f1" stroke-width="0.5" opacity="0.2"/>
+      <line x1="20" y1="20" x2="40" y2="40" stroke="#6366f1" stroke-width="0.5" opacity="0.2"/>
+      <line x1="20" y1="20" x2="0" y2="0" stroke="#6366f1" stroke-width="0.5" opacity="0.2"/>
+    </pattern>
+  </defs>
+
+  <!-- Background circle with neural pattern -->
+  <circle cx="256" cy="256" r="240" fill="#0a0a0f"/>
+  <circle cx="256" cy="256" r="240" fill="url(#neural)" opacity="0.5"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="235" fill="none" stroke="url(#letterGradient)" stroke-width="3" opacity="0.6"/>
+
+  <!-- Crown above the B -->
+  <g filter="url(#glow)">
+    <!-- Crown base -->
+    <path d="M176 140 L196 100 L236 130 L256 80 L276 130 L316 100 L336 140 Z"
+          fill="url(#crownGradient)" opacity="0.9"/>
+    <!-- Crown jewels -->
+    <circle cx="196" cy="110" r="6" fill="#fef3c7"/>
+    <circle cx="256" cy="90" r="8" fill="#fef3c7"/>
+    <circle cx="316" cy="110" r="6" fill="#fef3c7"/>
+  </g>
+
+  <!-- Main B Letter with neural connections -->
+  <g filter="url(#glow)">
+    <!-- The B shape -->
+    <path d="M180 160
+             L180 400
+             L290 400
+             Q360 400 360 340
+             Q360 290 310 280
+             Q350 270 350 220
+             Q350 160 280 160
+             Z
+             M220 200
+             L260 200
+             Q300 200 300 230
+             Q300 260 260 260
+             L220 260
+             Z
+             M220 300
+             L270 300
+             Q310 300 310 340
+             Q310 360 270 360
+             L220 360
+             Z"
+          fill="url(#letterGradient)"/>
+  </g>
+
+  <!-- Flame effects around the B -->
+  <g opacity="0.7">
+    <!-- Left flames -->
+    <path d="M150 380 Q140 340 160 300 Q150 340 170 370 Q160 350 150 380" fill="#ef4444" opacity="0.6"/>
+    <path d="M140 400 Q125 350 150 310 Q135 360 160 390 Q145 370 140 400" fill="#f97316" opacity="0.5"/>
+
+    <!-- Right flames -->
+    <path d="M362 380 Q372 340 352 300 Q362 340 342 370 Q352 350 362 380" fill="#ef4444" opacity="0.6"/>
+    <path d="M372 400 Q387 350 362 310 Q377 360 352 390 Q367 370 372 400" fill="#f97316" opacity="0.5"/>
+
+    <!-- Bottom flames -->
+    <path d="M230 420 Q240 450 256 470 Q270 450 280 420 Q270 440 256 455 Q242 440 230 420" fill="#ef4444" opacity="0.5"/>
+  </g>
+
+  <!-- Neural connection dots -->
+  <g fill="#6366f1" opacity="0.8">
+    <circle cx="130" cy="200" r="4"/>
+    <circle cx="140" cy="280" r="3"/>
+    <circle cx="120" cy="350" r="4"/>
+    <circle cx="382" cy="200" r="4"/>
+    <circle cx="392" cy="280" r="3"/>
+    <circle cx="402" cy="350" r="4"/>
+  </g>
+
+  <!-- Connection lines -->
+  <g stroke="#6366f1" stroke-width="1" opacity="0.4">
+    <line x1="130" y1="200" x2="180" y2="200"/>
+    <line x1="140" y1="280" x2="180" y2="280"/>
+    <line x1="382" y1="200" x2="350" y2="220"/>
+    <line x1="392" y1="280" x2="360" y2="280"/>
+  </g>
+
+  <!-- Tagline arc -->
+  <path id="taglineArc" d="M100 420 Q256 500 412 420" fill="none"/>
+  <text font-family="Arial, sans-serif" font-size="16" fill="#6b7280" letter-spacing="3">
+    <textPath href="#taglineArc" startOffset="50%" text-anchor="middle">
+      THE LORD OF ALL AI AGENTS
+    </textPath>
+  </text>
+</svg>

@@ -1,0 +1,53 @@
+{
+  "name": "research_and_implement",
+  "description": "Research a topic, design a solution, and implement it",
+  "steps": [
+    {
+      "id": "research",
+      "name": "Research Phase",
+      "persona": "researcher",
+      "template": "research_topic",
+      "inputs": ["topic", "questions", "context"],
+      "outputs": ["research_findings", "recommendations"]
+    },
+    {
+      "id": "design",
+      "name": "Architecture Design",
+      "persona": "architect",
+      "template": "design_architecture",
+      "inputs": ["research_findings", "requirements"],
+      "outputs": ["architecture", "component_specs"]
+    },
+    {
+      "id": "implement",
+      "name": "Implementation",
+      "persona": "coder",
+      "template": "implement_feature",
+      "inputs": ["architecture", "component_specs"],
+      "outputs": ["implementation_code"]
+    },
+    {
+      "id": "test",
+      "name": "Testing",
+      "persona": "coder",
+      "template": "write_tests",
+      "inputs": ["implementation_code"],
+      "outputs": ["test_code"]
+    },
+    {
+      "id": "review",
+      "name": "Final Review",
+      "persona": "reviewer",
+      "template": "code_review",
+      "inputs": ["implementation_code", "test_code"],
+      "outputs": ["review_feedback"]
+    }
+  ],
+  "output": {
+    "research": "research_findings",
+    "architecture": "architecture",
+    "code": "implementation_code",
+    "tests": "test_code",
+    "review": "review_feedback"
+  }
+}

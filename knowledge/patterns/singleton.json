@@ -1,0 +1,42 @@
+{
+  "name": "Singleton",
+  "category": "Creational",
+  "description": "Ensure a class has only one instance and provide a global point of access to it.",
+  "problem": "Need to ensure that only one instance of a class exists throughout the application.",
+  "solution": "Make the class constructor private and provide a static method that returns the same instance.",
+  "when_to_use": [
+    "When exactly one instance of a class is needed",
+    "When the single instance should be accessible from a well-known access point",
+    "When the sole instance should be extensible by subclassing"
+  ],
+  "when_not_to_use": [
+    "When you need to pass state to the object",
+    "When testing is a priority (hard to mock)",
+    "When you might need multiple instances later"
+  ],
+  "structure": {
+    "participants": [
+      {
+        "name": "Singleton",
+        "role": "Defines getInstance() operation for clients to access unique instance"
+      }
+    ]
+  },
+  "implementation": {
+    "python": "class Singleton:\n    _instance = None\n    \n    def __new__(cls):\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n        return cls._instance",
+    "typescript": "class Singleton {\n    private static instance: Singleton;\n    \n    private constructor() {}\n    \n    public static getInstance(): Singleton {\n        if (!Singleton.instance) {\n            Singleton.instance = new Singleton();\n        }\n        return Singleton.instance;\n    }\n}"
+  },
+  "related_patterns": ["Factory Method", "Abstract Factory", "Builder"],
+  "trade_offs": {
+    "pros": [
+      "Controlled access to sole instance",
+      "Reduced name space pollution",
+      "Permits refinement of operations"
+    ],
+    "cons": [
+      "Difficult to unit test",
+      "Can hide dependencies",
+      "Violates Single Responsibility Principle"
+    ]
+  }
+}

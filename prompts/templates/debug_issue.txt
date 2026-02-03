@@ -1,0 +1,44 @@
+You are tasked with debugging an issue in the codebase.
+
+## Problem Description
+{{problem_description}}
+
+## Error Information
+```
+{{error_message}}
+```
+
+## Relevant Code
+```{{language}}
+{{code}}
+```
+
+## Context
+- Environment: {{environment}}
+- Steps to reproduce: {{steps_to_reproduce}}
+- Expected behavior: {{expected_behavior}}
+- Actual behavior: {{actual_behavior}}
+
+## Debugging Task
+
+Please analyze this issue and provide:
+
+1. **Root Cause Analysis**
+   - What is causing this issue?
+   - Why is it happening?
+
+2. **Diagnostic Steps**
+   - What additional information would help?
+   - What debugging steps would you take?
+
+3. **Proposed Fix**
+   - Provide the corrected code
+   - Explain why the fix works
+
+4. **Prevention**
+   - How can similar issues be prevented?
+   - What tests should be added?
+
+5. **Related Concerns**
+   - Are there similar issues elsewhere?
+   - Any related areas to check?

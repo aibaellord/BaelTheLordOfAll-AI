@@ -1,0 +1,132 @@
+{
+  "name": "API Design",
+  "category": "Software Architecture",
+  "description": "Principles and best practices for designing robust, usable, and maintainable APIs.",
+  "principles": {
+    "consistency": {
+      "description": "APIs should be consistent in naming, structure, and behavior",
+      "guidelines": [
+        "Use consistent naming conventions (camelCase, snake_case)",
+        "Use consistent parameter ordering",
+        "Return consistent response structures",
+        "Handle errors consistently"
+      ]
+    },
+    "simplicity": {
+      "description": "APIs should be as simple as possible while meeting requirements",
+      "guidelines": [
+        "Start with the minimum viable API",
+        "Avoid over-engineering",
+        "Hide complexity behind simple interfaces",
+        "Provide sensible defaults"
+      ]
+    },
+    "discoverability": {
+      "description": "APIs should be easy to explore and understand",
+      "guidelines": [
+        "Provide comprehensive documentation",
+        "Use descriptive names",
+        "Include examples",
+        "Support introspection where possible"
+      ]
+    }
+  },
+  "rest_best_practices": {
+    "resources": {
+      "naming": "Use nouns, plural forms (users, orders, products)",
+      "hierarchy": "Express relationships in URL (/users/123/orders)",
+      "examples": {
+        "good": ["/users", "/users/123", "/users/123/orders"],
+        "bad": ["/getUsers", "/createUser", "/user_list"]
+      }
+    },
+    "http_methods": {
+      "GET": "Retrieve resource(s), safe, idempotent",
+      "POST": "Create resource, not idempotent",
+      "PUT": "Replace resource, idempotent",
+      "PATCH": "Partial update, may be idempotent",
+      "DELETE": "Remove resource, idempotent"
+    },
+    "status_codes": {
+      "2xx": {
+        "200": "OK - Successful GET, PUT, PATCH, DELETE",
+        "201": "Created - Successful POST",
+        "204": "No Content - Successful operation with no body"
+      },
+      "4xx": {
+        "400": "Bad Request - Malformed request",
+        "401": "Unauthorized - Authentication required",
+        "403": "Forbidden - Authenticated but not authorized",
+        "404": "Not Found - Resource doesn't exist",
+        "422": "Unprocessable Entity - Validation error"
+      },
+      "5xx": {
+        "500": "Internal Server Error - Unexpected error",
+        "502": "Bad Gateway - Upstream error",
+        "503": "Service Unavailable - Temporarily down"
+      }
+    }
+  },
+  "versioning": {
+    "strategies": [
+      {
+        "name": "URL Path",
+        "example": "/api/v1/users",
+        "pros": ["Explicit", "Easy to test"],
+        "cons": ["URL changes", "Can proliferate"]
+      },
+      {
+        "name": "Query Parameter",
+        "example": "/api/users?version=1",
+        "pros": ["Optional versioning"],
+        "cons": ["Often overlooked"]
+      },
+      {
+        "name": "Header",
+        "example": "Accept: application/vnd.api+json;version=1",
+        "pros": ["Clean URLs"],
+        "cons": ["Harder to test"]
+      }
+    ],
+    "recommendation": "URL path versioning for public APIs, header versioning for internal"
+  },
+  "pagination": {
+    "cursor_based": {
+      "pros": ["Stable with real-time data", "Efficient for large datasets"],
+      "example": "?cursor=abc123&limit=20"
+    },
+    "offset_based": {
+      "pros": ["Simple to implement", "Supports random access"],
+      "cons": ["Inconsistent with changing data"],
+      "example": "?offset=40&limit=20"
+    }
+  },
+  "error_handling": {
+    "structure": {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Human-readable message",
+        "details": [],
+        "request_id": "uuid"
+      }
+    },
+    "guidelines": [
+      "Use appropriate HTTP status codes",
+      "Provide machine-readable error codes",
+      "Include human-readable messages",
+      "Add request IDs for debugging",
+      "Don't expose internal details in production"
+    ]
+  },
+  "security": {
+    "authentication": ["API Keys", "OAuth 2.0", "JWT"],
+    "authorization": ["RBAC", "ABAC", "Scopes"],
+    "best_practices": [
+      "Always use HTTPS",
+      "Validate all inputs",
+      "Rate limit requests",
+      "Log access attempts",
+      "Use short-lived tokens"
+    ]
+  }
+}

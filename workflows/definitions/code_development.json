@@ -1,0 +1,78 @@
+{
+  "name": "code_development",
+  "description": "Complete development workflow from requirements to tested code",
+  "version": "1.0.0",
+  "tags": ["development", "code", "testing"],
+  "steps": [
+    {
+      "id": "analyze_requirements",
+      "name": "Analyze Requirements",
+      "persona": "analyst",
+      "template": null,
+      "inputs": ["requirements", "context"],
+      "outputs": ["analyzed_requirements", "acceptance_criteria"],
+      "timeout_seconds": 300
+    },
+    {
+      "id": "design_solution",
+      "name": "Design Solution",
+      "persona": "architect",
+      "template": "design_architecture",
+      "inputs": ["analyzed_requirements", "tech_stack"],
+      "outputs": ["design", "component_specs"],
+      "timeout_seconds": 600
+    },
+    {
+      "id": "implement_code",
+      "name": "Implement Code",
+      "persona": "coder",
+      "template": "implement_feature",
+      "inputs": ["design", "component_specs"],
+      "outputs": ["implementation", "code_files"],
+      "timeout_seconds": 900
+    },
+    {
+      "id": "write_tests",
+      "name": "Write Tests",
+      "persona": "coder",
+      "template": "write_tests",
+      "inputs": ["implementation", "acceptance_criteria"],
+      "outputs": ["test_code", "test_coverage"],
+      "timeout_seconds": 600
+    },
+    {
+      "id": "code_review",
+      "name": "Code Review",
+      "persona": "reviewer",
+      "template": "code_review",
+      "inputs": ["implementation", "test_code"],
+      "outputs": ["review_feedback", "approved"],
+      "timeout_seconds": 600
+    },
+    {
+      "id": "address_feedback",
+      "name": "Address Feedback",
+      "persona": "coder",
+      "template": null,
+      "inputs": ["implementation", "review_feedback"],
+      "outputs": ["final_code"],
+      "condition": "not approved",
+      "timeout_seconds": 600
+    },
+    {
+      "id": "document",
+      "name": "Create Documentation",
+      "persona": "teacher",
+      "template": "explain_concept",
+      "inputs": ["final_code OR implementation"],
+      "outputs": ["documentation"],
+      "timeout_seconds": 300
+    }
+  ],
+  "output": {
+    "code": "final_code OR implementation",
+    "tests": "test_code",
+    "documentation": "documentation",
+    "design": "design"
+  }
+}

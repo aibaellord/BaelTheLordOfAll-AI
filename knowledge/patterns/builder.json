@@ -1,0 +1,39 @@
+{
+  "name": "builder",
+  "category": "creational",
+  "description": "Separates the construction of a complex object from its representation, allowing the same construction process to create different representations.",
+  "when_to_use": [
+    "Creating complex objects with many optional parameters",
+    "Construction process must allow different representations",
+    "Avoiding telescoping constructor anti-pattern",
+    "Building composite objects step by step"
+  ],
+  "structure": {
+    "builder": "Specifies an abstract interface for creating parts of a Product",
+    "concrete_builder": "Constructs and assembles parts of the product",
+    "director": "Constructs an object using the Builder interface",
+    "product": "Represents the complex object under construction"
+  },
+  "implementation": {
+    "python": "from abc import ABC, abstractmethod\nfrom typing import Optional, List\nfrom dataclasses import dataclass, field\n\n@dataclass\nclass Product:\n    \"\"\"Complex object to be built.\"\"\"\n    parts: List[str] = field(default_factory=list)\n    \n    def add(self, part: str) -> None:\n        self.parts.append(part)\n    \n    def list_parts(self) -> str:\n        return f\"Product parts: {', '.join(self.parts)}\"\n\nclass Builder(ABC):\n    \"\"\"Builder interface.\"\"\"\n    \n    @property\n    @abstractmethod\n    def product(self) -> Product:\n        pass\n    \n    @abstractmethod\n    def produce_part_a(self) -> None:\n        pass\n    \n    @abstractmethod\n    def produce_part_b(self) -> None:\n        pass\n    \n    @abstractmethod\n    def produce_part_c(self) -> None:\n        pass\n\nclass ConcreteBuilder(Builder):\n    \"\"\"Concrete implementation of the Builder.\"\"\"\n    \n    def __init__(self):\n        self.reset()\n    \n    def reset(self) -> None:\n        self._product = Product()\n    \n    @property\n    def product(self) -> Product:\n        product = self._product\n        self.reset()\n        return product\n    \n    def produce_part_a(self) -> None:\n        self._product.add(\"PartA1\")\n    \n    def produce_part_b(self) -> None:\n        self._product.add(\"PartB1\")\n    \n    def produce_part_c(self) -> None:\n        self._product.add(\"PartC1\")\n\nclass Director:\n    \"\"\"Director that orchestrates building.\"\"\"\n    \n    def __init__(self):\n        self._builder: Optional[Builder] = None\n    \n    @property\n    def builder(self) -> Builder:\n        return self._builder\n    \n    @builder.setter\n    def builder(self, builder: Builder) -> None:\n        self._builder = builder\n    \n    def build_minimal_product(self) -> None:\n        self._builder.produce_part_a()\n    \n    def build_full_product(self) -> None:\n        self._builder.produce_part_a()\n        self._builder.produce_part_b()\n        self._builder.produce_part_c()",
+    "typescript": "interface Builder {\n    producePartA(): void;\n    producePartB(): void;\n    producePartC(): void;\n}\n\nclass Product {\n    public parts: string[] = [];\n\n    public listParts(): void {\n        console.log(`Product parts: ${this.parts.join(', ')}`);\n    }\n}\n\nclass ConcreteBuilder implements Builder {\n    private product!: Product;\n\n    constructor() {\n        this.reset();\n    }\n\n    public reset(): void {\n        this.product = new Product();\n    }\n\n    public producePartA(): void {\n        this.product.parts.push('PartA1');\n    }\n\n    public producePartB(): void {\n        this.product.parts.push('PartB1');\n    }\n\n    public producePartC(): void {\n        this.product.parts.push('PartC1');\n    }\n\n    public getProduct(): Product {\n        const result = this.product;\n        this.reset();\n        return result;\n    }\n}\n\nclass Director {\n    private builder!: Builder;\n\n    public setBuilder(builder: Builder): void {\n        this.builder = builder;\n    }\n\n    public buildMinimalProduct(): void {\n        this.builder.producePartA();\n    }\n\n    public buildFullProduct(): void {\n        this.builder.producePartA();\n        this.builder.producePartB();\n        this.builder.producePartC();\n    }\n}"
+  },
+  "trade_offs": {
+    "advantages": [
+      "Construct objects step-by-step, defer construction steps, or run steps recursively",
+      "Reuse the same construction code for various product representations",
+      "Single Responsibility: Isolate complex construction code",
+      "Immutable objects can be built"
+    ],
+    "disadvantages": [
+      "Overall complexity increases due to multiple new classes",
+      "Builder must be mutable"
+    ]
+  },
+  "real_world_examples": [
+    "StringBuilder in various languages",
+    "SQL query builders",
+    "HTML/XML document builders"
+  ],
+  "related_patterns": ["abstract_factory", "composite", "prototype"]
+}
