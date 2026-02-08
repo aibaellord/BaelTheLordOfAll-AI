@@ -359,6 +359,7 @@ Create `skill_creation.py`:
 
 ```python
 import asyncio
+import json
 from core.skills import get_skill_genesis
 
 
