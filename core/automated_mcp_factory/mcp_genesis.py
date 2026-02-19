@@ -67,13 +67,13 @@ class MCPToolDefinition:
     description: str
     input_schema: Dict[str, Any]
     handler_code: str
-    
+
     # Metadata
     category: str = "general"
     complexity: str = "medium"
     requires_confirmation: bool = False
     timeout_seconds: int = 30
-    
+
     def to_mcp_format(self) -> Dict[str, Any]:
         """Convert to MCP tool format."""
         return {
@@ -96,7 +96,7 @@ class MCPResourceDefinition:
     resource_type: MCPResourceType
     mime_type: str = "application/json"
     handler_code: str = ""
-    
+
     def to_mcp_format(self) -> Dict[str, Any]:
         """Convert to MCP resource format."""
         return {
@@ -114,7 +114,7 @@ class MCPPromptDefinition:
     description: str
     arguments: List[Dict[str, str]]
     template: str
-    
+
     def to_mcp_format(self) -> Dict[str, Any]:
         """Convert to MCP prompt format."""
         return {
@@ -131,28 +131,28 @@ class MCPServerSpec:
     name: str
     description: str
     version: str = "1.0.0"
-    
+
     # Server configuration
     server_type: MCPServerType = MCPServerType.STDIO
     capabilities: List[MCPCapability] = field(default_factory=list)
-    
+
     # Components
     tools: List[MCPToolDefinition] = field(default_factory=list)
     resources: List[MCPResourceDefinition] = field(default_factory=list)
     prompts: List[MCPPromptDefinition] = field(default_factory=list)
-    
+
     # Dependencies
     dependencies: List[str] = field(default_factory=list)
-    
+
     # Generated code
     server_code: str = ""
     setup_code: str = ""
     config_code: str = ""
-    
+
     # Metadata
     created_at: datetime = field(default_factory=datetime.utcnow)
     author: str = "bael_mcp_factory"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "server_id": self.server_id,
@@ -170,13 +170,13 @@ class MCPServerSpec:
 class MCPFactory:
     """
     Automated MCP Server Factory.
-    
+
     Creates complete MCP server implementations from:
     - Natural language descriptions
     - API specifications
     - Existing code analysis
     - Capability requirements
-    
+
     Features:
     - Zero-shot MCP server generation
     - Auto-discovery of tool requirements
@@ -184,7 +184,7 @@ class MCPFactory:
     - Prompt template synthesis
     - Server deployment and management
     """
-    
+
     # MCP Server template
     STDIO_SERVER_TEMPLATE = '''#!/usr/bin/env python3
 """
@@ -237,7 +237,7 @@ server = Server("{name}")
 async def main():
     """Run the MCP server."""
     logger.info("Starting {name} MCP server...")
-    
+
     async with stdio_server() as (read_stream, write_stream):
         await server.run(
             read_stream,
@@ -248,7 +248,7 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 '''
-    
+
     # Tool handler template
     TOOL_TEMPLATE = '''
 @server.list_tools()
@@ -262,12 +262,12 @@ async def list_tools() -> List[Tool]:
 async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
     """Handle tool calls."""
     logger.info(f"Tool called: {{name}} with args: {{arguments}}")
-    
+
 {tool_handlers}
-    
+
     return [TextContent(type="text", text=f"Unknown tool: {{name}}")]
 '''
-    
+
     # Resource handler template
     RESOURCE_TEMPLATE = '''
 @server.list_resources()
@@ -281,12 +281,12 @@ async def list_resources() -> List[Resource]:
 async def read_resource(uri: str) -> str:
     """Read a resource by URI."""
     logger.info(f"Reading resource: {{uri}}")
-    
+
 {resource_handlers}
-    
+
     return f"Resource not found: {{uri}}"
 '''
-    
+
     # Prompt handler template
     PROMPT_TEMPLATE = '''
 @server.list_prompts()
@@ -300,9 +300,9 @@ async def list_prompts() -> List[Dict]:
 async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
     """Get a prompt by name."""
     logger.info(f"Getting prompt: {{name}} with args: {{arguments}}")
-    
+
 {prompt_handlers}
-    
+
     return GetPromptResult(
         description=f"Unknown prompt: {{name}}",
         messages=[]
@@ -317,17 +317,17 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
     ):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.llm_provider = llm_provider
         self.auto_deploy = auto_deploy
-        
+
         # Server registry
         self._servers: Dict[str, MCPServerSpec] = {}
         self._deployed_servers: Dict[str, Dict[str, Any]] = {}
-        
+
         # Templates for common servers
         self._server_templates: Dict[str, Dict[str, Any]] = {}
-        
+
         # Statistics
         self._stats = {
             "servers_created": 0,
@@ -335,11 +335,11 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             "resources_generated": 0,
             "prompts_generated": 0
         }
-        
+
         logger.info("MCPFactory initialized")
-    
+
     # ==================== CORE GENERATION ====================
-    
+
     async def create_server_from_description(
         self,
         name: str,
@@ -352,7 +352,7 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
         This is zero-shot MCP generation.
         """
         server_id = f"mcp_{hashlib.md5(name.encode()).hexdigest()[:12]}"
-        
+
         # Determine capabilities
         caps = []
         if capabilities:
@@ -361,10 +361,10 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
                     caps.append(MCPCapability(cap.lower()))
                 except:
                     pass
-        
+
         if not caps:
             caps = [MCPCapability.TOOLS]  # Default to tools
-        
+
         # Create spec
         spec = MCPServerSpec(
             server_id=server_id,
@@ -372,31 +372,31 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             description=description,
             capabilities=caps
         )
-        
+
         # Auto-generate tools based on description
         if auto_generate_tools and MCPCapability.TOOLS in caps:
             tools = await self._generate_tools_from_description(description)
             spec.tools = tools
-        
+
         # Generate resources if needed
         if MCPCapability.RESOURCES in caps:
             resources = await self._generate_resources_from_description(description)
             spec.resources = resources
-        
+
         # Generate prompts if needed
         if MCPCapability.PROMPTS in caps:
             prompts = await self._generate_prompts_from_description(description)
             spec.prompts = prompts
-        
+
         # Generate server code
         spec.server_code = await self._generate_server_code(spec)
-        
+
         # Store and return
         self._servers[server_id] = spec
         self._stats["servers_created"] += 1
-        
+
         return spec
-    
+
     async def create_server_from_api(
         self,
         name: str,
@@ -407,18 +407,18 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
         Create an MCP server from an API specification (OpenAPI/Swagger).
         """
         server_id = f"mcp_api_{hashlib.md5(name.encode()).hexdigest()[:12]}"
-        
+
         spec = MCPServerSpec(
             server_id=server_id,
             name=name,
             description=api_spec.get("info", {}).get("description", f"MCP server for {name} API"),
             capabilities=[MCPCapability.TOOLS]
         )
-        
+
         # Convert API endpoints to tools
         tools = []
         paths = api_spec.get("paths", {})
-        
+
         for path, methods in paths.items():
             for method, details in methods.items():
                 if method.lower() in ["get", "post", "put", "delete", "patch"]:
@@ -426,15 +426,15 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
                         path, method, details, base_url
                     )
                     tools.append(tool)
-        
+
         spec.tools = tools
         spec.server_code = await self._generate_server_code(spec)
-        
+
         self._servers[server_id] = spec
         self._stats["servers_created"] += 1
-        
+
         return spec
-    
+
     async def create_server_from_functions(
         self,
         name: str,
@@ -445,33 +445,33 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
         Create an MCP server from existing Python functions.
         """
         import inspect
-        
+
         server_id = f"mcp_func_{hashlib.md5(name.encode()).hexdigest()[:12]}"
-        
+
         spec = MCPServerSpec(
             server_id=server_id,
             name=name,
             description=description or f"MCP server wrapping {len(functions)} functions",
             capabilities=[MCPCapability.TOOLS]
         )
-        
+
         # Convert functions to tools
         tools = []
         for func in functions:
             tool = self._function_to_tool(func)
             if tool:
                 tools.append(tool)
-        
+
         spec.tools = tools
         spec.server_code = await self._generate_server_code(spec)
-        
+
         self._servers[server_id] = spec
         self._stats["servers_created"] += 1
-        
+
         return spec
-    
+
     # ==================== TOOL GENERATION ====================
-    
+
     async def _generate_tools_from_description(
         self,
         description: str
@@ -479,7 +479,7 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
         """Generate tools from a natural language description."""
         tools = []
         description_lower = description.lower()
-        
+
         # Pattern matching for common tool types
         tool_patterns = {
             "file": {
@@ -602,12 +602,12 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
                 ]
             }
         }
-        
+
         # Match patterns
         for category, config in tool_patterns.items():
             if any(kw in description_lower for kw in config["keywords"]):
                 tools.extend(config["tools"])
-        
+
         # If no matches, create a generic tool
         if not tools:
             tools.append(MCPToolDefinition(
@@ -619,17 +619,17 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
 ''',
                 category="general"
             ))
-        
+
         self._stats["tools_generated"] += len(tools)
         return tools
-    
+
     async def _generate_resources_from_description(
         self,
         description: str
     ) -> List[MCPResourceDefinition]:
         """Generate resources from description."""
         resources = []
-        
+
         # Add state resource by default
         resources.append(MCPResourceDefinition(
             uri="state://current",
@@ -638,17 +638,17 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             resource_type=MCPResourceType.STATE,
             handler_code='return json.dumps({"status": "active"})'
         ))
-        
+
         self._stats["resources_generated"] += len(resources)
         return resources
-    
+
     async def _generate_prompts_from_description(
         self,
         description: str
     ) -> List[MCPPromptDefinition]:
         """Generate prompts from description."""
         prompts = []
-        
+
         # Create a default prompt
         prompts.append(MCPPromptDefinition(
             name="default",
@@ -658,10 +658,10 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             ],
             template="Process the following: {input}"
         ))
-        
+
         self._stats["prompts_generated"] += len(prompts)
         return prompts
-    
+
     def _api_endpoint_to_tool(
         self,
         path: str,
@@ -672,7 +672,7 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
         """Convert an API endpoint to an MCP tool."""
         name = details.get("operationId", f"{method}_{path.replace('/', '_')}")
         description = details.get("summary", f"{method.upper()} {path}")
-        
+
         # Build input schema from parameters
         input_schema = {}
         for param in details.get("parameters", []):
@@ -680,14 +680,14 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
                 "type": param.get("schema", {}).get("type", "string"),
                 "description": param.get("description", param["name"])
             }
-        
+
         # Handle request body
         if "requestBody" in details:
             input_schema["body"] = {
                 "type": "object",
                 "description": "Request body"
             }
-        
+
         handler_code = f'''
     import aiohttp
     url = "{base_url or ''}{path}"
@@ -696,7 +696,7 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             text = await response.text()
             return [TextContent(type="text", text=text)]
 '''
-        
+
         return MCPToolDefinition(
             name=name,
             description=description,
@@ -704,15 +704,15 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             handler_code=handler_code,
             category="api"
         )
-    
+
     def _function_to_tool(self, func: Callable) -> Optional[MCPToolDefinition]:
         """Convert a Python function to an MCP tool."""
         import inspect
-        
+
         try:
             sig = inspect.signature(func)
             doc = func.__doc__ or f"Execute {func.__name__}"
-            
+
             # Build input schema from parameters
             input_schema = {}
             for name, param in sig.parameters.items():
@@ -722,14 +722,14 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
                     "type": "string",  # Simplified
                     "description": name
                 }
-            
+
             # Generate handler code
             handler_code = f'''
     # Call the wrapped function
     result = {func.__name__}(**arguments)
     return [TextContent(type="text", text=str(result))]
 '''
-            
+
             return MCPToolDefinition(
                 name=func.__name__,
                 description=doc,
@@ -740,9 +740,9 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
         except Exception as e:
             logger.error(f"Failed to convert function {func.__name__}: {e}")
             return None
-    
+
     # ==================== CODE GENERATION ====================
-    
+
     async def _generate_server_code(self, spec: MCPServerSpec) -> str:
         """Generate complete server code from spec."""
         # Generate tools code
@@ -750,7 +750,7 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
         if spec.tools:
             tool_defs = []
             tool_handlers = []
-            
+
             for tool in spec.tools:
                 # Tool definition
                 tool_defs.append(f'''        Tool(
@@ -762,23 +762,23 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
                 "required": {json.dumps(list(tool.input_schema.keys()))}
             }}
         )''')
-                
+
                 # Tool handler
                 tool_handlers.append(f'''    if name == "{tool.name}":
 {tool.handler_code}
 ''')
-            
+
             tools_code = self.TOOL_TEMPLATE.format(
                 tool_definitions=",\n".join(tool_defs),
                 tool_handlers="\n".join(tool_handlers)
             )
-        
+
         # Generate resources code
         resources_code = ""
         if spec.resources:
             resource_defs = []
             resource_handlers = []
-            
+
             for resource in spec.resources:
                 resource_defs.append(f'''        Resource(
             uri="{resource.uri}",
@@ -786,29 +786,29 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             description="{resource.description}",
             mimeType="{resource.mime_type}"
         )''')
-                
+
                 resource_handlers.append(f'''    if uri == "{resource.uri}":
         {resource.handler_code or 'return "{}"'}
 ''')
-            
+
             resources_code = self.RESOURCE_TEMPLATE.format(
                 resource_definitions=",\n".join(resource_defs),
                 resource_handlers="\n".join(resource_handlers)
             )
-        
+
         # Generate prompts code
         prompts_code = ""
         if spec.prompts:
             prompt_defs = []
             prompt_handlers = []
-            
+
             for prompt in spec.prompts:
                 prompt_defs.append(f'''        {{
             "name": "{prompt.name}",
             "description": "{prompt.description}",
             "arguments": {json.dumps(prompt.arguments)}
         }}''')
-                
+
                 prompt_handlers.append(f'''    if name == "{prompt.name}":
         template = "{prompt.template}"
         message = template.format(**arguments)
@@ -817,12 +817,12 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             messages=[PromptMessage(role="user", content=TextContent(type="text", text=message))]
         )
 ''')
-            
+
             prompts_code = self.PROMPT_TEMPLATE.format(
                 prompt_definitions=",\n".join(prompt_defs),
                 prompt_handlers="\n".join(prompt_handlers)
             )
-        
+
         # Combine into final server code
         server_code = self.STDIO_SERVER_TEMPLATE.format(
             name=spec.name,
@@ -833,11 +833,11 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             resources_code=resources_code,
             prompts_code=prompts_code
         )
-        
+
         return server_code
-    
+
     # ==================== DEPLOYMENT ====================
-    
+
     async def save_server(
         self,
         spec: MCPServerSpec,
@@ -848,18 +848,18 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             path = Path(output_path)
         else:
             path = self.output_dir / f"{spec.server_id}.py"
-        
+
         path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         with open(path, "w") as f:
             f.write(spec.server_code)
-        
+
         # Make executable
         os.chmod(path, 0o755)
-        
+
         logger.info(f"Saved MCP server to: {path}")
         return str(path)
-    
+
     async def deploy_server(
         self,
         spec: MCPServerSpec
@@ -867,7 +867,7 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
         """Deploy an MCP server."""
         # Save the server
         server_path = await self.save_server(spec)
-        
+
         # Create requirements file
         req_path = self.output_dir / f"{spec.server_id}_requirements.txt"
         with open(req_path, "w") as f:
@@ -875,7 +875,7 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             f.write("aiohttp>=3.8.0\n")
             for dep in spec.dependencies:
                 f.write(f"{dep}\n")
-        
+
         deployment_info = {
             "server_id": spec.server_id,
             "path": server_path,
@@ -883,15 +883,15 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             "deployed_at": datetime.utcnow().isoformat(),
             "status": "deployed"
         }
-        
+
         self._deployed_servers[spec.server_id] = deployment_info
-        
+
         return deployment_info
-    
+
     def get_server_config(self, spec: MCPServerSpec) -> Dict[str, Any]:
         """Get Claude Desktop configuration for the server."""
         server_path = self.output_dir / f"{spec.server_id}.py"
-        
+
         return {
             "mcpServers": {
                 spec.name.lower().replace(" ", "-"): {
@@ -901,13 +901,13 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
                 }
             }
         }
-    
+
     # ==================== QUERY METHODS ====================
-    
+
     def get_server(self, server_id: str) -> Optional[MCPServerSpec]:
         """Get server by ID."""
         return self._servers.get(server_id)
-    
+
     def list_servers(self) -> List[Dict[str, Any]]:
         """List all generated servers."""
         return [
@@ -921,7 +921,7 @@ async def get_prompt(name: str, arguments: Dict[str, str]) -> GetPromptResult:
             }
             for s in self._servers.values()
         ]
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get factory statistics."""
         return {
@@ -945,9 +945,9 @@ def get_mcp_factory() -> MCPFactory:
 async def demo():
     """Demonstrate the MCP factory."""
     factory = get_mcp_factory()
-    
+
     print("=== MCP FACTORY DEMO ===\n")
-    
+
     # Create a file management server
     print("Creating file management MCP server...")
     file_server = await factory.create_server_from_description(
@@ -955,12 +955,12 @@ async def demo():
         description="MCP server for file operations: read, write, list files",
         capabilities=["tools", "resources"]
     )
-    
+
     print(f"Created: {file_server.name} ({file_server.server_id})")
     print(f"Tools: {len(file_server.tools)}")
     for tool in file_server.tools:
         print(f"  - {tool.name}: {tool.description}")
-    
+
     # Create a database server
     print("\n\nCreating database MCP server...")
     db_server = await factory.create_server_from_description(
@@ -968,20 +968,20 @@ async def demo():
         description="MCP server for database queries and data management",
         capabilities=["tools"]
     )
-    
+
     print(f"Created: {db_server.name} ({db_server.server_id})")
     print(f"Tools: {len(db_server.tools)}")
-    
+
     # Save servers
     print("\n\nSaving servers...")
     path = await factory.save_server(file_server)
     print(f"Saved to: {path}")
-    
+
     # Get Claude config
     print("\n\nClaude Desktop configuration:")
     config = factory.get_server_config(file_server)
     print(json.dumps(config, indent=2))
-    
+
     # Stats
     print("\n=== STATS ===")
     for key, value in factory.get_stats().items():

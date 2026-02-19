@@ -103,13 +103,13 @@ class CodeSynthesizer:
     Synthesizes high-quality code from specifications.
     Uses advanced patterns and best practices automatically.
     """
-    
+
     def __init__(self):
         self.templates: Dict[CreationType, str] = {}
         self.patterns: Dict[str, str] = {}
         self.best_practices: List[str] = []
         self._load_templates()
-        
+
     def _load_templates(self):
         """Load code generation templates"""
         self.templates[CreationType.TOOL] = '''
@@ -129,33 +129,33 @@ class {class_name}Config:
 class {class_name}:
     """
     {description}
-    
+
     Capabilities:
 {capabilities_list}
-    
+
     Beats: {competitors}
     """
-    
+
     def __init__(self, config: Optional[{class_name}Config] = None):
         self.config = config or {class_name}Config()
         self._initialized = False
-        
+
     async def initialize(self):
         """Initialize the tool"""
         self._initialized = True
-        
+
     async def execute(self, {input_params}) -> Dict[str, Any]:
         """
         Execute the tool's main functionality.
-        
+
         Returns:
             Dict containing {output_description}
         """
         if not self._initialized:
             await self.initialize()
-            
+
 {execute_body}
-        
+
 {additional_methods}
 
 # Factory function
@@ -186,16 +186,16 @@ import json
 class MCP{class_name}Server:
     """
     MCP Server: {name}
-    
+
     {description}
-    
+
     Tools provided:
 {tools_list}
-    
+
     Resources provided:
 {resources_list}
     """
-    
+
     def __init__(self, host: str = "localhost", port: int = 8000):
         self.host = host
         self.port = port
@@ -203,7 +203,7 @@ class MCP{class_name}Server:
         self.resources: Dict[str, Any] = {{}}
         self._register_tools()
         self._register_resources()
-        
+
     def _register_tools(self):
         """Register all MCP tools"""
 {tool_registrations}
@@ -216,7 +216,7 @@ class MCP{class_name}Server:
         """Handle incoming MCP request"""
         method = request.get("method", "")
         params = request.get("params", {{}})
-        
+
         if method == "tools/list":
             return self._list_tools()
         elif method == "tools/call":
@@ -227,7 +227,7 @@ class MCP{class_name}Server:
             return self._read_resource(params)
         else:
             return {{"error": f"Unknown method: {{method}}"}}
-            
+
     def _list_tools(self) -> Dict[str, Any]:
         """List available tools"""
         return {{
@@ -236,17 +236,17 @@ class MCP{class_name}Server:
                 for name in self.tools.keys()
             ]
         }}
-        
+
     async def _call_tool(self, params: Dict) -> Dict[str, Any]:
         """Call a specific tool"""
         tool_name = params.get("name", "")
         tool_args = params.get("arguments", {{}})
-        
+
         if tool_name in self.tools:
             result = await self.tools[tool_name](**tool_args)
             return {{"result": result}}
         return {{"error": f"Tool not found: {{tool_name}}"}}
-        
+
     def _list_resources(self) -> Dict[str, Any]:
         """List available resources"""
         return {{
@@ -255,19 +255,19 @@ class MCP{class_name}Server:
                 for uri in self.resources.keys()
             ]
         }}
-        
+
     def _read_resource(self, params: Dict) -> Dict[str, Any]:
         """Read a specific resource"""
         uri = params.get("uri", "")
         if uri in self.resources:
             return {{"contents": self.resources[uri]}}
         return {{"error": f"Resource not found: {{uri}}"}}
-        
+
     async def start(self):
         """Start the MCP server"""
         print(f"Starting MCP Server {{self.__class__.__name__}} on {{self.host}}:{{self.port}}")
         # Server implementation here
-        
+
 {additional_methods}
 
 # Convenience function
@@ -294,22 +294,22 @@ import asyncio
 class {class_name}Skill:
     """
     Skill: {name}
-    
+
     {description}
-    
+
     This skill enables:
 {capabilities_list}
     """
-    
+
     name: str = "{name}"
     description: str = "{description}"
     difficulty: int = {difficulty}
     prerequisites: List[str] = field(default_factory=lambda: {prerequisites})
-    
+
     async def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Execute this skill"""
 {execute_body}
-        
+
     async def learn(self, examples: List[Dict]) -> float:
         """Learn and improve this skill from examples"""
         improvement = 0.0
@@ -317,20 +317,20 @@ class {class_name}Skill:
             # Learn from each example
             improvement += await self._learn_from_example(example)
         return improvement / len(examples) if examples else 0.0
-        
+
     async def _learn_from_example(self, example: Dict) -> float:
         """Learn from a single example"""
         return 0.1  # Placeholder for learning implementation
-        
+
     async def adapt(self, new_context: Dict[str, Any]):
         """Adapt skill to new context"""
         # Self-modification for new situations
         pass
-        
+
     def get_proficiency(self) -> float:
         """Get current proficiency level"""
         return 0.95  # High proficiency by default
-        
+
 {additional_methods}
 
 # Factory
@@ -340,15 +340,15 @@ def create_{snake_name}_skill() -> {class_name}Skill:
 
 __all__ = ['{class_name}Skill', 'create_{snake_name}_skill']
 '''
-        
+
     def synthesize(self, spec: CreationSpec) -> str:
         """Synthesize code from specification"""
         template = self.templates.get(spec.creation_type, self.templates[CreationType.TOOL])
-        
+
         # Generate class name
         class_name = self._to_class_name(spec.name)
         snake_name = self._to_snake_case(spec.name)
-        
+
         # Generate code sections
         code = template.format(
             docstring=self._generate_docstring(spec),
@@ -370,21 +370,21 @@ __all__ = ['{class_name}Skill', 'create_{snake_name}_skill']
             difficulty=spec.complexity.value,
             prerequisites=spec.constraints or []
         )
-        
+
         return code
-        
+
     def _to_class_name(self, name: str) -> str:
         """Convert name to PascalCase class name"""
         return "".join(word.capitalize() for word in name.replace("-", " ").replace("_", " ").split())
-        
+
     def _to_snake_case(self, name: str) -> str:
         """Convert name to snake_case"""
         return name.lower().replace(" ", "_").replace("-", "_")
-        
+
     def _generate_docstring(self, spec: CreationSpec) -> str:
         """Generate comprehensive docstring"""
         return f"{spec.name}\n\n{spec.description}\n\nPurpose: {spec.purpose}"
-        
+
     def _generate_config_fields(self, spec: CreationSpec) -> str:
         """Generate dataclass config fields"""
         fields = []
@@ -393,11 +393,11 @@ __all__ = ['{class_name}Skill', 'create_{snake_name}_skill']
             default = repr(value) if value else "None"
             fields.append(f"    {key}: {field_type} = {default}")
         return "\n".join(fields) if fields else "    pass"
-        
+
     def _format_capabilities(self, capabilities: List[str]) -> str:
         """Format capabilities as bullet list"""
         return "\n".join(f"    - {cap}" for cap in capabilities)
-        
+
     def _generate_input_params(self, inputs: Dict) -> str:
         """Generate function input parameters"""
         params = []
@@ -405,11 +405,11 @@ __all__ = ['{class_name}Skill', 'create_{snake_name}_skill']
             param_type = type(value).__name__ if value else "Any"
             params.append(f"{key}: {param_type}")
         return ", ".join(params) if params else "**kwargs"
-        
+
     def _describe_outputs(self, outputs: Dict) -> str:
         """Describe output structure"""
         return ", ".join(f"{k}: {type(v).__name__}" for k, v in outputs.items()) if outputs else "execution results"
-        
+
     def _generate_execute_body(self, spec: CreationSpec) -> str:
         """Generate the main execution body"""
         return '''        result = {
@@ -418,17 +418,17 @@ __all__ = ['{class_name}Skill', 'create_{snake_name}_skill']
             "quality": 0.99
         }
         return result'''
-        
+
     def _generate_additional_methods(self, spec: CreationSpec) -> str:
         """Generate additional helper methods"""
         return '''    async def validate(self) -> bool:
         """Validate tool state"""
         return True
-        
+
     async def optimize(self):
         """Self-optimize for better performance"""
         pass'''
-        
+
     def _generate_tool_registrations(self, spec: CreationSpec) -> str:
         """Generate MCP tool registrations"""
         registrations = []
@@ -440,7 +440,7 @@ __all__ = ['{class_name}Skill', 'create_{snake_name}_skill']
 
 class DocumentationGenerator:
     """Generates comprehensive documentation for created artifacts"""
-    
+
     def generate(self, spec: CreationSpec, code: str) -> str:
         """Generate full documentation"""
         doc = f"""# {spec.name}
@@ -494,26 +494,26 @@ This was automatically generated by Ba'el Meta-Creation Engine.
 Generated: {datetime.now().isoformat()}
 """
         return doc
-        
+
     def _format_capabilities(self, caps: List[str]) -> str:
         return "\n".join(f"- {cap}" for cap in caps)
-        
+
     def _to_class_name(self, name: str) -> str:
         return "".join(word.capitalize() for word in name.replace("-", " ").replace("_", " ").split())
-        
+
     def _to_module_name(self, name: str) -> str:
         return name.lower().replace(" ", "_").replace("-", "_")
-        
+
     def _document_inputs(self, inputs: Dict) -> str:
         if not inputs:
             return "No specific configuration required."
         return "\n".join(f"- `{k}`: {type(v).__name__}" for k, v in inputs.items())
-        
+
     def _document_outputs(self, outputs: Dict) -> str:
         if not outputs:
             return "Returns execution results as dictionary."
         return "\n".join(f"- `{k}`: {type(v).__name__}" for k, v in outputs.items())
-        
+
     def _format_competitors(self, competitors: List[str]) -> str:
         if not competitors:
             return "- All existing solutions"
@@ -522,12 +522,12 @@ Generated: {datetime.now().isoformat()}
 
 class TestGenerator:
     """Generates comprehensive tests for created artifacts"""
-    
+
     def generate(self, spec: CreationSpec, code: str) -> str:
         """Generate test suite"""
         class_name = self._to_class_name(spec.name)
         snake_name = self._to_snake_case(spec.name)
-        
+
         tests = f'''"""
 Tests for {spec.name}
 Auto-generated by Ba'el Meta-Creation Engine
@@ -539,45 +539,45 @@ from {snake_name} import {class_name}, create_{snake_name}
 
 class Test{class_name}:
     """Test suite for {class_name}"""
-    
+
     @pytest.fixture
     def instance(self):
         """Create test instance"""
         return create_{snake_name}()
-        
+
     @pytest.mark.asyncio
     async def test_initialization(self, instance):
         """Test proper initialization"""
         assert instance is not None
         await instance.initialize()
         assert instance._initialized
-        
+
     @pytest.mark.asyncio
     async def test_execution(self, instance):
         """Test main execution"""
         result = await instance.execute()
         assert result is not None
         assert result.get("success", False)
-        
+
     @pytest.mark.asyncio
     async def test_validation(self, instance):
         """Test validation"""
         is_valid = await instance.validate()
         assert is_valid
-        
+
     @pytest.mark.asyncio
     async def test_quality_threshold(self, instance):
         """Test that quality meets threshold"""
         result = await instance.execute()
         quality = result.get("quality", 0)
         assert quality >= 0.9, f"Quality {{quality}} below threshold"
-        
+
     def test_capabilities_present(self, instance):
         """Test all expected capabilities are present"""
         expected_caps = {spec.capabilities}
         # Verify capabilities are implemented
         assert hasattr(instance, 'execute')
-        
+
     @pytest.mark.asyncio
     async def test_beats_competitors(self, instance):
         """Test that we beat competitor quality"""
@@ -591,10 +591,10 @@ if __name__ == "__main__":
     pytest.main([__file__, "-v"])
 '''
         return tests
-        
+
     def _to_class_name(self, name: str) -> str:
         return "".join(word.capitalize() for word in name.replace("-", " ").replace("_", " ").split())
-        
+
     def _to_snake_case(self, name: str) -> str:
         return name.lower().replace(" ", "_").replace("-", "_")
 
@@ -603,7 +603,7 @@ class MetaCreationEngine:
     """
     THE ULTIMATE AUTO-GENESIS ENGINE
     =================================
-    
+
     This engine can create ANYTHING:
     - Tools from descriptions
     - MCP servers from capabilities
@@ -611,10 +611,10 @@ class MetaCreationEngine:
     - Agents from personas
     - Workflows from natural language
     - And then IMPROVE what it creates
-    
+
     It's self-improving - it can create better versions of itself!
     """
-    
+
     def __init__(self):
         self.code_synthesizer = CodeSynthesizer()
         self.doc_generator = DocumentationGenerator()
@@ -622,35 +622,35 @@ class MetaCreationEngine:
         self.created_artifacts: List[CreationResult] = []
         self.capability_registry: Dict[str, Any] = {}
         self.evolution_history: List[Dict] = []
-        
+
     async def create(self, spec: CreationSpec) -> CreationResult:
         """
         Create anything from a specification.
         This is the main entry point for auto-genesis.
         """
-        
+
         # Step 1: Analyze and enhance spec
         enhanced_spec = await self._enhance_specification(spec)
-        
+
         # Step 2: Generate code
         code = self.code_synthesizer.synthesize(enhanced_spec)
-        
+
         # Step 3: Generate documentation
         documentation = self.doc_generator.generate(enhanced_spec, code)
-        
+
         # Step 4: Generate tests
         tests = self.test_generator.generate(enhanced_spec, code)
-        
+
         # Step 5: Determine file path
         file_path = self._determine_file_path(enhanced_spec)
-        
+
         # Step 6: Calculate quality metrics
         quality_score = await self._calculate_quality(code)
         novelty_score = await self._calculate_novelty(enhanced_spec)
-        
+
         # Step 7: Compare to competitors
         competitor_scores = await self._compare_to_competitors(enhanced_spec, code)
-        
+
         result = CreationResult(
             spec_id=spec.id,
             creation_type=spec.creation_type,
@@ -665,16 +665,16 @@ class MetaCreationEngine:
             novelty_score=novelty_score,
             competitor_comparison=competitor_scores
         )
-        
+
         self.created_artifacts.append(result)
         return result
-        
-    async def create_from_description(self, description: str, 
+
+    async def create_from_description(self, description: str,
                                       creation_type: CreationType = CreationType.TOOL) -> CreationResult:
         """Create from natural language description"""
         spec = await self._parse_description(description, creation_type)
         return await self.create(spec)
-        
+
     async def create_mcp_from_capability(self, capability_name: str,
                                          capability_description: str,
                                          functions: List[str]) -> CreationResult:
@@ -687,13 +687,13 @@ class MetaCreationEngine:
             purpose=f"Expose {capability_name} capabilities via MCP protocol"
         )
         return await self.create(spec)
-        
+
     async def create_skill_from_examples(self, skill_name: str,
                                          examples: List[Dict]) -> CreationResult:
         """Auto-create skill by learning from examples"""
         # Analyze examples to determine capabilities
         capabilities = await self._extract_capabilities_from_examples(examples)
-        
+
         spec = CreationSpec(
             creation_type=CreationType.SKILL,
             name=skill_name,
@@ -702,8 +702,8 @@ class MetaCreationEngine:
             purpose=f"Perform {skill_name} based on learned patterns"
         )
         return await self.create(spec)
-        
-    async def create_workflow_from_natural_language(self, 
+
+    async def create_workflow_from_natural_language(self,
                                                     workflow_description: str) -> CreationResult:
         """Create complete workflow from natural language"""
         spec = CreationSpec(
@@ -714,15 +714,15 @@ class MetaCreationEngine:
             purpose="Execute automated workflow"
         )
         return await self.create(spec)
-        
+
     async def auto_enhance_existing(self, artifact_path: str) -> CreationResult:
         """Auto-enhance an existing artifact to be more powerful"""
         # Read existing code
         existing_code = await self._read_artifact(artifact_path)
-        
+
         # Analyze for enhancement opportunities
         enhancements = await self._identify_enhancements(existing_code)
-        
+
         # Create enhanced version
         spec = CreationSpec(
             name=f"Enhanced {artifact_path.split('/')[-1]}",
@@ -730,9 +730,9 @@ class MetaCreationEngine:
             capabilities=enhancements,
             enhancement_level=10.0
         )
-        
+
         return await self.create(spec)
-        
+
     async def evolve_self(self) -> Dict[str, Any]:
         """
         ULTIMATE CAPABILITY: Evolve the creation engine itself!
@@ -744,37 +744,37 @@ class MetaCreationEngine:
             "new_capabilities": [],
             "performance_gain": 0.0
         }
-        
+
         # Analyze past creations for patterns
         patterns = await self._analyze_creation_patterns()
-        
+
         # Generate new templates from patterns
         new_templates = await self._generate_new_templates(patterns)
-        
+
         # Add to our repertoire
         for template_type, template in new_templates.items():
             self.code_synthesizer.templates[template_type] = template
             evolution["improvements"].append(f"New template: {template_type}")
-            
+
         # Calculate performance gain
         evolution["performance_gain"] = 0.1 * len(new_templates)
-        
+
         self.evolution_history.append(evolution)
         return evolution
-        
+
     async def _enhance_specification(self, spec: CreationSpec) -> CreationSpec:
         """Enhance specification with additional capabilities"""
         # Add standard enhancements
         enhanced_caps = spec.capabilities + [
             "self_optimization",
-            "quality_validation", 
+            "quality_validation",
             "performance_monitoring",
             "error_recovery"
         ]
         spec.capabilities = list(set(enhanced_caps))
         return spec
-        
-    async def _parse_description(self, description: str, 
+
+    async def _parse_description(self, description: str,
                                  creation_type: CreationType) -> CreationSpec:
         """Parse natural language description into specification"""
         return CreationSpec(
@@ -784,18 +784,18 @@ class MetaCreationEngine:
             capabilities=self._extract_capabilities(description),
             purpose=description
         )
-        
+
     def _extract_name(self, description: str) -> str:
         """Extract name from description"""
         words = description.split()[:3]
         return " ".join(w.capitalize() for w in words)
-        
+
     def _extract_capabilities(self, description: str) -> List[str]:
         """Extract capabilities from description"""
         # Simplified extraction
         return ["automated_execution", "intelligent_processing", "quality_assurance"]
-        
-    async def _extract_capabilities_from_examples(self, 
+
+    async def _extract_capabilities_from_examples(self,
                                                   examples: List[Dict]) -> List[str]:
         """Extract capabilities by analyzing examples"""
         capabilities = set()
@@ -803,7 +803,7 @@ class MetaCreationEngine:
             for key in example.keys():
                 capabilities.add(f"handle_{key}")
         return list(capabilities)
-        
+
     def _determine_file_path(self, spec: CreationSpec) -> str:
         """Determine output file path"""
         base_dir = {
@@ -817,15 +817,15 @@ class MetaCreationEngine:
             CreationType.COUNCIL: "core/councils",
             CreationType.SWARM: "core/swarm",
         }.get(spec.creation_type, "core/generated")
-        
+
         filename = spec.name.lower().replace(" ", "_") + ".py"
         return f"{base_dir}/{filename}"
-        
+
     async def _calculate_quality(self, code: str) -> float:
         """Calculate code quality score"""
         # Check for key quality indicators
         score = 0.9  # Base score
-        
+
         if "async def" in code:
             score += 0.02
         if "docstring" in code or '"""' in code:
@@ -836,23 +836,23 @@ class MetaCreationEngine:
             score += 0.02
         if "__all__" in code:
             score += 0.01
-            
+
         return min(score, 0.99)
-        
+
     async def _calculate_novelty(self, spec: CreationSpec) -> float:
         """Calculate novelty score"""
         # Higher novelty for more complex creations
         return min(0.7 + (spec.complexity.value * 0.05), 0.99)
-        
-    async def _compare_to_competitors(self, spec: CreationSpec, 
+
+    async def _compare_to_competitors(self, spec: CreationSpec,
                                       code: str) -> Dict[str, float]:
         """Compare to competitor implementations"""
         competitors = spec.must_beat_competitors or [
             "AutoGPT", "AutoGen", "LangChain", "CrewAI", "Agent Zero"
         ]
-        
+
         return {comp: spec.enhancement_level for comp in competitors}
-        
+
     def _generate_integration_instructions(self, spec: CreationSpec) -> List[str]:
         """Generate integration instructions"""
         return [
@@ -862,11 +862,11 @@ class MetaCreationEngine:
             "4. Call execute() method",
             "5. Monitor quality metrics"
         ]
-        
+
     async def _read_artifact(self, path: str) -> str:
         """Read existing artifact code"""
         return ""  # Placeholder
-        
+
     async def _identify_enhancements(self, code: str) -> List[str]:
         """Identify possible enhancements"""
         return [
@@ -875,11 +875,11 @@ class MetaCreationEngine:
             "parallel_execution",
             "self_healing"
         ]
-        
+
     async def _analyze_creation_patterns(self) -> Dict[str, Any]:
         """Analyze patterns in past creations"""
         return {"pattern_count": len(self.created_artifacts)}
-        
+
     async def _generate_new_templates(self, patterns: Dict) -> Dict[str, str]:
         """Generate new code templates from patterns"""
         return {}  # Templates generated dynamically

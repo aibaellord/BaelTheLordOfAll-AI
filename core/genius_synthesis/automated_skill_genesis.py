@@ -131,7 +131,7 @@ class MCPServerBlueprint:
 
 class SkillAnalyzer:
     """Analyzes tasks to determine what skills are needed."""
-    
+
     SKILL_PATTERNS = {
         "web_scraping": [
             r"scrape", r"extract.*website", r"crawl", r"fetch.*page",
@@ -174,7 +174,7 @@ class SkillAnalyzer:
             r"security", r"password"
         ]
     }
-    
+
     COMPLEXITY_INDICATORS = {
         SkillComplexity.TRIVIAL: [r"simple", r"basic", r"quick"],
         SkillComplexity.SIMPLE: [r"easy", r"straightforward"],
@@ -184,11 +184,11 @@ class SkillAnalyzer:
         SkillComplexity.EXPERT: [r"cutting-edge", r"state-of-art"],
         SkillComplexity.TRANSCENDENT: [r"transcend", r"ultimate", r"supreme", r"beyond"]
     }
-    
+
     def analyze_task(self, task_description: str) -> Dict[str, Any]:
         """Analyze a task to determine required skills."""
         task_lower = task_description.lower()
-        
+
         # Detect skill categories
         detected_categories = []
         for category, patterns in self.SKILL_PATTERNS.items():
@@ -196,7 +196,7 @@ class SkillAnalyzer:
                 if re.search(pattern, task_lower):
                     detected_categories.append(category)
                     break
-        
+
         # Determine complexity
         complexity = SkillComplexity.MODERATE
         for level, indicators in self.COMPLEXITY_INDICATORS.items():
@@ -204,17 +204,17 @@ class SkillAnalyzer:
                 if re.search(indicator, task_lower):
                     complexity = level
                     break
-        
+
         # Determine domains
         domains = self._infer_domains(detected_categories)
-        
+
         # Generate skill suggestions
         suggestions = self._generate_skill_suggestions(
-            task_description, 
+            task_description,
             detected_categories,
             complexity
         )
-        
+
         return {
             "task": task_description,
             "detected_categories": detected_categories,
@@ -223,7 +223,7 @@ class SkillAnalyzer:
             "skill_suggestions": suggestions,
             "sacred_alignment": self._calculate_sacred_alignment(task_description)
         }
-    
+
     def _infer_domains(self, categories: List[str]) -> List[SkillDomain]:
         """Infer domains from skill categories."""
         domain_map = {
@@ -238,24 +238,24 @@ class SkillAnalyzer:
             "database": SkillDomain.DATA,
             "security": SkillDomain.SECURITY
         }
-        
+
         domains = []
         for cat in categories:
             if cat in domain_map:
                 domains.append(domain_map[cat])
-        
+
         if not domains:
             domains.append(SkillDomain.UNIVERSAL)
-        
+
         return list(set(domains))
-    
+
     def _generate_skill_suggestions(self,
                                     task: str,
                                     categories: List[str],
                                     complexity: SkillComplexity) -> List[SkillBlueprint]:
         """Generate skill blueprints based on analysis."""
         suggestions = []
-        
+
         for category in categories:
             blueprint = SkillBlueprint(
                 name=f"{category}_skill",
@@ -265,7 +265,7 @@ class SkillAnalyzer:
                 domains=self._infer_domains([category])
             )
             suggestions.append(blueprint)
-        
+
         # Add meta-skill if complex enough
         if complexity.value >= SkillComplexity.COMPLEX.value:
             meta_blueprint = SkillBlueprint(
@@ -276,9 +276,9 @@ class SkillAnalyzer:
                 domains=[SkillDomain.UNIVERSAL]
             )
             suggestions.append(meta_blueprint)
-        
+
         return suggestions
-    
+
     def _infer_skill_type(self, category: str, complexity: SkillComplexity) -> SkillType:
         """Infer the appropriate skill type."""
         if complexity.value >= SkillComplexity.EXPERT.value:
@@ -289,7 +289,7 @@ class SkillAnalyzer:
             return SkillType.TOOL
         else:
             return SkillType.FUNCTION
-    
+
     def _calculate_sacred_alignment(self, text: str) -> float:
         """Calculate sacred alignment of text."""
         text_hash = int(hashlib.md5(text.encode()).hexdigest()[:8], 16)
@@ -298,15 +298,15 @@ class SkillAnalyzer:
 
 class SkillCodeGenerator:
     """Generates code for skills based on blueprints."""
-    
+
     FUNCTION_TEMPLATE = '''
 async def {name}({params}) -> {return_type}:
     """
     {description}
-    
+
     Args:
 {args_doc}
-    
+
     Returns:
         {return_doc}
     """
@@ -324,15 +324,15 @@ from typing import Any, Dict, List, Optional
 class {class_name}Tool:
     """
     {description}
-    
+
     A complete tool implementation with schema validation.
     """
-    
+
     name: str = "{name}"
     description: str = """{description}"""
-    
+
     input_schema: Dict[str, Any] = None
-    
+
     def __post_init__(self):
         self.input_schema = {{
             "type": "object",
@@ -341,19 +341,19 @@ class {class_name}Tool:
             }},
             "required": {required_fields}
         }}
-    
+
     async def execute(self, **kwargs) -> Dict[str, Any]:
         """Execute the tool with given parameters."""
         try:
             # Validate inputs
             self._validate_inputs(kwargs)
-            
+
             # Execute main logic
 {tool_implementation}
-            
+
         except Exception as e:
             return {{"success": False, "error": str(e)}}
-    
+
     def _validate_inputs(self, inputs: Dict[str, Any]) -> None:
         """Validate inputs against schema."""
         for field in {required_fields}:
@@ -378,22 +378,22 @@ from typing import Any, Dict, List, Optional
 # MCP Protocol Implementation
 class MCPServer:
     """MCP Server for {name}."""
-    
+
     def __init__(self):
         self.name = "{name}"
         self.version = "1.0.0"
         self.tools = {{}}
         self._initialize_tools()
-    
+
     def _initialize_tools(self):
         """Initialize all tools."""
 {tool_initializations}
-    
+
     async def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Handle an incoming MCP request."""
         method = request.get("method", "")
         params = request.get("params", {{}})
-        
+
         if method == "initialize":
             return self._handle_initialize()
         elif method == "tools/list":
@@ -406,7 +406,7 @@ class MCPServer:
             return self._handle_prompts_list()
         else:
             return {{"error": {{"code": -32601, "message": f"Method not found: {{method}}"}}}}
-    
+
     def _handle_initialize(self) -> Dict[str, Any]:
         """Handle initialize request."""
         return {{
@@ -423,7 +423,7 @@ class MCPServer:
                 }}
             }}
         }}
-    
+
     def _handle_tools_list(self) -> Dict[str, Any]:
         """List available tools."""
         tools = []
@@ -434,25 +434,25 @@ class MCPServer:
                 "inputSchema": tool.get("input_schema", {{}})
             }})
         return {{"result": {{"tools": tools}}}}
-    
+
     async def _handle_tools_call(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute a tool."""
         tool_name = params.get("name", "")
         arguments = params.get("arguments", {{}})
-        
+
         if tool_name not in self.tools:
             return {{"error": {{"code": -32602, "message": f"Unknown tool: {{tool_name}}"}}}}
-        
+
         try:
             result = await self.tools[tool_name]["handler"](arguments)
             return {{"result": {{"content": [{{"type": "text", "text": json.dumps(result)}}]}}}}
         except Exception as e:
             return {{"error": {{"code": -32000, "message": str(e)}}}}
-    
+
     def _handle_resources_list(self) -> Dict[str, Any]:
         """List available resources."""
         return {{"result": {{"resources": {resources}}}}}
-    
+
     def _handle_prompts_list(self) -> Dict[str, Any]:
         """List available prompts."""
         return {{"result": {{"prompts": {prompts}}}}}
@@ -461,21 +461,21 @@ class MCPServer:
 async def main():
     """Run the MCP server."""
     server = MCPServer()
-    
+
     # Read from stdin, write to stdout (stdio transport)
     while True:
         try:
             line = sys.stdin.readline()
             if not line:
                 break
-            
+
             request = json.loads(line)
             response = await server.handle_request(request)
             response["jsonrpc"] = "2.0"
             response["id"] = request.get("id")
-            
+
             print(json.dumps(response), flush=True)
-            
+
         except json.JSONDecodeError:
             continue
         except Exception as e:
@@ -499,7 +499,7 @@ if __name__ == "__main__":
             param_type = inp.get("type", "Any")
             params.append(f"{param_name}: {param_type}")
             args_doc.append(f"        {param_name}: {inp.get('description', 'Parameter')}")
-        
+
         # Generate return type
         if blueprint.outputs:
             return_type = blueprint.outputs[0].get("type", "Dict[str, Any]")
@@ -507,10 +507,10 @@ if __name__ == "__main__":
         else:
             return_type = "Dict[str, Any]"
             return_doc = "Result dictionary"
-        
+
         # Generate implementation
         implementation = self._generate_implementation(blueprint)
-        
+
         return self.FUNCTION_TEMPLATE.format(
             name=self._sanitize_name(blueprint.name),
             params=", ".join(params) if params else "",
@@ -520,11 +520,11 @@ if __name__ == "__main__":
             return_doc=return_doc,
             implementation=implementation
         )
-    
+
     def generate_tool(self, blueprint: SkillBlueprint) -> str:
         """Generate a tool from blueprint."""
         class_name = self._to_class_name(blueprint.name)
-        
+
         # Generate schema properties
         schema_props = []
         required = []
@@ -534,10 +534,10 @@ if __name__ == "__main__":
             schema_props.append(prop)
             if inp.get("required", True):
                 required.append(name)
-        
+
         # Generate implementation
         impl = self._generate_tool_implementation(blueprint)
-        
+
         return self.TOOL_TEMPLATE.format(
             class_name=class_name,
             name=blueprint.name,
@@ -546,7 +546,7 @@ if __name__ == "__main__":
             required_fields=json.dumps(required),
             tool_implementation=impl
         )
-    
+
     def generate_mcp_server(self, blueprint: MCPServerBlueprint) -> str:
         """Generate a complete MCP server from blueprint."""
         # Generate tool initializations
@@ -559,7 +559,7 @@ if __name__ == "__main__":
             "handler": self._handle_{tool_name}
         }}'''
             tool_inits.append(tool_init)
-        
+
         return self.MCP_SERVER_TEMPLATE.format(
             name=blueprint.name,
             description=blueprint.description,
@@ -567,12 +567,12 @@ if __name__ == "__main__":
             resources=json.dumps(blueprint.resources),
             prompts=json.dumps(blueprint.prompts)
         )
-    
+
     def _generate_implementation(self, blueprint: SkillBlueprint) -> str:
         """Generate implementation code based on blueprint."""
         # This would ideally use an LLM for complex implementations
         # For now, generate a structured placeholder
-        
+
         impl_lines = [
             "        # Auto-generated implementation",
             "        result = {",
@@ -586,9 +586,9 @@ if __name__ == "__main__":
             "",
             "        return result"
         ]
-        
+
         return "\n".join(impl_lines)
-    
+
     def _generate_tool_implementation(self, blueprint: SkillBlueprint) -> str:
         """Generate tool implementation."""
         impl_lines = [
@@ -605,14 +605,14 @@ if __name__ == "__main__":
             "",
             "            return result"
         ]
-        
+
         return "\n".join(impl_lines)
-    
+
     def _build_input_schema(self, inputs: List[Dict]) -> Dict[str, Any]:
         """Build JSON schema from inputs."""
         properties = {}
         required = []
-        
+
         for inp in inputs:
             name = inp.get("name", "param")
             properties[name] = {
@@ -621,20 +621,20 @@ if __name__ == "__main__":
             }
             if inp.get("required", True):
                 required.append(name)
-        
+
         return {
             "type": "object",
             "properties": properties,
             "required": required
         }
-    
+
     def _sanitize_name(self, name: str) -> str:
         """Sanitize name for use as identifier."""
         sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', name)
         if sanitized[0].isdigit():
             sanitized = '_' + sanitized
         return sanitized.lower()
-    
+
     def _to_class_name(self, name: str) -> str:
         """Convert name to class name format."""
         words = re.split(r'[_\s-]', name)
@@ -643,11 +643,11 @@ if __name__ == "__main__":
 
 class SkillEvolutionEngine:
     """Evolves skills based on usage and feedback."""
-    
+
     def __init__(self):
         self.evolution_history: List[Dict] = []
         self.fitness_threshold = 0.7
-    
+
     def evaluate_skill(self, skill: GeneratedSkill) -> Dict[str, float]:
         """Evaluate a skill's fitness."""
         metrics = {
@@ -657,7 +657,7 @@ class SkillEvolutionEngine:
             "sacred_alignment": skill.blueprint.sacred_alignment,
             "overall_fitness": 0.0
         }
-        
+
         # Calculate overall fitness with golden ratio weighting
         weights = [PHI, 1.0, 1.0 / PHI, 0.5]
         values = [
@@ -666,22 +666,22 @@ class SkillEvolutionEngine:
             metrics["complexity_fit"],
             metrics["sacred_alignment"]
         ]
-        
+
         metrics["overall_fitness"] = sum(w * v for w, v in zip(weights, values)) / sum(weights)
-        
+
         return metrics
-    
+
     def evolve_skill(self, skill: GeneratedSkill) -> GeneratedSkill:
         """Evolve a skill to improve its fitness."""
         fitness = self.evaluate_skill(skill)
-        
+
         if fitness["overall_fitness"] >= self.fitness_threshold:
             # Skill is fit, minor optimization
             evolved = self._optimize_skill(skill)
         else:
             # Skill needs significant improvement
             evolved = self._major_evolution(skill)
-        
+
         # Record evolution
         self.evolution_history.append({
             "skill_id": skill.blueprint.id,
@@ -689,14 +689,14 @@ class SkillEvolutionEngine:
             "evolution_type": "optimize" if fitness["overall_fitness"] >= self.fitness_threshold else "major",
             "timestamp": time.time()
         })
-        
+
         return evolved
-    
+
     def _evaluate_complexity_fit(self, skill: GeneratedSkill) -> float:
         """Evaluate if skill complexity matches its use cases."""
         # Simulated complexity fit
         return 0.7 + (skill.blueprint.complexity.value / 10) * 0.2
-    
+
     def _optimize_skill(self, skill: GeneratedSkill) -> GeneratedSkill:
         """Optimize a well-performing skill."""
         # Create optimized copy
@@ -712,15 +712,15 @@ class SkillEvolutionEngine:
                 {"type": "optimization", "timestamp": time.time()}
             ]
         )
-        
+
         # Improve sacred alignment
         optimized.blueprint.sacred_alignment = min(
             skill.blueprint.sacred_alignment + 0.1,
             1.0
         )
-        
+
         return optimized
-    
+
     def _major_evolution(self, skill: GeneratedSkill) -> GeneratedSkill:
         """Perform major evolution on underperforming skill."""
         # Create evolved copy
@@ -748,13 +748,13 @@ class SkillEvolutionEngine:
                 }
             ]
         )
-        
+
         return evolved
 
 
 class SkillMarketplace:
     """Discovers and integrates community skills."""
-    
+
     def __init__(self):
         self.known_sources = [
             "https://github.com/topics/mcp-server",
@@ -763,7 +763,7 @@ class SkillMarketplace:
         ]
         self.discovered_skills: List[Dict] = []
         self.integrated_skills: Dict[str, GeneratedSkill] = {}
-    
+
     async def discover_skills(self, category: Optional[str] = None) -> List[Dict]:
         """Discover available skills from community sources."""
         # Simulated discovery - in real implementation would scrape/API
@@ -790,14 +790,14 @@ class SkillMarketplace:
                 "popularity": 0.92
             }
         ]
-        
+
         if category:
             discoveries = [d for d in discoveries if category in d["name"]]
-        
+
         self.discovered_skills.extend(discoveries)
         return discoveries
-    
-    async def analyze_and_integrate(self, 
+
+    async def analyze_and_integrate(self,
                                     skill_info: Dict,
                                     enhance: bool = True) -> GeneratedSkill:
         """Analyze a community skill and integrate it."""
@@ -808,47 +808,47 @@ class SkillMarketplace:
             skill_type=skill_info.get("skill_type", SkillType.TOOL),
             complexity=SkillComplexity.MODERATE
         )
-        
+
         # Generate skill
         generator = SkillCodeGenerator()
         code = generator.generate_tool(blueprint)
-        
+
         skill = GeneratedSkill(
             blueprint=blueprint,
             code=code,
             performance_metrics={"source_popularity": skill_info.get("popularity", 0.5)}
         )
-        
+
         # Enhance if requested
         if enhance:
             skill = await self._enhance_skill(skill)
-        
+
         self.integrated_skills[skill_info["name"]] = skill
         return skill
-    
+
     async def _enhance_skill(self, skill: GeneratedSkill) -> GeneratedSkill:
         """Enhance an integrated skill with Ba'el capabilities."""
         # Add sacred geometry optimization
         skill.blueprint.sacred_alignment = 0.8
-        
+
         # Increase complexity for Ba'el integration
         skill.blueprint.complexity = SkillComplexity(
             min(skill.blueprint.complexity.value + 1, 7)
         )
-        
+
         # Add evolution tracking
         skill.evolution_history.append({
             "type": "bael_enhancement",
             "timestamp": time.time()
         })
-        
+
         return skill
 
 
 class AutomatedSkillGenesis:
     """
     The ultimate skill creation factory.
-    
+
     This system can:
     1. Analyze any task to determine needed skills
     2. Generate complete skill implementations
@@ -856,34 +856,34 @@ class AutomatedSkillGenesis:
     4. Evolve skills based on usage
     5. Integrate community skills
     6. Create meta-skills that create other skills
-    
+
     NO OTHER FRAMEWORK CAN DO THIS.
     """
-    
+
     def __init__(self, output_dir: Optional[Path] = None):
         self.analyzer = SkillAnalyzer()
         self.generator = SkillCodeGenerator()
         self.evolution_engine = SkillEvolutionEngine()
         self.marketplace = SkillMarketplace()
-        
+
         self.output_dir = output_dir or Path("generated_skills")
         self.skills_registry: Dict[str, GeneratedSkill] = {}
         self.mcp_servers: Dict[str, str] = {}
-        
+
         self.genesis_count = 0
         self.sacred_alignment = 0.0
-    
-    async def genesis_from_task(self, 
+
+    async def genesis_from_task(self,
                                 task_description: str,
                                 auto_create: bool = True) -> Dict[str, Any]:
         """
         Analyze a task and create all needed skills.
-        
+
         This is the primary entry point for automatic skill creation.
         """
         # Analyze the task
         analysis = self.analyzer.analyze_task(task_description)
-        
+
         results = {
             "task": task_description,
             "analysis": analysis,
@@ -891,10 +891,10 @@ class AutomatedSkillGenesis:
             "mcp_servers": [],
             "sacred_alignment": 0.0
         }
-        
+
         if not auto_create:
             return results
-        
+
         # Create skills from suggestions
         for blueprint in analysis["skill_suggestions"]:
             skill = await self.create_skill(blueprint)
@@ -903,7 +903,7 @@ class AutomatedSkillGenesis:
                 "type": skill.blueprint.skill_type.value,
                 "complexity": skill.blueprint.complexity.value
             })
-        
+
         # Create MCP server if complex enough
         if analysis["complexity"].value >= SkillComplexity.COMPLEX.value:
             mcp_name = f"mcp_{task_description[:20].replace(' ', '_').lower()}"
@@ -913,16 +913,16 @@ class AutomatedSkillGenesis:
                 skills=[s.blueprint for s in self.skills_registry.values()][-5:]
             )
             results["mcp_servers"].append(mcp_name)
-        
+
         # Calculate sacred alignment
         alignments = [s.blueprint.sacred_alignment for s in self.skills_registry.values()]
         results["sacred_alignment"] = sum(alignments) / len(alignments) if alignments else 0.0
-        
+
         self.genesis_count += 1
-        
+
         return results
-    
-    async def create_skill(self, 
+
+    async def create_skill(self,
                           blueprint: SkillBlueprint,
                           save: bool = True) -> GeneratedSkill:
         """Create a skill from a blueprint."""
@@ -933,23 +933,23 @@ class AutomatedSkillGenesis:
             code = self.generator.generate_tool(blueprint)
         else:
             code = self.generator.generate_function(blueprint)
-        
+
         skill = GeneratedSkill(
             blueprint=blueprint,
             code=code,
             test_cases=self._generate_test_cases(blueprint),
             performance_metrics={}
         )
-        
+
         # Register skill
         self.skills_registry[blueprint.name] = skill
-        
+
         # Save if requested
         if save:
             await self._save_skill(skill)
-        
+
         return skill
-    
+
     async def create_mcp_server(self,
                                name: str,
                                description: str,
@@ -963,18 +963,18 @@ class AutomatedSkillGenesis:
             resources=[],
             prompts=[]
         )
-        
+
         code = self.generator.generate_mcp_server(blueprint)
-        
+
         # Register server
         self.mcp_servers[name] = code
-        
+
         # Save if requested
         if save:
             await self._save_mcp_server(name, code)
-        
+
         return code
-    
+
     async def create_meta_skill(self,
                                domain: SkillDomain,
                                capabilities: List[str]) -> GeneratedSkill:
@@ -987,9 +987,9 @@ class AutomatedSkillGenesis:
             domains=[domain, SkillDomain.UNIVERSAL],
             sacred_alignment=PHI - 1  # Golden ratio alignment
         )
-        
+
         return await self.create_skill(blueprint)
-    
+
     async def evolve_all_skills(self) -> Dict[str, Any]:
         """Evolve all registered skills."""
         results = {
@@ -997,10 +997,10 @@ class AutomatedSkillGenesis:
             "optimized": 0,
             "unchanged": 0
         }
-        
+
         for name, skill in self.skills_registry.items():
             fitness = self.evolution_engine.evaluate_skill(skill)
-            
+
             if fitness["overall_fitness"] < 0.5:
                 evolved = self.evolution_engine.evolve_skill(skill)
                 self.skills_registry[name] = evolved
@@ -1011,60 +1011,60 @@ class AutomatedSkillGenesis:
                 results["optimized"] += 1
             else:
                 results["unchanged"] += 1
-        
+
         return results
-    
-    async def discover_and_integrate(self, 
+
+    async def discover_and_integrate(self,
                                      category: Optional[str] = None) -> List[GeneratedSkill]:
         """Discover community skills and integrate them."""
         discoveries = await self.marketplace.discover_skills(category)
-        
+
         integrated = []
         for discovery in discoveries:
             skill = await self.marketplace.analyze_and_integrate(discovery)
             self.skills_registry[skill.blueprint.name] = skill
             integrated.append(skill)
-        
+
         return integrated
-    
+
     def _generate_test_cases(self, blueprint: SkillBlueprint) -> List[Dict]:
         """Generate test cases for a skill."""
         test_cases = []
-        
+
         # Generate Fibonacci number of test cases
         num_tests = FIBONACCI[min(blueprint.complexity.value, len(FIBONACCI) - 1)]
-        
+
         for i in range(num_tests):
             test_case = {
                 "name": f"test_{blueprint.name}_{i+1}",
-                "inputs": {inp.get("name", f"param{j}"): f"test_value_{j}" 
+                "inputs": {inp.get("name", f"param{j}"): f"test_value_{j}"
                           for j, inp in enumerate(blueprint.inputs)},
                 "expected_success": True
             }
             test_cases.append(test_case)
-        
+
         return test_cases
-    
+
     async def _save_skill(self, skill: GeneratedSkill):
         """Save a skill to disk."""
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         filename = f"{skill.blueprint.name}.py"
         filepath = self.output_dir / filename
-        
+
         with open(filepath, "w") as f:
             f.write(skill.code)
-    
+
     async def _save_mcp_server(self, name: str, code: str):
         """Save an MCP server to disk."""
         mcp_dir = self.output_dir / "mcp_servers"
         mcp_dir.mkdir(parents=True, exist_ok=True)
-        
+
         filepath = mcp_dir / f"{name}.py"
-        
+
         with open(filepath, "w") as f:
             f.write(code)
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Get genesis system status."""
         return {
@@ -1090,27 +1090,27 @@ async def create_skill_genesis(output_dir: Optional[str] = None) -> AutomatedSki
 async def demonstrate_skill_genesis():
     """Demonstrate the skill genesis capabilities."""
     genesis = await create_skill_genesis("./demo_skills")
-    
+
     print("=" * 80)
     print("AUTOMATED SKILL GENESIS DEMONSTRATION")
     print("=" * 80)
-    
+
     # Analyze and create skills for a complex task
     task = "Build a web scraping system that analyzes competitor pricing, stores data in a database, and sends alerts when prices change"
-    
+
     print(f"\nTask: {task}\n")
-    
+
     result = await genesis.genesis_from_task(task)
-    
+
     print(f"Analysis Complexity: {result['analysis']['complexity'].name}")
     print(f"Detected Categories: {result['analysis']['detected_categories']}")
     print(f"\nSkills Created:")
     for skill in result["created_skills"]:
         print(f"  - {skill['name']} ({skill['type']}, complexity: {skill['complexity']})")
-    
+
     print(f"\nMCP Servers Created: {result['mcp_servers']}")
     print(f"Sacred Alignment: {result['sacred_alignment']:.4f}")
-    
+
     print(f"\nSystem Status: {genesis.get_status()}")
 
 

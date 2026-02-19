@@ -86,37 +86,37 @@ class Capability(Enum):
     KNOWLEDGE_SYNTHESIS = "knowledge_synthesis"
     LEARNING = "learning"
     REASONING = "reasoning"
-    
+
     # Analysis
     DATA_ANALYSIS = "data_analysis"
     PATTERN_RECOGNITION = "pattern_recognition"
     PREDICTION = "prediction"
     SIMULATION = "simulation"
-    
+
     # Action
     TASK_EXECUTION = "task_execution"
     DECISION_MAKING = "decision_making"
     PLANNING = "planning"
     OPTIMIZATION = "optimization"
-    
+
     # Communication
     NLP = "nlp"
     DIALOG = "dialog"
     TRANSLATION = "translation"
     CONTENT_GENERATION = "content_generation"
-    
+
     # Power
     INFLUENCE = "influence"
     MANIPULATION = "manipulation"
     RESOURCE_CONTROL = "resource_control"
     STRATEGY = "strategy"
-    
+
     # Reality
     PHYSICAL_MODELING = "physical_modeling"
     FREQUENCY_CONTROL = "frequency_control"
     MOLECULAR_ENGINEERING = "molecular_engineering"
     ENERGY_MANIPULATION = "energy_manipulation"
-    
+
     # Meta
     SELF_IMPROVEMENT = "self_improvement"
     MONITORING = "monitoring"
@@ -143,7 +143,7 @@ class SystemRecord:
     key_classes: List[str]
     key_functions: List[str]
     metrics: Dict[str, Any]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -177,7 +177,7 @@ class SystemRelationship:
 class MasterSystemRegistry:
     """
     Master registry of all Ba'el systems.
-    
+
     Features:
     - Complete system catalog
     - Health monitoring
@@ -185,7 +185,7 @@ class MasterSystemRegistry:
     - Evolution tracking
     - Gap analysis
     """
-    
+
     def __init__(self, base_path: str = "/Volumes/SSD320/BaelTheLordOfAll-AI"):
         self.base_path = Path(base_path)
         self.systems: Dict[str, SystemRecord] = {}
@@ -193,16 +193,16 @@ class MasterSystemRegistry:
         self.capability_coverage: Dict[Capability, List[str]] = {
             cap: [] for cap in Capability
         }
-        
+
         # Statistics
         self.total_lines_of_code = 0
         self.total_systems = 0
         self.category_counts: Dict[SystemCategory, int] = {}
-        
+
         self._scan_and_register_systems()
-        
+
         logger.info(f"MasterSystemRegistry initialized - {self.total_systems} systems tracked")
-    
+
     def _scan_and_register_systems(self):
         """Scan filesystem and register all systems."""
         # Known systems from prior work
@@ -218,7 +218,7 @@ class MasterSystemRegistry:
              SystemCategory.MOLECULAR, [Capability.MOLECULAR_ENGINEERING, Capability.PHYSICAL_MODELING]),
             ("core/power/power_maximization_engine.py", "Power Maximization Engine",
              SystemCategory.POWER, [Capability.INFLUENCE, Capability.RESOURCE_CONTROL, Capability.STRATEGY]),
-            
+
             # Prior session systems
             ("core/agents/pressure_chamber.py", "Agent Pressure Chamber",
              SystemCategory.EVOLUTION, [Capability.SELF_IMPROVEMENT, Capability.OPTIMIZATION]),
@@ -236,7 +236,7 @@ class MasterSystemRegistry:
              SystemCategory.ORCHESTRATION, [Capability.TASK_EXECUTION, Capability.ORCHESTRATION]),
             ("core/communication/bael_communication_hub.py", "Ba'el Communication Hub",
              SystemCategory.COMMUNICATION, [Capability.DIALOG, Capability.NLP]),
-            
+
             # Creative and strategic systems
             ("core/creativity/creative_genius_engine.py", "Creative Genius Engine",
              SystemCategory.CREATIVE, [Capability.CONTENT_GENERATION, Capability.KNOWLEDGE_SYNTHESIS]),
@@ -252,7 +252,7 @@ class MasterSystemRegistry:
              SystemCategory.CORE, [Capability.MONITORING, Capability.ORCHESTRATION]),
             ("core/integration/master_integration_hub.py", "Master Integration Hub",
              SystemCategory.INTEGRATION, [Capability.ORCHESTRATION]),
-            
+
             # Memory and brain systems
             ("core/brain/__init__.py", "Brain Core",
              SystemCategory.CORE, [Capability.REASONING, Capability.DECISION_MAKING]),
@@ -262,44 +262,44 @@ class MasterSystemRegistry:
              SystemCategory.KNOWLEDGE, [Capability.KNOWLEDGE_STORAGE, Capability.REASONING]),
             ("memory/working.py", "Working Memory",
              SystemCategory.KNOWLEDGE, [Capability.KNOWLEDGE_STORAGE]),
-            
+
             # Analytics and monitoring
             ("core/analytics/analytics_engine.py", "Analytics Engine",
              SystemCategory.ANALYTICS, [Capability.DATA_ANALYSIS, Capability.PATTERN_RECOGNITION]),
             ("core/anomaly/anomaly_detector.py", "Anomaly Detector",
              SystemCategory.ANALYTICS, [Capability.PATTERN_RECOGNITION, Capability.MONITORING]),
-            
+
             # Learning systems
             ("core/activelearn/active_learner.py", "Active Learner",
              SystemCategory.EVOLUTION, [Capability.LEARNING, Capability.SELF_IMPROVEMENT]),
             ("core/adaptation/adaptation_engine.py", "Adaptation Engine",
              SystemCategory.EVOLUTION, [Capability.LEARNING, Capability.SELF_IMPROVEMENT]),
-            
+
             # Reasoning systems
             ("core/reasoning/reasoning_engine.py", "Reasoning Engine",
              SystemCategory.INTELLIGENCE, [Capability.REASONING, Capability.DECISION_MAKING]),
             ("core/causal/causal_engine.py", "Causal Reasoning Engine",
              SystemCategory.INTELLIGENCE, [Capability.REASONING, Capability.PREDICTION]),
-            
+
             # Planning and goals
             ("core/goal/goal_manager.py", "Goal Manager",
              SystemCategory.STRATEGY, [Capability.PLANNING, Capability.DECISION_MAKING]),
             ("core/decision/decision_engine.py", "Decision Engine",
              SystemCategory.STRATEGY, [Capability.DECISION_MAKING, Capability.OPTIMIZATION]),
-            
+
             # Communication
             ("core/dialog/dialog_manager.py", "Dialog Manager",
              SystemCategory.COMMUNICATION, [Capability.DIALOG, Capability.NLP]),
             ("core/generation/generation_engine.py", "Content Generation Engine",
              SystemCategory.CREATIVE, [Capability.CONTENT_GENERATION, Capability.NLP]),
-            
+
             # Security and survival
             ("core/crypto/crypto_engine.py", "Cryptography Engine",
              SystemCategory.SURVIVAL, [Capability.RESOURCE_CONTROL]),
             ("core/failover/failover_manager.py", "Failover Manager",
              SystemCategory.SURVIVAL, [Capability.MONITORING, Capability.SELF_IMPROVEMENT]),
         ]
-        
+
         for path, name, category, capabilities in known_systems:
             full_path = self.base_path / path
             self._register_system(
@@ -308,7 +308,7 @@ class MasterSystemRegistry:
                 category=category,
                 capabilities=capabilities
             )
-    
+
     def _register_system(
         self,
         path: str,
@@ -318,10 +318,10 @@ class MasterSystemRegistry:
     ):
         """Register a system."""
         system_id = hashlib.md5(path.encode()).hexdigest()[:12]
-        
+
         # Estimate lines of code
         loc = self._estimate_loc(path)
-        
+
         record = SystemRecord(
             id=system_id,
             name=name,
@@ -341,20 +341,20 @@ class MasterSystemRegistry:
             key_functions=[],
             metrics={}
         )
-        
+
         self.systems[system_id] = record
         self.total_systems += 1
         self.total_lines_of_code += loc
-        
+
         # Update category counts
         if category not in self.category_counts:
             self.category_counts[category] = 0
         self.category_counts[category] += 1
-        
+
         # Update capability coverage
         for cap in capabilities:
             self.capability_coverage[cap].append(system_id)
-    
+
     def _estimate_loc(self, path: str) -> int:
         """Estimate lines of code for a file."""
         try:
@@ -365,24 +365,24 @@ class MasterSystemRegistry:
             pass
         # Default estimate based on typical system size
         return 500
-    
+
     # -------------------------------------------------------------------------
     # QUERY METHODS
     # -------------------------------------------------------------------------
-    
+
     def get_system(self, system_id: str) -> Optional[SystemRecord]:
         """Get system by ID."""
         return self.systems.get(system_id)
-    
+
     def get_by_category(self, category: SystemCategory) -> List[SystemRecord]:
         """Get all systems in a category."""
         return [s for s in self.systems.values() if s.category == category]
-    
+
     def get_by_capability(self, capability: Capability) -> List[SystemRecord]:
         """Get all systems with a capability."""
         system_ids = self.capability_coverage.get(capability, [])
         return [self.systems[sid] for sid in system_ids if sid in self.systems]
-    
+
     def search_systems(self, query: str) -> List[SystemRecord]:
         """Search systems by name or description."""
         query_lower = query.lower()
@@ -390,15 +390,15 @@ class MasterSystemRegistry:
             s for s in self.systems.values()
             if query_lower in s.name.lower() or query_lower in s.description.lower()
         ]
-    
+
     # -------------------------------------------------------------------------
     # ANALYSIS METHODS
     # -------------------------------------------------------------------------
-    
+
     def identify_capability_gaps(self) -> List[CapabilityGap]:
         """Identify missing or weak capabilities."""
         gaps = []
-        
+
         for cap in Capability:
             coverage = len(self.capability_coverage.get(cap, []))
             if coverage == 0:
@@ -415,9 +415,9 @@ class MasterSystemRegistry:
                     suggested_systems=[f"Additional {cap.value} system recommended"],
                     estimated_effort=50
                 ))
-        
+
         return sorted(gaps, key=lambda g: g.importance, reverse=True)
-    
+
     def get_system_health(self) -> Dict[str, Any]:
         """Get overall system health."""
         status_counts = {}
@@ -426,17 +426,17 @@ class MasterSystemRegistry:
             if status not in status_counts:
                 status_counts[status] = 0
             status_counts[status] += 1
-        
+
         active_count = status_counts.get("active", 0)
         health_score = active_count / max(1, self.total_systems)
-        
+
         return {
             "health_score": health_score,
             "status_breakdown": status_counts,
             "total_systems": self.total_systems,
             "total_loc": self.total_lines_of_code
         }
-    
+
     def get_capability_coverage_report(self) -> Dict[str, Any]:
         """Get capability coverage report."""
         coverage = {}
@@ -447,17 +447,17 @@ class MasterSystemRegistry:
                 "covered": len(systems) > 0,
                 "redundancy": len(systems) > 1
             }
-        
+
         total_caps = len(Capability)
         covered_caps = sum(1 for c in coverage.values() if c["covered"])
-        
+
         return {
             "total_capabilities": total_caps,
             "covered_capabilities": covered_caps,
             "coverage_percentage": covered_caps / total_caps * 100,
             "details": coverage
         }
-    
+
     def get_evolution_status(self) -> Dict[str, Any]:
         """Get evolution and growth status."""
         return {
@@ -474,18 +474,18 @@ class MasterSystemRegistry:
             "growth_trajectory": "exponential",
             "estimated_completion": "ongoing_evolution"
         }
-    
+
     # -------------------------------------------------------------------------
     # STATISTICS
     # -------------------------------------------------------------------------
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get comprehensive registry statistics."""
         health = self.get_system_health()
         coverage = self.get_capability_coverage_report()
         evolution = self.get_evolution_status()
         gaps = self.identify_capability_gaps()
-        
+
         return {
             "overview": {
                 "total_systems": self.total_systems,
@@ -497,11 +497,11 @@ class MasterSystemRegistry:
             "capability_gaps": len(gaps),
             "critical_gaps": len([g for g in gaps if g.importance > 0.9])
         }
-    
+
     def generate_report(self) -> str:
         """Generate comprehensive text report."""
         stats = self.get_stats()
-        
+
         report = []
         report.append("=" * 60)
         report.append("BA'EL MASTER SYSTEM REGISTRY REPORT")
@@ -525,7 +525,7 @@ class MasterSystemRegistry:
         report.append(f"  Critical Gaps: {stats['critical_gaps']}")
         report.append("")
         report.append("=" * 60)
-        
+
         return "\n".join(report)
 
 
@@ -553,9 +553,9 @@ async def demo():
     print("=" * 60)
     print("📋 MASTER SYSTEM REGISTRY 📋")
     print("=" * 60)
-    
+
     registry = get_system_registry()
-    
+
     # Stats
     print("\n--- Registry Statistics ---")
     stats = registry.get_stats()
@@ -563,32 +563,32 @@ async def demo():
     print(f"Total Lines of Code: {stats['overview']['total_lines_of_code']:,}")
     print(f"Health Score: {stats['overview']['health_score']:.1%}")
     print(f"Capability Coverage: {stats['overview']['capability_coverage']:.1f}%")
-    
+
     # By category
     print("\n--- Systems by Category ---")
     for cat, count in sorted(stats['by_category'].items(), key=lambda x: -x[1])[:5]:
         print(f"  {cat.value}: {count}")
-    
+
     # Capability coverage
     print("\n--- Capability Coverage ---")
     coverage = registry.get_capability_coverage_report()
     for cap_name, info in list(coverage['details'].items())[:5]:
         status = "✅" if info['covered'] else "❌"
         print(f"  {status} {cap_name}: {info['count']} systems")
-    
+
     # Gaps
     print("\n--- Capability Gaps ---")
     gaps = registry.identify_capability_gaps()
     for gap in gaps[:3]:
         print(f"  ⚠️ {gap.capability.value} (importance: {gap.importance:.0%})")
-    
+
     # Sample systems
     print("\n--- Sample Systems ---")
     for system in list(registry.systems.values())[:5]:
         print(f"  📦 {system.name}")
         print(f"      Category: {system.category.value}")
         print(f"      LOC: {system.lines_of_code}")
-    
+
     print("\n" + "=" * 60)
     print("📋 COMPLETE SYSTEM OVERSIGHT ACTIVE 📋")
 

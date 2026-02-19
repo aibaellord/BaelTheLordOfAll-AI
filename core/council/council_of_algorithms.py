@@ -99,20 +99,20 @@ class ProposedSolution:
     paradigm: AlgorithmicParadigm
     complexity_time: ComplexityClass
     complexity_space: ComplexityClass
-    
+
     # Implementation
     pseudocode: str = ""
     key_insight: str = ""
-    
+
     # Quality
     correctness_proof: str = ""
     confidence: float = 0.0
     optimality: float = 0.0  # How close to optimal
-    
+
     # Trade-offs
     pros: List[str] = field(default_factory=list)
     cons: List[str] = field(default_factory=list)
-    
+
     # Author
     proposed_by: str = ""
 
@@ -122,16 +122,16 @@ class AlgorithmicProblem:
     problem_id: str
     description: str
     problem_type: ProblemType
-    
+
     # Constraints
     input_constraints: Dict[str, Any] = field(default_factory=dict)
     output_requirements: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Known information
     known_lower_bound: Optional[ComplexityClass] = None
     known_upper_bound: Optional[ComplexityClass] = None
     similar_problems: List[str] = field(default_factory=list)
-    
+
     # Analysis results
     insights: List[AlgorithmicInsight] = field(default_factory=list)
     solutions: List[ProposedSolution] = field(default_factory=list)
@@ -143,22 +143,22 @@ class AlgorithmicProblem:
 
 class CouncilMember(ABC):
     """Base class for council members."""
-    
+
     def __init__(self, name: str, specialty: str):
         self.name = name
         self.specialty = specialty
         self.contribution_count = 0
-        
+
     @abstractmethod
     async def analyze(self, problem: AlgorithmicProblem) -> List[AlgorithmicInsight]:
         """Analyze the problem and provide insights."""
         pass
-        
+
     @abstractmethod
     async def propose_solution(self, problem: AlgorithmicProblem) -> Optional[ProposedSolution]:
         """Propose a solution to the problem."""
         pass
-        
+
     @abstractmethod
     async def critique(self, solution: ProposedSolution) -> Dict[str, Any]:
         """Critique a proposed solution."""
@@ -166,7 +166,7 @@ class CouncilMember(ABC):
 
 class TheMathematician(CouncilMember):
     """Applies pure mathematical reasoning."""
-    
+
     def __init__(self):
         super().__init__("The Mathematician", "Pure mathematical reasoning and proofs")
         self.mathematical_tools = [
@@ -178,13 +178,13 @@ class TheMathematician(CouncilMember):
             "Set theory",
             "Calculus"
         ]
-        
+
     async def analyze(self, problem: AlgorithmicProblem) -> List[AlgorithmicInsight]:
         insights = []
-        
+
         # Look for mathematical structure
         desc_lower = problem.description.lower()
-        
+
         if any(kw in desc_lower for kw in ["count", "number of", "how many"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -193,7 +193,7 @@ class TheMathematician(CouncilMember):
                 confidence=0.8,
                 reasoning="Counting problems often have closed-form solutions"
             ))
-            
+
         if any(kw in desc_lower for kw in ["prime", "factor", "divisible", "gcd", "lcm"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -202,7 +202,7 @@ class TheMathematician(CouncilMember):
                 confidence=0.85,
                 reasoning="Number theoretic problems benefit from mathematical identities"
             ))
-            
+
         if any(kw in desc_lower for kw in ["probability", "expected", "random"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -211,9 +211,9 @@ class TheMathematician(CouncilMember):
                 confidence=0.75,
                 reasoning="Probabilistic problems may have elegant expected value solutions"
             ))
-            
+
         return insights
-        
+
     async def propose_solution(self, problem: AlgorithmicProblem) -> Optional[ProposedSolution]:
         # Check if mathematical solution is applicable
         if problem.problem_type == ProblemType.COUNTING:
@@ -233,35 +233,35 @@ class TheMathematician(CouncilMember):
                 proposed_by=self.name
             )
         return None
-        
+
     async def critique(self, solution: ProposedSolution) -> Dict[str, Any]:
         critique = {
             "member": self.name,
             "verdict": "neutral",
             "points": []
         }
-        
+
         # Mathematical rigor check
         if solution.correctness_proof:
             critique["points"].append("Has correctness proof - mathematically sound")
             critique["verdict"] = "approve"
         else:
             critique["points"].append("Lacks formal correctness proof")
-            
+
         return critique
 
 class TheOptimizer(CouncilMember):
     """Finds the most efficient solutions."""
-    
+
     def __init__(self):
         super().__init__("The Optimizer", "Finding optimal and efficient solutions")
-        
+
     async def analyze(self, problem: AlgorithmicProblem) -> List[AlgorithmicInsight]:
         insights = []
-        
+
         # Look for optimization opportunities
         desc_lower = problem.description.lower()
-        
+
         if any(kw in desc_lower for kw in ["maximum", "minimum", "optimal", "best"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -270,7 +270,7 @@ class TheOptimizer(CouncilMember):
                 confidence=0.7,
                 reasoning="May have greedy or DP solution"
             ))
-            
+
         if any(kw in desc_lower for kw in ["shortest", "longest", "fastest"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -279,9 +279,9 @@ class TheOptimizer(CouncilMember):
                 confidence=0.8,
                 reasoning="Consider Dijkstra, Bellman-Ford, or DP"
             ))
-            
+
         return insights
-        
+
     async def propose_solution(self, problem: AlgorithmicProblem) -> Optional[ProposedSolution]:
         if problem.problem_type == ProblemType.OPTIMIZATION:
             return ProposedSolution(
@@ -307,30 +307,30 @@ return result
                 proposed_by=self.name
             )
         return None
-        
+
     async def critique(self, solution: ProposedSolution) -> Dict[str, Any]:
         critique = {
             "member": self.name,
             "verdict": "neutral",
             "points": []
         }
-        
+
         # Check complexity
-        efficient = [ComplexityClass.O_1, ComplexityClass.O_LOG_N, 
+        efficient = [ComplexityClass.O_1, ComplexityClass.O_LOG_N,
                     ComplexityClass.O_N, ComplexityClass.O_N_LOG_N]
-                    
+
         if solution.complexity_time in efficient:
             critique["points"].append(f"Efficient time complexity: {solution.complexity_time.value}")
             critique["verdict"] = "approve"
         else:
             critique["points"].append(f"Suboptimal complexity: {solution.complexity_time.value}")
             critique["verdict"] = "needs_improvement"
-            
+
         return critique
 
 class ThePatternFinder(CouncilMember):
     """Discovers hidden patterns in problems."""
-    
+
     def __init__(self):
         super().__init__("The Pattern Finder", "Discovering hidden patterns and structures")
         self.known_patterns = [
@@ -342,11 +342,11 @@ class ThePatternFinder(CouncilMember):
             ("prefix sum", ["range sum", "cumulative", "subarray sum"]),
             ("interval", ["overlapping", "merge", "schedule"]),
         ]
-        
+
     async def analyze(self, problem: AlgorithmicProblem) -> List[AlgorithmicInsight]:
         insights = []
         desc_lower = problem.description.lower()
-        
+
         for pattern_name, keywords in self.known_patterns:
             if any(kw in desc_lower for kw in keywords):
                 insights.append(AlgorithmicInsight(
@@ -357,12 +357,12 @@ class ThePatternFinder(CouncilMember):
                     reasoning=f"Keywords suggest {pattern_name} technique",
                     supporting_evidence=keywords
                 ))
-                
+
         return insights
-        
+
     async def propose_solution(self, problem: AlgorithmicProblem) -> Optional[ProposedSolution]:
         desc_lower = problem.description.lower()
-        
+
         if any(kw in desc_lower for kw in ["subarray", "window"]):
             return ProposedSolution(
                 solution_id=str(uuid.uuid4()),
@@ -378,12 +378,12 @@ while right < n:
     # Expand window
     add(arr[right])
     right += 1
-    
+
     # Contract if needed
     while invalid():
         remove(arr[left])
         left += 1
-        
+
     update_answer()
                 """,
                 confidence=0.8,
@@ -392,9 +392,9 @@ while right < n:
                 cons=["Only works for contiguous elements"],
                 proposed_by=self.name
             )
-            
+
         return None
-        
+
     async def critique(self, solution: ProposedSolution) -> Dict[str, Any]:
         return {
             "member": self.name,
@@ -404,7 +404,7 @@ while right < n:
 
 class TheDynamicProgrammer(CouncilMember):
     """Finds overlapping subproblems and optimal substructure."""
-    
+
     def __init__(self):
         super().__init__("The Dynamic Programmer", "DP and memoization expert")
         self.dp_patterns = [
@@ -416,11 +416,11 @@ class TheDynamicProgrammer(CouncilMember):
             "bitmask DP",
             "knapsack variants"
         ]
-        
+
     async def analyze(self, problem: AlgorithmicProblem) -> List[AlgorithmicInsight]:
         insights = []
         desc_lower = problem.description.lower()
-        
+
         # Check for DP indicators
         if any(kw in desc_lower for kw in ["ways", "count paths", "number of"]):
             insights.append(AlgorithmicInsight(
@@ -430,7 +430,7 @@ class TheDynamicProgrammer(CouncilMember):
                 confidence=0.85,
                 reasoning="Counting distinct ways often has overlapping subproblems"
             ))
-            
+
         if any(kw in desc_lower for kw in ["subsequence", "substring", "edit distance"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -439,7 +439,7 @@ class TheDynamicProgrammer(CouncilMember):
                 confidence=0.9,
                 reasoning="Sequence problems have classic DP formulations"
             ))
-            
+
         if any(kw in desc_lower for kw in ["knapsack", "capacity", "weight", "value"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -448,9 +448,9 @@ class TheDynamicProgrammer(CouncilMember):
                 confidence=0.95,
                 reasoning="Classic knapsack pattern detected"
             ))
-            
+
         return insights
-        
+
     async def propose_solution(self, problem: AlgorithmicProblem) -> Optional[ProposedSolution]:
         return ProposedSolution(
             solution_id=str(uuid.uuid4()),
@@ -468,7 +468,7 @@ dp[0] = base_value
 # Transition
 for i in range(1, n+1):
     dp[i] = optimal(dp[j] + cost for j in previous_states)
-    
+
 return dp[n]
             """,
             confidence=0.75,
@@ -477,25 +477,25 @@ return dp[n]
             cons=["Needs state identification", "Space overhead"],
             proposed_by=self.name
         )
-        
+
     async def critique(self, solution: ProposedSolution) -> Dict[str, Any]:
         critique = {
             "member": self.name,
             "verdict": "neutral",
             "points": []
         }
-        
+
         if solution.paradigm == AlgorithmicParadigm.DYNAMIC_PROGRAMMING:
             critique["points"].append("DP approach - verify state and transition")
             critique["verdict"] = "approve"
         else:
             critique["points"].append("Consider if DP could improve this")
-            
+
         return critique
 
 class TheGraphTheorist(CouncilMember):
     """Models problems as graphs."""
-    
+
     def __init__(self):
         super().__init__("The Graph Theorist", "Graph modeling and algorithms")
         self.graph_algorithms = {
@@ -507,11 +507,11 @@ class TheGraphTheorist(CouncilMember):
             "Kruskal/Prim": ["minimum spanning tree"],
             "Union-Find": ["connected components", "dynamic connectivity"],
         }
-        
+
     async def analyze(self, problem: AlgorithmicProblem) -> List[AlgorithmicInsight]:
         insights = []
         desc_lower = problem.description.lower()
-        
+
         if any(kw in desc_lower for kw in ["graph", "node", "edge", "vertex", "network"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -520,7 +520,7 @@ class TheGraphTheorist(CouncilMember):
                 confidence=0.95,
                 reasoning="Problem explicitly mentions graph structure"
             ))
-            
+
         # Implicit graph detection
         if any(kw in desc_lower for kw in ["maze", "grid", "matrix path", "island"]):
             insights.append(AlgorithmicInsight(
@@ -530,7 +530,7 @@ class TheGraphTheorist(CouncilMember):
                 confidence=0.85,
                 reasoning="Grid problems can be modeled as graphs"
             ))
-            
+
         if any(kw in desc_lower for kw in ["connect", "reach", "path", "reachable"]):
             insights.append(AlgorithmicInsight(
                 insight_id=str(uuid.uuid4()),
@@ -539,9 +539,9 @@ class TheGraphTheorist(CouncilMember):
                 confidence=0.8,
                 reasoning="Consider BFS/DFS or Union-Find"
             ))
-            
+
         return insights
-        
+
     async def propose_solution(self, problem: AlgorithmicProblem) -> Optional[ProposedSolution]:
         return ProposedSolution(
             solution_id=str(uuid.uuid4()),
@@ -569,7 +569,7 @@ elif connectivity:
             cons=["Graph construction overhead"],
             proposed_by=self.name
         )
-        
+
     async def critique(self, solution: ProposedSolution) -> Dict[str, Any]:
         return {
             "member": self.name,
@@ -583,7 +583,7 @@ elif connectivity:
 
 class CouncilOfAlgorithms:
     """Orchestrates the council for algorithmic problem solving."""
-    
+
     def __init__(self):
         self.members: List[CouncilMember] = [
             TheMathematician(),
@@ -593,17 +593,17 @@ class CouncilOfAlgorithms:
             TheGraphTheorist(),
         ]
         self.solved_problems: Dict[str, AlgorithmicProblem] = {}
-        
+
     async def solve(self, problem_description: str,
                    problem_type: ProblemType = ProblemType.OPTIMIZATION
                    ) -> Dict[str, Any]:
         """
         Convene the council to solve an algorithmic problem.
-        
+
         Args:
             problem_description: Natural language description
             problem_type: Type of problem
-            
+
         Returns:
             Complete solution with reasoning
         """
@@ -613,44 +613,44 @@ class CouncilOfAlgorithms:
             description=problem_description,
             problem_type=problem_type
         )
-        
+
         # Phase 1: Analysis - gather insights from all members
         logger.info("Phase 1: Council Analysis")
         for member in self.members:
             insights = await member.analyze(problem)
             problem.insights.extend(insights)
-            
+
         # Phase 2: Solution Proposals
         logger.info("Phase 2: Solution Proposals")
         for member in self.members:
             solution = await member.propose_solution(problem)
             if solution:
                 problem.solutions.append(solution)
-                
+
         # Phase 3: Critique and Refinement
         logger.info("Phase 3: Critique")
         solution_scores: Dict[str, float] = {}
-        
+
         for solution in problem.solutions:
             total_score = solution.confidence
-            
+
             for member in self.members:
                 critique = await member.critique(solution)
                 if critique["verdict"] == "approve":
                     total_score += 0.1
                 elif critique["verdict"] == "needs_improvement":
                     total_score -= 0.1
-                    
+
             solution_scores[solution.solution_id] = total_score
-            
+
         # Phase 4: Select Best Solution
         if solution_scores:
             best_id = max(solution_scores.keys(), key=lambda k: solution_scores[k])
             problem.best_solution = best_id
-            
+
         # Store solved problem
         self.solved_problems[problem.problem_id] = problem
-        
+
         # Return results
         best_solution = None
         if problem.best_solution:
@@ -658,7 +658,7 @@ class CouncilOfAlgorithms:
                 (s for s in problem.solutions if s.solution_id == problem.best_solution),
                 None
             )
-            
+
         return {
             "problem_id": problem.problem_id,
             "insights_count": len(problem.insights),
@@ -676,7 +676,7 @@ class CouncilOfAlgorithms:
                 for i in problem.insights
             ]
         }
-        
+
     def get_stats(self) -> Dict[str, Any]:
         """Get council statistics."""
         return {
@@ -700,25 +700,25 @@ def create_algorithm_council() -> CouncilOfAlgorithms:
 async def example_usage():
     """Example of using the algorithm council."""
     council = create_algorithm_council()
-    
+
     problems = [
         "Find the maximum sum of a contiguous subarray",
         "Count the number of ways to climb n stairs taking 1 or 2 steps at a time",
         "Find the shortest path in a weighted graph from source to all vertices",
         "Given an array, find two numbers that add up to a target sum"
     ]
-    
+
     for problem in problems:
         print(f"\n{'='*60}")
         print(f"Problem: {problem}")
         print('='*60)
-        
+
         result = await council.solve(problem)
-        
+
         print(f"\nInsights found: {result['insights_count']}")
         for insight in result['all_insights'][:3]:
             print(f"  - {insight['description']} ({insight['paradigm']})")
-            
+
         if result['best_solution']:
             sol = result['best_solution']
             print(f"\nBest Solution: {sol['name']}")

@@ -92,30 +92,30 @@ class DiscoveredResource:
     source: DiscoverySource
     category: ResourceCategory
     opportunity_type: OpportunityType
-    
+
     # Quality metrics
     stars: int = 0
     forks: int = 0
     last_updated: Optional[datetime] = None
     community_size: int = 0
     documentation_quality: float = 0.0
-    
+
     # Free tier details
     free_tier_limits: Dict[str, Any] = field(default_factory=dict)
     pricing_url: str = ""
-    
+
     # Integration info
     api_docs_url: str = ""
     docker_image: str = ""
     pypi_package: str = ""
     npm_package: str = ""
-    
+
     # Discovery metadata
     discovered_at: datetime = field(default_factory=datetime.now)
     verified: bool = False
     integration_tested: bool = False
     quality_score: float = 0.0
-    
+
     # Tags
     tags: List[str] = field(default_factory=list)
 
@@ -136,30 +136,30 @@ class DiscoveryResult:
 
 class SourceScanner:
     """Base class for source scanners."""
-    
+
     def __init__(self, source: DiscoverySource):
         self.source = source
-        
+
     async def scan(self) -> List[DiscoveredResource]:
         """Scan the source for resources."""
         raise NotImplementedError
 
 class GitHubTopicsScanner(SourceScanner):
     """Scans GitHub topics for free API projects."""
-    
+
     TOPICS = [
         "free-api", "self-hosted", "open-source",
         "llm", "ai-tools", "machine-learning",
         "developer-tools", "automation"
     ]
-    
+
     def __init__(self):
         super().__init__(DiscoverySource.GITHUB_TOPICS)
-        
+
     async def scan(self) -> List[DiscoveredResource]:
         """Scan GitHub topics."""
         resources = []
-        
+
         # Known high-value repos
         known_repos = [
             {
@@ -243,7 +243,7 @@ class GitHubTopicsScanner(SourceScanner):
                 "tags": ["coding", "ai", "vscode"]
             },
         ]
-        
+
         for repo in known_repos:
             resource = DiscoveredResource(
                 resource_id=hashlib.md5(repo["url"].encode()).hexdigest()[:16],
@@ -257,26 +257,26 @@ class GitHubTopicsScanner(SourceScanner):
                 tags=repo["tags"]
             )
             resources.append(resource)
-            
+
         return resources
 
 class AwesomeListScanner(SourceScanner):
     """Scans awesome lists for resources."""
-    
+
     AWESOME_LISTS = [
         "https://github.com/public-apis/public-apis",
         "https://github.com/awesome-selfhosted/awesome-selfhosted",
         "https://github.com/ripienaar/free-for-dev",
         "https://github.com/Significant-Gravitas/AutoGPT",
     ]
-    
+
     def __init__(self):
         super().__init__(DiscoverySource.GITHUB_AWESOME)
-        
+
     async def scan(self) -> List[DiscoveredResource]:
         """Scan awesome lists."""
         resources = []
-        
+
         # Known high-value entries from awesome lists
         entries = [
             {
@@ -294,7 +294,7 @@ class AwesomeListScanner(SourceScanner):
                 "tags": ["free-tier", "saas", "paas"]
             },
         ]
-        
+
         for entry in entries:
             resource = DiscoveredResource(
                 resource_id=hashlib.md5(entry["url"].encode()).hexdigest()[:16],
@@ -307,19 +307,19 @@ class AwesomeListScanner(SourceScanner):
                 tags=entry["tags"]
             )
             resources.append(resource)
-            
+
         return resources
 
 class HuggingFaceScanner(SourceScanner):
     """Scans HuggingFace for free models."""
-    
+
     def __init__(self):
         super().__init__(DiscoverySource.HUGGINGFACE)
-        
+
     async def scan(self) -> List[DiscoveredResource]:
         """Scan HuggingFace for free models."""
         resources = []
-        
+
         # Popular free models
         models = [
             {
@@ -347,7 +347,7 @@ class HuggingFaceScanner(SourceScanner):
                 "tags": ["embeddings", "open-weights", "fast"]
             },
         ]
-        
+
         for model in models:
             resource = DiscoveredResource(
                 resource_id=hashlib.md5(model["name"].encode()).hexdigest()[:16],
@@ -360,7 +360,7 @@ class HuggingFaceScanner(SourceScanner):
                 tags=model["tags"]
             )
             resources.append(resource)
-            
+
         return resources
 
 # ============================================================================
@@ -369,11 +369,11 @@ class HuggingFaceScanner(SourceScanner):
 
 class QualityScorer:
     """Scores the quality of discovered resources."""
-    
+
     def score(self, resource: DiscoveredResource) -> float:
         """Calculate quality score for a resource."""
         score = 0.0
-        
+
         # Stars score (0-25 points)
         if resource.stars > 10000:
             score += 25
@@ -385,7 +385,7 @@ class QualityScorer:
             score += 10
         else:
             score += 5
-            
+
         # Recency score (0-20 points)
         if resource.last_updated:
             days_old = (datetime.now() - resource.last_updated).days
@@ -399,10 +399,10 @@ class QualityScorer:
                 score += 5
         else:
             score += 10  # Unknown recency
-            
+
         # Documentation score (0-20 points)
         score += resource.documentation_quality * 20
-        
+
         # Integration readiness (0-20 points)
         if resource.docker_image:
             score += 5
@@ -412,13 +412,13 @@ class QualityScorer:
             score += 5
         if resource.npm_package:
             score += 5
-            
+
         # Verification bonus (0-15 points)
         if resource.verified:
             score += 10
         if resource.integration_tested:
             score += 5
-            
+
         # Normalize to 0-1
         return min(score / 100, 1.0)
 
@@ -428,7 +428,7 @@ class QualityScorer:
 
 class AutomatedDiscoveryEngine:
     """Main engine for automated resource discovery."""
-    
+
     def __init__(self):
         self.scanners: List[SourceScanner] = [
             GitHubTopicsScanner(),
@@ -440,24 +440,24 @@ class AutomatedDiscoveryEngine:
         self.scan_history: List[DiscoveryResult] = []
         self.running = False
         self.scan_interval = 3600  # 1 hour
-        
+
     async def start(self) -> None:
         """Start the discovery engine."""
         self.running = True
         asyncio.create_task(self._scan_loop())
         logger.info("Automated Discovery Engine started")
-        
+
     async def stop(self) -> None:
         """Stop the discovery engine."""
         self.running = False
         logger.info("Automated Discovery Engine stopped")
-        
+
     async def _scan_loop(self) -> None:
         """Main scanning loop."""
         while self.running:
             await self.run_full_scan()
             await asyncio.sleep(self.scan_interval)
-            
+
     async def run_full_scan(self) -> Dict[str, int]:
         """Run a full scan of all sources."""
         results = {
@@ -465,15 +465,15 @@ class AutomatedDiscoveryEngine:
             "new_resources": 0,
             "updated_resources": 0
         }
-        
+
         for scanner in self.scanners:
             try:
                 resources = await scanner.scan()
-                
+
                 for resource in resources:
                     # Score quality
                     resource.quality_score = self.quality_scorer.score(resource)
-                    
+
                     # Check if new
                     if resource.resource_id not in self.discovered_resources:
                         results["new_resources"] += 1
@@ -482,60 +482,60 @@ class AutomatedDiscoveryEngine:
                         results["updated_resources"] += 1
                         # Update existing
                         self.discovered_resources[resource.resource_id] = resource
-                        
+
                     results["total_found"] += 1
-                    
+
             except Exception as e:
                 logger.error(f"Error scanning {scanner.source.value}: {e}")
-                
+
         logger.info(f"Scan complete: {results}")
         return results
-        
-    def get_top_resources(self, 
+
+    def get_top_resources(self,
                          category: Optional[ResourceCategory] = None,
                          limit: int = 10) -> List[DiscoveredResource]:
         """Get top-scored resources."""
         resources = list(self.discovered_resources.values())
-        
+
         if category:
             resources = [r for r in resources if r.category == category]
-            
+
         # Sort by quality score
         resources.sort(key=lambda r: r.quality_score, reverse=True)
-        
+
         return resources[:limit]
-        
+
     def get_by_category(self, category: ResourceCategory) -> List[DiscoveredResource]:
         """Get all resources in a category."""
         return [
             r for r in self.discovered_resources.values()
             if r.category == category
         ]
-        
+
     def get_by_tags(self, tags: List[str]) -> List[DiscoveredResource]:
         """Get resources matching any of the tags."""
         return [
             r for r in self.discovered_resources.values()
             if any(t in r.tags for t in tags)
         ]
-        
+
     def get_stats(self) -> Dict[str, Any]:
         """Get discovery statistics."""
         by_category = defaultdict(int)
         by_type = defaultdict(int)
         by_source = defaultdict(int)
-        
+
         for resource in self.discovered_resources.values():
             by_category[resource.category.value] += 1
             by_type[resource.opportunity_type.value] += 1
             by_source[resource.source.value] += 1
-            
+
         avg_quality = 0.0
         if self.discovered_resources:
             avg_quality = sum(
                 r.quality_score for r in self.discovered_resources.values()
             ) / len(self.discovered_resources)
-            
+
         return {
             "total_resources": len(self.discovered_resources),
             "by_category": dict(by_category),
@@ -560,17 +560,17 @@ def create_discovery_engine() -> AutomatedDiscoveryEngine:
 async def example_usage():
     """Example usage of the discovery engine."""
     engine = create_discovery_engine()
-    
+
     # Run initial scan
     results = await engine.run_full_scan()
     print(f"Scan results: {json.dumps(results, indent=2)}")
-    
+
     # Get top LLM resources
     top_llm = engine.get_top_resources(ResourceCategory.LLM_API, limit=5)
     print("\nTop LLM Resources:")
     for r in top_llm:
         print(f"  - {r.name}: {r.description} (score: {r.quality_score:.2f})")
-        
+
     # Get stats
     stats = engine.get_stats()
     print(f"\nStats: {json.dumps(stats, indent=2)}")

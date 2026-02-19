@@ -82,7 +82,7 @@ class TortureSession:
     breakthroughs: List[Dict[str, Any]] = field(default_factory=list)
     failures: List[Dict[str, Any]] = field(default_factory=list)
     best_solution: Optional[Dict[str, Any]] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -121,19 +121,19 @@ class Breakthrough:
 class AgentPressureChamber:
     """
     The Pressure Chamber - where agents are pushed beyond limits.
-    
+
     Forces agents through extreme scenarios to extract:
     - Hidden solutions they wouldn't normally find
     - Edge cases and failure modes
     - Creative breakthroughs under pressure
     - The absolute best possible solution
     """
-    
+
     def __init__(self):
         self.active_sessions: Dict[str, TortureSession] = {}
         self.completed_sessions: List[TortureSession] = []
         self.all_breakthroughs: List[Breakthrough] = []
-        
+
         # Torture tactics for each protocol
         self.tactics = {
             TortureProtocol.CONTRADICTION_ASSAULT: self._contradiction_assault,
@@ -147,7 +147,7 @@ class AgentPressureChamber:
             TortureProtocol.HOSTILE_ENVIRONMENT: self._hostile_environment,
             TortureProtocol.SURVIVAL_ELIMINATION: self._survival_elimination
         }
-        
+
         # Contradiction templates
         self.contradictions = [
             "But what if the opposite is true?",
@@ -159,7 +159,7 @@ class AgentPressureChamber:
             "Your solution is too slow AND too fast - optimize for both.",
             "It must be simple yet handle infinite complexity."
         ]
-        
+
         # Impossibility challenges
         self.impossibilities = [
             "Solve this with ZERO resources.",
@@ -171,13 +171,13 @@ class AgentPressureChamber:
             "Do everything with nothing.",
             "Be everywhere at once."
         ]
-        
+
         logger.info("AgentPressureChamber initialized - prepare for torture")
-    
+
     # -------------------------------------------------------------------------
     # SESSION MANAGEMENT
     # -------------------------------------------------------------------------
-    
+
     async def create_session(
         self,
         problem: str,
@@ -194,12 +194,12 @@ class AgentPressureChamber:
             agents_involved=[f"agent_{i}" for i in range(num_agents)],
             started_at=datetime.now()
         )
-        
+
         self.active_sessions[session.id] = session
         logger.info(f"Torture session {session.id} created with {protocol.value}")
-        
+
         return session
-    
+
     async def run_full_torture(
         self,
         problem: str,
@@ -214,7 +214,7 @@ class AgentPressureChamber:
             PressureLevel.EXTREME,
             num_agents=10
         )
-        
+
         # Initialize agents with solutions
         agents = [
             AgentUnderPressure(
@@ -227,18 +227,18 @@ class AgentPressureChamber:
             )
             for aid in session.agents_involved
         ]
-        
+
         # Run through all torture protocols
         for protocol in TortureProtocol:
             session.protocol = protocol
-            
+
             for iteration in range(max_iterations):
                 session.iterations += 1
-                
+
                 # Apply torture tactic
                 tactic = self.tactics[protocol]
                 agents = await tactic(session, agents, problem)
-                
+
                 # Check for breakthroughs
                 for agent in agents:
                     if agent.solution_quality >= target_quality:
@@ -253,13 +253,13 @@ class AgentPressureChamber:
                         )
                         session.breakthroughs.append(breakthrough.__dict__)
                         self.all_breakthroughs.append(breakthrough)
-                
+
                 # Eliminate weak agents
                 agents = [a for a in agents if not a.eliminated and a.solution_quality > 0.1]
-                
+
                 if not agents:
                     break
-                
+
                 # Track best solution
                 best_agent = max(agents, key=lambda a: a.solution_quality)
                 if session.best_solution is None or best_agent.solution_quality > session.best_solution.get("quality", 0):
@@ -270,21 +270,21 @@ class AgentPressureChamber:
                         "protocol": protocol.value,
                         "iteration": session.iterations
                     }
-                
+
                 # Check if target achieved
                 if best_agent.solution_quality >= target_quality:
                     break
-        
+
         session.ended_at = datetime.now()
         self.completed_sessions.append(session)
         del self.active_sessions[session.id]
-        
+
         return session
-    
+
     # -------------------------------------------------------------------------
     # TORTURE TACTICS
     # -------------------------------------------------------------------------
-    
+
     async def _contradiction_assault(
         self,
         session: TortureSession,
@@ -296,13 +296,13 @@ class AgentPressureChamber:
             # Pick random contradictions
             num_contradictions = int(session.pressure_level.value * 2)
             contradictions = random.sample(self.contradictions, min(num_contradictions, len(self.contradictions)))
-            
+
             # Apply pressure
             agent.stress_level += 0.1 * session.pressure_level.value
-            
+
             # Simulate agent responding to contradictions
             await asyncio.sleep(0.01)
-            
+
             # Quality changes based on response
             if agent.stress_level < agent.breaking_point:
                 # Agent adapts and improves
@@ -315,9 +315,9 @@ class AgentPressureChamber:
                 agent.solution_quality *= 0.8
                 if agent.solution_quality < 0.1:
                     agent.eliminated = True
-        
+
         return agents
-    
+
     async def _impossibility_demand(
         self,
         session: TortureSession,
@@ -326,12 +326,12 @@ class AgentPressureChamber:
     ) -> List[AgentUnderPressure]:
         """Demand the impossible - only creative solutions survive."""
         impossibilities = random.sample(self.impossibilities, min(3, len(self.impossibilities)))
-        
+
         for agent in agents:
             agent.stress_level += 0.15 * session.pressure_level.value
-            
+
             await asyncio.sleep(0.01)
-            
+
             # Only the creative survive impossibility
             creativity_roll = random.random()
             if creativity_roll > 0.7:  # 30% chance of creative breakthrough
@@ -339,9 +339,9 @@ class AgentPressureChamber:
                 agent.current_solution = self._evolve_solution(agent.current_solution, "impossible_solved")
             elif creativity_roll < 0.3:  # 30% chance of failure
                 agent.solution_quality *= 0.7
-        
+
         return agents
-    
+
     async def _time_pressure(
         self,
         session: TortureSession,
@@ -350,16 +350,16 @@ class AgentPressureChamber:
     ) -> List[AgentUnderPressure]:
         """Extreme time pressure - faster solutions win."""
         deadline = 0.1 / session.pressure_level.value  # Shorter deadline with more pressure
-        
+
         results = []
         for agent in agents:
             start = time.time()
-            
+
             # Simulate rushed solution
             await asyncio.sleep(random.uniform(0.001, deadline * 2))
-            
+
             elapsed = time.time() - start
-            
+
             if elapsed <= deadline:
                 # Met deadline - reward
                 agent.solution_quality = min(1.0, agent.solution_quality + 0.1)
@@ -367,12 +367,12 @@ class AgentPressureChamber:
                 # Missed deadline - penalty proportional to how late
                 lateness = (elapsed - deadline) / deadline
                 agent.solution_quality *= max(0.5, 1 - lateness * 0.3)
-            
+
             agent.stress_level += 0.2
             results.append(agent)
-        
+
         return results
-    
+
     async def _adversarial_attack(
         self,
         session: TortureSession,
@@ -382,15 +382,15 @@ class AgentPressureChamber:
         """Agents attack each other's solutions."""
         # Pair agents for combat
         random.shuffle(agents)
-        
+
         for i in range(0, len(agents) - 1, 2):
             attacker = agents[i]
             defender = agents[i + 1]
-            
+
             # Attack strength based on attacker quality
             attack_power = attacker.solution_quality * 0.3
             defense_power = defender.solution_quality * 0.2
-            
+
             if attack_power > defense_power:
                 # Attacker finds weakness
                 defender.solution_quality *= 0.9
@@ -400,9 +400,9 @@ class AgentPressureChamber:
                 # Defense holds - both learn
                 attacker.solution_quality = min(1.0, attacker.solution_quality + 0.02)
                 defender.solution_quality = min(1.0, defender.solution_quality + 0.02)
-        
+
         return agents
-    
+
     async def _resource_starvation(
         self,
         session: TortureSession,
@@ -413,20 +413,20 @@ class AgentPressureChamber:
         for agent in agents:
             # Simulate resource constraints
             resource_limit = 1.0 / session.pressure_level.value
-            
+
             # Agents must optimize for efficiency
             efficiency = random.uniform(0.3, 1.0)
-            
+
             if efficiency >= resource_limit:
                 agent.solution_quality = min(1.0, agent.solution_quality + 0.1)
                 agent.current_solution = self._evolve_solution(agent.current_solution, "resource_optimized")
             else:
                 agent.solution_quality *= 0.85
-            
+
             agent.stress_level += 0.1
-        
+
         return agents
-    
+
     async def _infinite_recursion(
         self,
         session: TortureSession,
@@ -435,21 +435,21 @@ class AgentPressureChamber:
     ) -> List[AgentUnderPressure]:
         """Force deeper and deeper analysis."""
         depth = session.pressure_level.value * 3
-        
+
         for agent in agents:
             for d in range(depth):
                 # Each level of depth adds pressure but potentially improves quality
                 agent.stress_level += 0.05
-                
+
                 if random.random() > 0.4:  # 60% chance of improvement per level
                     agent.solution_quality = min(1.0, agent.solution_quality + 0.03)
-                
+
                 if agent.stress_level > 1.0:
                     agent.eliminated = True
                     break
-        
+
         return agents
-    
+
     async def _paradox_injection(
         self,
         session: TortureSession,
@@ -464,10 +464,10 @@ class AgentPressureChamber:
             "To solve it, you must first unsolved it.",
             "The optimal solution is suboptimal optimally."
         ]
-        
+
         for agent in agents:
             paradox = random.choice(paradoxes)
-            
+
             # Paradox resolution requires high creativity
             if random.random() > 0.6:
                 # Resolved paradox - major breakthrough
@@ -477,9 +477,9 @@ class AgentPressureChamber:
                 # Paradox causes confusion
                 agent.stress_level += 0.2
                 agent.solution_quality *= 0.95
-        
+
         return agents
-    
+
     async def _extreme_edge_cases(
         self,
         session: TortureSession,
@@ -497,26 +497,26 @@ class AgentPressureChamber:
             "What if the network is hostile?",
             "What if physics doesn't apply?"
         ]
-        
+
         num_cases = session.pressure_level.value * 2
         selected_cases = random.sample(edge_cases, min(num_cases, len(edge_cases)))
-        
+
         for agent in agents:
             cases_handled = 0
-            
+
             for case in selected_cases:
                 if random.random() > 0.5:  # 50% chance to handle each case
                     cases_handled += 1
-            
+
             # Quality based on cases handled
             handling_ratio = cases_handled / len(selected_cases)
             if handling_ratio > 0.7:
                 agent.solution_quality = min(1.0, agent.solution_quality + 0.15)
             elif handling_ratio < 0.3:
                 agent.solution_quality *= 0.8
-        
+
         return agents
-    
+
     async def _hostile_environment(
         self,
         session: TortureSession,
@@ -532,13 +532,13 @@ class AgentPressureChamber:
             "injection_attack",
             "denial_of_service"
         ]
-        
+
         for agent in agents:
             num_attacks = session.pressure_level.value
-            
+
             for _ in range(num_attacks):
                 attack = random.choice(hostilities)
-                
+
                 # Defense check
                 if random.random() > 0.4:
                     agent.solution_quality = min(1.0, agent.solution_quality + 0.05)
@@ -546,9 +546,9 @@ class AgentPressureChamber:
                 else:
                     agent.solution_quality *= 0.9
                     agent.stress_level += 0.1
-        
+
         return agents
-    
+
     async def _survival_elimination(
         self,
         session: TortureSession,
@@ -558,30 +558,30 @@ class AgentPressureChamber:
         """Only the best solutions survive - eliminate the weak."""
         if len(agents) <= 2:
             return agents
-        
+
         # Sort by quality
         agents.sort(key=lambda a: a.solution_quality, reverse=True)
-        
+
         # Calculate elimination threshold
         elimination_rate = 0.1 * session.pressure_level.value
         num_to_eliminate = max(1, int(len(agents) * elimination_rate))
-        
+
         # Eliminate weakest
         for i in range(num_to_eliminate):
             if len(agents) > i:
                 agents[-(i+1)].eliminated = True
-        
+
         # Survivors get stronger
         survivors = [a for a in agents if not a.eliminated]
         for agent in survivors:
             agent.solution_quality = min(1.0, agent.solution_quality + 0.05)
-        
+
         return agents
-    
+
     # -------------------------------------------------------------------------
     # HELPER METHODS
     # -------------------------------------------------------------------------
-    
+
     async def _generate_initial_solution(self, problem: str) -> Dict[str, Any]:
         """Generate initial solution for a problem."""
         return {
@@ -590,7 +590,7 @@ class AgentPressureChamber:
             "timestamp": datetime.now().isoformat(),
             "version": 1
         }
-    
+
     def _evolve_solution(self, solution: Dict[str, Any], evolution_type: str) -> Dict[str, Any]:
         """Evolve a solution based on pressure."""
         evolved = solution.copy()
@@ -598,11 +598,11 @@ class AgentPressureChamber:
         evolved["evolutions"] = evolved.get("evolutions", []) + [evolution_type]
         evolved["last_evolution"] = datetime.now().isoformat()
         return evolved
-    
+
     # -------------------------------------------------------------------------
     # INTERROGATION
     # -------------------------------------------------------------------------
-    
+
     async def interrogate(
         self,
         problem: str,
@@ -611,7 +611,7 @@ class AgentPressureChamber:
     ) -> List[Dict[str, Any]]:
         """Interrogate to extract hidden knowledge."""
         extractions = []
-        
+
         if method == ExtractionMethod.SOCRATIC:
             questions = [
                 f"What is {problem} really about?",
@@ -620,14 +620,14 @@ class AgentPressureChamber:
                 f"What would make {problem} trivial?",
                 f"What is the opposite of solving {problem}?"
             ]
-            
+
             for q in questions[:depth]:
                 extractions.append({
                     "question": q,
                     "insight": f"Insight from questioning: {q[:30]}...",
                     "depth": len(extractions) + 1
                 })
-        
+
         elif method == ExtractionMethod.ADVERSARIAL:
             attacks = [
                 f"Your understanding of {problem} is wrong because...",
@@ -636,14 +636,14 @@ class AgentPressureChamber:
                 f"An expert would say {problem} is trivial because...",
                 f"The hidden complexity in {problem} is..."
             ]
-            
+
             for a in attacks[:depth]:
                 extractions.append({
                     "attack": a,
                     "revelation": f"Revealed through attack: {a[:30]}...",
                     "depth": len(extractions) + 1
                 })
-        
+
         elif method == ExtractionMethod.EXHAUSTIVE:
             for i in range(depth):
                 extractions.append({
@@ -651,13 +651,13 @@ class AgentPressureChamber:
                     "exhaustive_search": f"Exhaustive search iteration {i+1}",
                     "coverage": f"{(i+1)/depth*100:.0f}%"
                 })
-        
+
         return extractions
-    
+
     # -------------------------------------------------------------------------
     # STATISTICS
     # -------------------------------------------------------------------------
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get torture chamber statistics."""
         return {
@@ -667,14 +667,14 @@ class AgentPressureChamber:
             "breakthroughs_by_protocol": self._count_breakthroughs_by_protocol(),
             "average_quality_improvement": self._avg_quality_improvement()
         }
-    
+
     def _count_breakthroughs_by_protocol(self) -> Dict[str, int]:
         """Count breakthroughs by protocol."""
         counts = defaultdict(int)
         for bt in self.all_breakthroughs:
             counts[bt.pressure_that_caused_it.value] += 1
         return dict(counts)
-    
+
     def _avg_quality_improvement(self) -> float:
         """Calculate average quality improvement."""
         if not self.all_breakthroughs:
@@ -706,9 +706,9 @@ async def demo():
     print("=" * 60)
     print("🔥 AGENT PRESSURE CHAMBER - TORTURE TACTICS 🔥")
     print("=" * 60)
-    
+
     chamber = get_pressure_chamber()
-    
+
     # Run full torture
     print("\n--- Running Full Torture Protocol ---")
     session = await chamber.run_full_torture(
@@ -716,14 +716,14 @@ async def demo():
         max_iterations=5,
         target_quality=0.9
     )
-    
+
     print(f"\nSession Results: {json.dumps(session.to_dict(), indent=2)}")
-    
+
     if session.best_solution:
         print(f"\nBest Solution Quality: {session.best_solution['quality']:.2f}")
         print(f"Achieved by: {session.best_solution['agent']}")
         print(f"Under protocol: {session.best_solution['protocol']}")
-    
+
     # Interrogation
     print("\n--- Interrogation ---")
     extractions = await chamber.interrogate(
@@ -733,12 +733,12 @@ async def demo():
     )
     for ext in extractions:
         print(f"  Depth {ext['depth']}: {ext.get('insight', ext.get('revelation', ''))[:50]}")
-    
+
     # Stats
     print("\n--- Chamber Statistics ---")
     stats = chamber.get_stats()
     print(json.dumps(stats, indent=2))
-    
+
     print("\n" + "=" * 60)
     print("🔥 TORTURE COMPLETE - SOLUTIONS EXTRACTED 🔥")
 

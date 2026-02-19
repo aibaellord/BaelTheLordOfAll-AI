@@ -8,7 +8,7 @@ This module contains the most advanced reality forging, creation, and manifestat
 systems ever conceived. It surpasses all existing AI frameworks by implementing:
 
 1. Reality Forge - Creates complete working systems from pure intention
-2. Probability Collapse - Selects optimal outcomes from infinite possibilities  
+2. Probability Collapse - Selects optimal outcomes from infinite possibilities
 3. Sacred Geometry Engine - All creations follow golden ratio principles
 4. Temporal Weaving - Considers past, present, and future implications
 5. Consciousness Bridging - Links multiple AI minds into unified creation
@@ -48,7 +48,7 @@ __all__ = [
     "reality_forge",
     "forge",
     "IntentionVector",
-    "RealityBlueprint", 
+    "RealityBlueprint",
     "ManifestationResult",
     "RealityDomain",
     "CreationIntensity",

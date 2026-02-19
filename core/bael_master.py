@@ -45,33 +45,33 @@ class BaelCapability(Enum):
     GENERATE = "generate"
     SUMMARIZE = "summarize"
     TRANSLATE = "translate"
-    
+
     # Creation
     CODE = "code"
     WRITE = "write"
     IMAGE = "image"
     VOICE = "voice"
-    
+
     # Research
     SEARCH = "search"
     RESEARCH = "research"
     DISCOVER = "discover"
-    
+
     # Automation
     AUTOMATE = "automate"
     WORKFLOW = "workflow"
     SCHEDULE = "schedule"
-    
+
     # Agents
     SPAWN_AGENTS = "spawn_agents"
     COUNCIL = "council"
     SWARM = "swarm"
-    
+
     # Knowledge
     REMEMBER = "remember"
     LEARN = "learn"
     KNOWLEDGE = "knowledge"
-    
+
     # Tools
     EXECUTE = "execute"
     INTEGRATE = "integrate"
@@ -129,34 +129,34 @@ class BaelResponse:
 class Bael:
     """
     The unified Ba'el interface - access to ALL capabilities.
-    
+
     Example usage:
         bael = Bael()
         await bael.initialize()
-        
+
         # Simple chat
         response = await bael.chat("Hello, Ba'el!")
-        
+
         # Deep reasoning
         response = await bael.reason("Prove P != NP")
-        
+
         # Generate code
         response = await bael.code("Create a REST API")
-        
+
         # Research a topic
         response = await bael.research("Latest AI developments")
-        
+
         # Create image
         response = await bael.image("A futuristic city")
-        
+
         # Spawn agent swarm
         response = await bael.swarm("Analyze this codebase", agent_count=10)
     """
-    
+
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
         self.initialized = False
-        
+
         # Subsystems (lazy loaded)
         self._orchestrator = None
         self._genesis = None
@@ -164,25 +164,25 @@ class Bael:
         self._infinite_genius = None
         self._discovery = None
         self._free_llm_hub = None
-        
+
         # State
         self.request_count = 0
         self.success_count = 0
         self.total_cost = 0.0
         self.start_time = None
-        
+
     async def initialize(self) -> None:
         """Initialize Ba'el and all subsystems."""
         if self.initialized:
             return
-            
+
         self.start_time = datetime.now()
         logger.info("Initializing Ba'el Master Integration...")
-        
+
         # Initialize subsystems lazily as needed
         self.initialized = True
         logger.info("Ba'el Master Integration initialized")
-        
+
     async def shutdown(self) -> None:
         """Shutdown Ba'el gracefully."""
         if self._orchestrator:
@@ -191,25 +191,25 @@ class Bael:
             await self._genesis.shutdown()
         if self._discovery:
             await self._discovery.stop()
-            
+
         logger.info("Ba'el shut down gracefully")
-        
+
     # =========================================================================
     # CORE CAPABILITIES
     # =========================================================================
-    
-    async def chat(self, 
+
+    async def chat(self,
                   message: str,
                   system: str = None,
                   **options) -> BaelResponse:
         """
         Simple chat interaction.
-        
+
         Args:
             message: The user message
             system: Optional system prompt
             **options: Additional options
-            
+
         Returns:
             BaelResponse with the chat response
         """
@@ -220,7 +220,7 @@ class Bael:
             options=options
         )
         return await self._process(request)
-        
+
     async def reason(self,
                     problem: str,
                     show_work: bool = True,
@@ -228,12 +228,12 @@ class Bael:
                     **options) -> BaelResponse:
         """
         Deep reasoning on a problem.
-        
+
         Args:
             problem: The problem to reason about
             show_work: Whether to show reasoning steps
             depth: Reasoning depth (quick, standard, deep, profound)
-            
+
         Returns:
             BaelResponse with reasoned solution
         """
@@ -243,18 +243,18 @@ class Bael:
             options={"show_work": show_work, "depth": depth, **options}
         )
         return await self._process(request)
-        
+
     async def analyze(self,
                      content: str,
                      analysis_type: str = "comprehensive",
                      **options) -> BaelResponse:
         """
         Analyze content deeply.
-        
+
         Args:
             content: Content to analyze
             analysis_type: Type of analysis
-            
+
         Returns:
             BaelResponse with analysis
         """
@@ -264,18 +264,18 @@ class Bael:
             options={"analysis_type": analysis_type, **options}
         )
         return await self._process(request)
-        
+
     async def code(self,
                   task: str,
                   language: str = "python",
                   **options) -> BaelResponse:
         """
         Generate code for a task.
-        
+
         Args:
             task: Description of what to code
             language: Programming language
-            
+
         Returns:
             BaelResponse with generated code
         """
@@ -285,7 +285,7 @@ class Bael:
             options={"language": language, **options}
         )
         return await self._process(request)
-        
+
     async def write(self,
                    topic: str,
                    style: str = "professional",
@@ -293,12 +293,12 @@ class Bael:
                    **options) -> BaelResponse:
         """
         Write content on a topic.
-        
+
         Args:
             topic: Topic to write about
             style: Writing style
             length: Desired length
-            
+
         Returns:
             BaelResponse with written content
         """
@@ -308,7 +308,7 @@ class Bael:
             options={"style": style, "length": length, **options}
         )
         return await self._process(request)
-        
+
     async def image(self,
                    prompt: str,
                    style: str = None,
@@ -316,12 +316,12 @@ class Bael:
                    **options) -> BaelResponse:
         """
         Generate an image.
-        
+
         Args:
             prompt: Image description
             style: Art style
             size: Image size
-            
+
         Returns:
             BaelResponse with image URL or data
         """
@@ -331,18 +331,18 @@ class Bael:
             options={"style": style, "size": size, **options}
         )
         return await self._process(request)
-        
+
     async def search(self,
                     query: str,
                     sources: List[str] = None,
                     **options) -> BaelResponse:
         """
         Search the web/knowledge.
-        
+
         Args:
             query: Search query
             sources: Specific sources to search
-            
+
         Returns:
             BaelResponse with search results
         """
@@ -352,18 +352,18 @@ class Bael:
             options={"sources": sources, **options}
         )
         return await self._process(request)
-        
+
     async def research(self,
                       topic: str,
                       depth: str = "comprehensive",
                       **options) -> BaelResponse:
         """
         Deep research on a topic.
-        
+
         Args:
             topic: Topic to research
             depth: Research depth
-            
+
         Returns:
             BaelResponse with research findings
         """
@@ -373,11 +373,11 @@ class Bael:
             options={"depth": depth, **options}
         )
         return await self._process(request)
-        
+
     # =========================================================================
     # AGENT CAPABILITIES
     # =========================================================================
-    
+
     async def swarm(self,
                    task: str,
                    agent_count: int = 5,
@@ -385,12 +385,12 @@ class Bael:
                    **options) -> BaelResponse:
         """
         Deploy an agent swarm on a task.
-        
+
         Args:
             task: Task for the swarm
             agent_count: Number of agents
             agent_types: Types of agents to use
-            
+
         Returns:
             BaelResponse with swarm results
         """
@@ -404,18 +404,18 @@ class Bael:
             }
         )
         return await self._process(request)
-        
+
     async def council(self,
                      question: str,
                      council_type: str = "wisdom",
                      **options) -> BaelResponse:
         """
         Convene a council for deliberation.
-        
+
         Args:
             question: Question for the council
             council_type: Type of council
-            
+
         Returns:
             BaelResponse with council decision
         """
@@ -425,22 +425,22 @@ class Bael:
             options={"council_type": council_type, **options}
         )
         return await self._process(request)
-        
+
     # =========================================================================
     # AUTOMATION CAPABILITIES
     # =========================================================================
-    
+
     async def automate(self,
                       task: str,
                       trigger: str = None,
                       **options) -> BaelResponse:
         """
         Create an automation.
-        
+
         Args:
             task: Task to automate
             trigger: When to trigger
-            
+
         Returns:
             BaelResponse with automation details
         """
@@ -450,16 +450,16 @@ class Bael:
             options={"trigger": trigger, **options}
         )
         return await self._process(request)
-        
+
     async def workflow(self,
                       steps: List[Dict[str, Any]],
                       **options) -> BaelResponse:
         """
         Execute a multi-step workflow.
-        
+
         Args:
             steps: Workflow steps
-            
+
         Returns:
             BaelResponse with workflow results
         """
@@ -469,22 +469,22 @@ class Bael:
             options=options
         )
         return await self._process(request)
-        
+
     # =========================================================================
     # KNOWLEDGE CAPABILITIES
     # =========================================================================
-    
+
     async def remember(self,
                       content: str,
                       memory_type: str = "long_term",
                       **options) -> BaelResponse:
         """
         Store something in memory.
-        
+
         Args:
             content: Content to remember
             memory_type: Type of memory
-            
+
         Returns:
             BaelResponse confirming storage
         """
@@ -494,18 +494,18 @@ class Bael:
             options={"memory_type": memory_type, **options}
         )
         return await self._process(request)
-        
+
     async def learn(self,
                    content: str,
                    source: str = None,
                    **options) -> BaelResponse:
         """
         Learn from content.
-        
+
         Args:
             content: Content to learn from
             source: Source of the content
-            
+
         Returns:
             BaelResponse with learning summary
         """
@@ -515,22 +515,22 @@ class Bael:
             options={"source": source, **options}
         )
         return await self._process(request)
-        
+
     # =========================================================================
     # TOOL CAPABILITIES
     # =========================================================================
-    
+
     async def execute(self,
                      command: str,
                      tool: str = None,
                      **options) -> BaelResponse:
         """
         Execute a command or tool.
-        
+
         Args:
             command: Command to execute
             tool: Specific tool to use
-            
+
         Returns:
             BaelResponse with execution results
         """
@@ -540,7 +540,7 @@ class Bael:
             options={"tool": tool, **options}
         )
         return await self._process(request)
-        
+
     async def mcp(self,
                  server: str,
                  tool: str,
@@ -548,12 +548,12 @@ class Bael:
                  **options) -> BaelResponse:
         """
         Call an MCP tool.
-        
+
         Args:
             server: MCP server name
             tool: Tool name
             arguments: Tool arguments
-            
+
         Returns:
             BaelResponse with tool results
         """
@@ -563,22 +563,22 @@ class Bael:
             options={"arguments": arguments or {}, **options}
         )
         return await self._process(request)
-        
+
     # =========================================================================
     # DISCOVERY CAPABILITIES
     # =========================================================================
-    
+
     async def discover(self,
                       topic: str = None,
                       category: str = None,
                       **options) -> BaelResponse:
         """
         Discover new resources/opportunities.
-        
+
         Args:
             topic: Topic to discover
             category: Category to search
-            
+
         Returns:
             BaelResponse with discoveries
         """
@@ -588,23 +588,23 @@ class Bael:
             options={"category": category, **options}
         )
         return await self._process(request)
-        
+
     # =========================================================================
     # INTERNAL PROCESSING
     # =========================================================================
-    
+
     async def _process(self, request: BaelRequest) -> BaelResponse:
         """Process a request through the appropriate subsystems."""
         start_time = time.time()
         self.request_count += 1
-        
+
         try:
             # Route to appropriate handler
             result = await self._route_request(request)
-            
+
             processing_time = time.time() - start_time
             self.success_count += 1
-            
+
             return BaelResponse(
                 request_id=request.request_id,
                 success=True,
@@ -615,10 +615,10 @@ class Bael:
                 cost=result.get("cost", 0.0),
                 processing_time=processing_time
             )
-            
+
         except Exception as e:
             logger.error(f"Error processing request: {e}")
-            
+
             return BaelResponse(
                 request_id=request.request_id,
                 success=False,
@@ -627,7 +627,7 @@ class Bael:
                 processing_time=time.time() - start_time,
                 metadata={"error": str(e)}
             )
-            
+
     async def _route_request(self, request: BaelRequest) -> Dict[str, Any]:
         """Route request to appropriate handler."""
         # Map capabilities to handlers
@@ -644,21 +644,21 @@ class Bael:
             BaelCapability.COUNCIL: self._handle_council,
             BaelCapability.DISCOVER: self._handle_discover,
         }
-        
+
         handler = handlers.get(request.capability, self._handle_default)
         return await handler(request)
-        
+
     # =========================================================================
     # HANDLERS
     # =========================================================================
-    
+
     async def _handle_chat(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle chat requests."""
         return {
             "content": f"[Chat Response] Processing: {request.prompt[:100]}...",
             "confidence": 0.9
         }
-        
+
     async def _handle_reason(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle reasoning requests."""
         depth = request.options.get("depth", "deep")
@@ -667,14 +667,14 @@ class Bael:
             "confidence": 0.85,
             "reasoning": "Applied multi-step logical analysis"
         }
-        
+
     async def _handle_analyze(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle analysis requests."""
         return {
             "content": f"[Analysis] Comprehensive analysis of: {request.prompt[:100]}...",
             "confidence": 0.85
         }
-        
+
     async def _handle_code(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle code generation requests."""
         language = request.options.get("language", "python")
@@ -682,7 +682,7 @@ class Bael:
             "content": f"# Generated {language} code for: {request.prompt}\n# Implementation here...",
             "confidence": 0.9
         }
-        
+
     async def _handle_write(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle writing requests."""
         style = request.options.get("style", "professional")
@@ -690,7 +690,7 @@ class Bael:
             "content": f"[{style.title()} Writing] On topic: {request.prompt}...",
             "confidence": 0.85
         }
-        
+
     async def _handle_image(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle image generation requests."""
         return {
@@ -698,7 +698,7 @@ class Bael:
             "confidence": 0.8,
             "sources": ["jimeng-free-api", "pollinations"]
         }
-        
+
     async def _handle_search(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle search requests."""
         return {
@@ -706,7 +706,7 @@ class Bael:
             "confidence": 0.9,
             "sources": ["duckduckgo", "searxng"]
         }
-        
+
     async def _handle_research(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle research requests."""
         return {
@@ -714,7 +714,7 @@ class Bael:
             "confidence": 0.8,
             "sources": ["arxiv", "semantic-scholar", "web"]
         }
-        
+
     async def _handle_swarm(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle swarm requests."""
         agent_count = request.options.get("agent_count", 5)
@@ -723,7 +723,7 @@ class Bael:
             "confidence": 0.85,
             "metadata": {"agents_used": agent_count}
         }
-        
+
     async def _handle_council(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle council requests."""
         return {
@@ -731,31 +731,31 @@ class Bael:
             "confidence": 0.9,
             "reasoning": "Consensus reached through multi-perspective analysis"
         }
-        
+
     async def _handle_discover(self, request: BaelRequest) -> Dict[str, Any]:
         """Handle discovery requests."""
         return {
             "content": {"discoveries": []},
             "confidence": 0.8
         }
-        
+
     async def _handle_default(self, request: BaelRequest) -> Dict[str, Any]:
         """Default handler."""
         return {
             "content": f"Processed: {request.prompt}",
             "confidence": 0.7
         }
-        
+
     # =========================================================================
     # STATUS & UTILITIES
     # =========================================================================
-    
+
     def status(self) -> Dict[str, Any]:
         """Get Ba'el status."""
         uptime = None
         if self.start_time:
             uptime = (datetime.now() - self.start_time).total_seconds()
-            
+
         return {
             "initialized": self.initialized,
             "uptime_seconds": uptime,
@@ -776,11 +776,11 @@ _bael_instance: Optional[Bael] = None
 async def get_bael() -> Bael:
     """Get the global Ba'el instance."""
     global _bael_instance
-    
+
     if _bael_instance is None:
         _bael_instance = Bael()
         await _bael_instance.initialize()
-        
+
     return _bael_instance
 
 # ============================================================================
@@ -790,27 +790,27 @@ async def get_bael() -> Bael:
 async def example_usage():
     """Example of using Ba'el."""
     bael = await get_bael()
-    
+
     # Simple chat
     response = await bael.chat("Hello, Ba'el! What can you do?")
     print(f"Chat: {response.result}")
-    
+
     # Deep reasoning
     response = await bael.reason("What is the meaning of consciousness?")
     print(f"Reasoning: {response.result}")
-    
+
     # Generate code
     response = await bael.code("Create a REST API for a todo app")
     print(f"Code: {response.result}")
-    
+
     # Research
     response = await bael.research("Latest advances in AI safety")
     print(f"Research: {response.result}")
-    
+
     # Agent swarm
     response = await bael.swarm("Analyze this problem from multiple angles", agent_count=10)
     print(f"Swarm: {response.result}")
-    
+
     # Status
     print(f"\nStatus: {json.dumps(bael.status(), indent=2)}")
 

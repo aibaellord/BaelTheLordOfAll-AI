@@ -14,7 +14,7 @@ from .ultimate_comfort_system import (
 )
 
 __all__ = [
-    'ComfortAutomation', 
+    'ComfortAutomation',
     'get_comfort_automation',
     'ComfortAutomationSystem',
     'get_comfort_system',

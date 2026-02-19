@@ -74,20 +74,20 @@ class Problem:
     problem_id: str
     description: str
     problem_type: ProblemType
-    
+
     # Context
     context: Dict[str, Any] = field(default_factory=dict)
     constraints: List[str] = field(default_factory=list)
     requirements: List[str] = field(default_factory=list)
-    
+
     # Goals
     success_criteria: List[str] = field(default_factory=list)
     priority: int = 5  # 1-10
-    
+
     # Decomposition
     sub_problems: List["Problem"] = field(default_factory=list)
     parent_problem: Optional[str] = None
-    
+
     # Status
     is_solved: bool = False
     solution: Optional["Solution"] = None
@@ -100,26 +100,26 @@ class Solution:
     solution_id: str
     problem_id: str
     description: str
-    
+
     # Implementation
     steps: List[str] = field(default_factory=list)
     code: Optional[str] = None
     resources_needed: List[str] = field(default_factory=list)
-    
+
     # Quality
     quality: SolutionQuality = SolutionQuality.GOOD
     confidence: float = 0.0  # 0-1
-    
+
     # Strategy used
     strategy: SolutionStrategy = SolutionStrategy.DIRECT
-    
+
     # Validation
     validated: bool = False
     validation_results: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Alternatives
     alternative_solutions: List["Solution"] = field(default_factory=list)
-    
+
     # Meta
     created_at: datetime = field(default_factory=datetime.utcnow)
     time_to_solve_seconds: float = 0.0
@@ -131,12 +131,12 @@ class SolutionAttempt:
     attempt_id: str
     problem_id: str
     strategy: SolutionStrategy
-    
+
     # Result
     success: bool = False
     solution: Optional[Solution] = None
     error: Optional[str] = None
-    
+
     # Timing
     started_at: datetime = field(default_factory=datetime.utcnow)
     duration_seconds: float = 0.0
@@ -144,7 +144,7 @@ class SolutionAttempt:
 
 class ProblemAnalyzer:
     """Analyzes problems to determine best solving approach."""
-    
+
     def analyze(self, problem: Problem) -> Dict[str, Any]:
         """Analyze a problem and recommend strategies."""
         analysis = {
@@ -155,10 +155,10 @@ class ProblemAnalyzer:
             "key_challenges": [],
             "related_domains": []
         }
-        
+
         # Estimate complexity
         complexity = analysis["complexity"]
-        
+
         # Recommend strategies based on problem type and complexity
         if problem.problem_type == ProblemType.TECHNICAL:
             analysis["recommended_strategies"] = [
@@ -190,7 +190,7 @@ class ProblemAnalyzer:
                 SolutionStrategy.ANALOGY,
                 SolutionStrategy.ENSEMBLE
             ]
-        
+
         # Identify key challenges
         if len(problem.constraints) > 3:
             analysis["key_challenges"].append("Multiple constraints to satisfy")
@@ -198,31 +198,31 @@ class ProblemAnalyzer:
             analysis["key_challenges"].append("High complexity - may need decomposition")
         if not problem.success_criteria:
             analysis["key_challenges"].append("Success criteria not clearly defined")
-        
+
         # Suggest decomposition
         if complexity > 5:
             analysis["sub_problem_count"] = min(complexity // 2, 5)
-        
+
         return analysis
-    
+
     def _estimate_complexity(self, problem: Problem) -> int:
         """Estimate problem complexity (1-10)."""
         complexity = 5  # Base
-        
+
         # Adjust based on factors
         complexity += len(problem.constraints) // 2
         complexity += len(problem.requirements) // 3
-        
+
         if problem.sub_problems:
             complexity += len(problem.sub_problems)
-        
+
         # Cap at 10
         return min(10, max(1, complexity))
-    
+
     def decompose(self, problem: Problem) -> List[Problem]:
         """Decompose a problem into sub-problems."""
         sub_problems = []
-        
+
         # Create sub-problems based on requirements
         for i, req in enumerate(problem.requirements):
             sub_problem = Problem(
@@ -234,7 +234,7 @@ class ProblemAnalyzer:
                 parent_problem=problem.problem_id
             )
             sub_problems.append(sub_problem)
-        
+
         # If no requirements, create generic sub-problems
         if not sub_problems:
             sub_problems = [
@@ -257,16 +257,16 @@ class ProblemAnalyzer:
                     parent_problem=problem.problem_id
                 )
             ]
-        
+
         return sub_problems
 
 
 class StrategySolver:
     """Solves problems using specific strategies."""
-    
+
     def __init__(self, llm_provider: Callable = None):
         self.llm_provider = llm_provider
-    
+
     async def solve(
         self,
         problem: Problem,
@@ -278,34 +278,34 @@ class StrategySolver:
             problem_id=problem.problem_id,
             strategy=strategy
         )
-        
+
         start_time = datetime.utcnow()
-        
+
         try:
             solution = await self._apply_strategy(problem, strategy)
-            
+
             if solution:
                 attempt.success = True
                 attempt.solution = solution
             else:
                 attempt.success = False
                 attempt.error = "Strategy did not produce a solution"
-                
+
         except Exception as e:
             attempt.success = False
             attempt.error = str(e)
-        
+
         attempt.duration_seconds = (datetime.utcnow() - start_time).total_seconds()
-        
+
         return attempt
-    
+
     async def _apply_strategy(
         self,
         problem: Problem,
         strategy: SolutionStrategy
     ) -> Optional[Solution]:
         """Apply a specific strategy to solve the problem."""
-        
+
         if strategy == SolutionStrategy.DIRECT:
             return await self._solve_direct(problem)
         elif strategy == SolutionStrategy.DECOMPOSE:
@@ -324,7 +324,7 @@ class StrategySolver:
             return await self._solve_evolutionary(problem)
         else:
             return await self._solve_direct(problem)
-    
+
     async def _solve_direct(self, problem: Problem) -> Solution:
         """Direct approach to solving."""
         steps = [
@@ -334,7 +334,7 @@ class StrategySolver:
             "Implement solution",
             "Validate against requirements"
         ]
-        
+
         return Solution(
             solution_id=f"sol_{hashlib.md5(f'{problem.problem_id}direct'.encode()).hexdigest()[:8]}",
             problem_id=problem.problem_id,
@@ -344,22 +344,22 @@ class StrategySolver:
             quality=SolutionQuality.GOOD,
             confidence=0.7
         )
-    
+
     async def _solve_decompose(self, problem: Problem) -> Solution:
         """Decomposition approach."""
         analyzer = ProblemAnalyzer()
         sub_problems = analyzer.decompose(problem)
-        
+
         steps = [
             f"Decomposed into {len(sub_problems)} sub-problems"
         ]
-        
+
         for i, sp in enumerate(sub_problems, 1):
             steps.append(f"Sub-problem {i}: {sp.description}")
-        
+
         steps.append("Solve each sub-problem")
         steps.append("Integrate sub-solutions")
-        
+
         return Solution(
             solution_id=f"sol_{hashlib.md5(f'{problem.problem_id}decompose'.encode()).hexdigest()[:8]}",
             problem_id=problem.problem_id,
@@ -369,7 +369,7 @@ class StrategySolver:
             quality=SolutionQuality.GOOD,
             confidence=0.75
         )
-    
+
     async def _solve_analogy(self, problem: Problem) -> Solution:
         """Find and apply analogous solutions."""
         # In practice, this would search a solution database
@@ -378,14 +378,14 @@ class StrategySolver:
             "Adapted solution pattern from Y",
             "Applied proven approach from Z"
         ]
-        
+
         steps = [
             "Searched for similar solved problems",
             *similar_problems,
             "Adapted solution to current context",
             "Validated adaptation"
         ]
-        
+
         return Solution(
             solution_id=f"sol_{hashlib.md5(f'{problem.problem_id}analogy'.encode()).hexdigest()[:8]}",
             problem_id=problem.problem_id,
@@ -395,7 +395,7 @@ class StrategySolver:
             quality=SolutionQuality.GOOD,
             confidence=0.8
         )
-    
+
     async def _solve_reverse(self, problem: Problem) -> Solution:
         """Work backwards from the goal."""
         steps = [
@@ -405,7 +405,7 @@ class StrategySolver:
             "Created path from current to goal state",
             "Validated reverse path"
         ]
-        
+
         return Solution(
             solution_id=f"sol_{hashlib.md5(f'{problem.problem_id}reverse'.encode()).hexdigest()[:8]}",
             problem_id=problem.problem_id,
@@ -415,11 +415,11 @@ class StrategySolver:
             quality=SolutionQuality.GOOD,
             confidence=0.7
         )
-    
+
     async def _solve_constraint_relax(self, problem: Problem) -> Solution:
         """Relax constraints to find solution."""
         relaxed_constraints = problem.constraints[:len(problem.constraints)//2] if problem.constraints else []
-        
+
         steps = [
             f"Original constraints: {problem.constraints}",
             f"Relaxed constraints: {relaxed_constraints}",
@@ -427,7 +427,7 @@ class StrategySolver:
             "Gradually reintroduced constraints",
             "Adjusted solution for full constraints"
         ]
-        
+
         return Solution(
             solution_id=f"sol_{hashlib.md5(f'{problem.problem_id}relax'.encode()).hexdigest()[:8]}",
             problem_id=problem.problem_id,
@@ -437,7 +437,7 @@ class StrategySolver:
             quality=SolutionQuality.ACCEPTABLE,
             confidence=0.6
         )
-    
+
     async def _solve_creative(self, problem: Problem) -> Solution:
         """Creative, out-of-the-box solution."""
         creative_approaches = [
@@ -447,9 +447,9 @@ class StrategySolver:
             "Questioned fundamental assumptions",
             "Designed for extreme edge case first"
         ]
-        
+
         approach = random.choice(creative_approaches)
-        
+
         steps = [
             "Applied creative thinking techniques",
             approach,
@@ -457,7 +457,7 @@ class StrategySolver:
             "Validated creative approach works",
             "Refined for practical implementation"
         ]
-        
+
         return Solution(
             solution_id=f"sol_{hashlib.md5(f'{problem.problem_id}creative'.encode()).hexdigest()[:8]}",
             problem_id=problem.problem_id,
@@ -467,7 +467,7 @@ class StrategySolver:
             quality=SolutionQuality.EXCELLENT,
             confidence=0.65
         )
-    
+
     async def _solve_ensemble(self, problem: Problem) -> Solution:
         """Combine multiple solution approaches."""
         # Generate multiple solutions
@@ -476,7 +476,7 @@ class StrategySolver:
             await self._solve_analogy(problem),
             await self._solve_reverse(problem)
         ]
-        
+
         steps = [
             f"Generated {len(solutions)} candidate solutions",
             "Analyzed strengths of each approach",
@@ -484,7 +484,7 @@ class StrategySolver:
             "Created hybrid solution",
             "Validated ensemble solution"
         ]
-        
+
         return Solution(
             solution_id=f"sol_{hashlib.md5(f'{problem.problem_id}ensemble'.encode()).hexdigest()[:8]}",
             problem_id=problem.problem_id,
@@ -495,11 +495,11 @@ class StrategySolver:
             confidence=0.85,
             alternative_solutions=solutions
         )
-    
+
     async def _solve_evolutionary(self, problem: Problem) -> Solution:
         """Evolve solution through iterations."""
         generations = 5
-        
+
         steps = [
             "Created initial solution population",
             f"Evolved through {generations} generations",
@@ -507,7 +507,7 @@ class StrategySolver:
             "Applied mutations for exploration",
             "Converged on optimal solution"
         ]
-        
+
         return Solution(
             solution_id=f"sol_{hashlib.md5(f'{problem.problem_id}evolutionary'.encode()).hexdigest()[:8]}",
             problem_id=problem.problem_id,
@@ -521,7 +521,7 @@ class StrategySolver:
 
 class SolutionValidator:
     """Validates solutions against problem requirements."""
-    
+
     async def validate(
         self,
         problem: Problem,
@@ -537,7 +537,7 @@ class SolutionValidator:
             "quality_assessment": solution.quality.value,
             "confidence": solution.confidence
         }
-        
+
         # Check requirements
         for req in problem.requirements:
             # In practice, this would actually test
@@ -547,7 +547,7 @@ class SolutionValidator:
             else:
                 results["requirements_failed"].append(req)
                 results["valid"] = False
-        
+
         # Check constraints
         for constraint in problem.constraints:
             satisfied = random.random() > 0.1  # 90% chance
@@ -556,17 +556,17 @@ class SolutionValidator:
             else:
                 results["constraints_violated"].append(constraint)
                 results["valid"] = False
-        
+
         solution.validated = results["valid"]
         solution.validation_results = results
-        
+
         return results
 
 
 class SolutionFinderSupreme:
     """
     The ultimate solution finding system.
-    
+
     Features:
     - Multi-strategy parallel exploration
     - Automatic problem decomposition
@@ -574,19 +574,19 @@ class SolutionFinderSupreme:
     - Never-give-up mentality
     - Always finds a way
     """
-    
+
     def __init__(self, llm_provider: Callable = None):
         self.llm_provider = llm_provider
-        
+
         self.analyzer = ProblemAnalyzer()
         self.solver = StrategySolver(llm_provider)
         self.validator = SolutionValidator()
-        
+
         # Tracking
         self._problems: Dict[str, Problem] = {}
         self._solutions: Dict[str, Solution] = {}
         self._attempts: List[SolutionAttempt] = []
-        
+
         # Statistics
         self._stats = {
             "problems_solved": 0,
@@ -594,9 +594,9 @@ class SolutionFinderSupreme:
             "strategies_used": {},
             "avg_attempts_to_solve": 0.0
         }
-        
+
         logger.info("SolutionFinderSupreme initialized - No problem is unsolvable!")
-    
+
     async def solve(
         self,
         description: str,
@@ -617,56 +617,56 @@ class SolutionFinderSupreme:
             constraints=constraints or [],
             requirements=requirements or []
         )
-        
+
         self._problems[problem.problem_id] = problem
-        
+
         # Analyze problem
         analysis = self.analyzer.analyze(problem)
         strategies = analysis["recommended_strategies"]
-        
+
         # Add fallback strategies
         all_strategies = list(set(strategies + [
             SolutionStrategy.ENSEMBLE,
             SolutionStrategy.CREATIVE,
             SolutionStrategy.CONSTRAINT_RELAX
         ]))
-        
+
         # Try strategies until one works
         best_solution = None
         attempts = 0
-        
+
         for strategy in all_strategies:
             if attempts >= max_attempts:
                 break
-            
+
             attempts += 1
             self._stats["total_attempts"] += 1
-            
+
             # Track strategy usage
             strategy_name = strategy.value
             self._stats["strategies_used"][strategy_name] = \
                 self._stats["strategies_used"].get(strategy_name, 0) + 1
-            
+
             # Try strategy
             attempt = await self.solver.solve(problem, strategy)
             self._attempts.append(attempt)
-            
+
             if attempt.success and attempt.solution:
                 # Validate solution
                 validation = await self.validator.validate(problem, attempt.solution)
-                
+
                 if validation["valid"]:
                     best_solution = attempt.solution
                     break
                 elif best_solution is None or attempt.solution.confidence > best_solution.confidence:
                     best_solution = attempt.solution
-        
+
         # If still no solution, try ensemble as last resort
         if best_solution is None or not best_solution.validated:
             ensemble_attempt = await self.solver.solve(problem, SolutionStrategy.ENSEMBLE)
             if ensemble_attempt.success:
                 best_solution = ensemble_attempt.solution
-        
+
         # Always return something
         if best_solution is None:
             best_solution = Solution(
@@ -677,31 +677,31 @@ class SolutionFinderSupreme:
                 quality=SolutionQuality.WORKAROUND,
                 confidence=0.3
             )
-        
+
         # Update tracking
         problem.is_solved = best_solution.validated
         problem.solution = best_solution
         problem.attempts = attempts
-        
+
         self._solutions[best_solution.solution_id] = best_solution
-        
+
         if best_solution.validated:
             self._stats["problems_solved"] += 1
-        
+
         # Update average
         if self._stats["problems_solved"] > 0:
             total_attempts = sum(p.attempts for p in self._problems.values() if p.is_solved)
             self._stats["avg_attempts_to_solve"] = total_attempts / self._stats["problems_solved"]
-        
+
         return best_solution
-    
+
     async def solve_all(
         self,
         problems: List[Dict[str, Any]]
     ) -> List[Solution]:
         """Solve multiple problems."""
         solutions = []
-        
+
         for prob_data in problems:
             solution = await self.solve(
                 description=prob_data.get("description", ""),
@@ -710,9 +710,9 @@ class SolutionFinderSupreme:
                 requirements=prob_data.get("requirements", [])
             )
             solutions.append(solution)
-        
+
         return solutions
-    
+
     def get_statistics(self) -> Dict[str, Any]:
         """Get solver statistics."""
         return {
@@ -721,7 +721,7 @@ class SolutionFinderSupreme:
             "solutions_generated": len(self._solutions),
             "total_attempts_made": len(self._attempts)
         }
-    
+
     def get_best_strategies(self) -> List[Tuple[str, int]]:
         """Get most successful strategies."""
         return sorted(
@@ -746,11 +746,11 @@ def get_solution_finder() -> SolutionFinderSupreme:
 async def demo():
     """Demonstrate the solution finder."""
     finder = get_solution_finder()
-    
+
     print("Solution Finder Supreme Demo")
     print("=" * 50)
     print("No problem is unsolvable!\n")
-    
+
     # Solve a technical problem
     print("Problem 1: Technical Challenge")
     solution1 = await finder.solve(
@@ -763,7 +763,7 @@ async def demo():
     print(f"  Confidence: {solution1.confidence:.0%}")
     print(f"  Strategy: {solution1.strategy.value}")
     print(f"  Steps: {len(solution1.steps)}")
-    
+
     # Solve a creative problem
     print("\nProblem 2: Creative Challenge")
     solution2 = await finder.solve(
@@ -774,7 +774,7 @@ async def demo():
     print(f"  Quality: {solution2.quality.value}")
     print(f"  Confidence: {solution2.confidence:.0%}")
     print(f"  Strategy: {solution2.strategy.value}")
-    
+
     # Show statistics
     print("\nSolver Statistics:")
     stats = finder.get_statistics()

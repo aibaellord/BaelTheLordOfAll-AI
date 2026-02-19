@@ -127,7 +127,7 @@ class DominationPlan:
     expected_control_level: ControlLevel
     victory_conditions: List[str]
     created_at: datetime
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -154,7 +154,7 @@ class DominanceStatus:
 class UniversalDominationPlanner:
     """
     The Domination Planner - achieve total control.
-    
+
     Creates comprehensive plans for:
     - Market domination
     - Technological superiority
@@ -162,13 +162,13 @@ class UniversalDominationPlanner:
     - Network dominance
     - Complete victory in any domain
     """
-    
+
     def __init__(self):
         self.active_plans: Dict[str, DominationPlan] = {}
         self.completed_conquests: List[DominationPlan] = []
         self.domain_status: Dict[DominationDomain, DominanceStatus] = {}
         self.conquest_history: List[Dict[str, Any]] = []
-        
+
         # Strategy templates
         self.strategy_templates = {
             ConquestStrategy.BLITZKRIEG: self._plan_blitzkrieg,
@@ -180,7 +180,7 @@ class UniversalDominationPlanner:
             ConquestStrategy.SUBVERSION: self._plan_subversion,
             ConquestStrategy.SILENT: self._plan_silent
         }
-        
+
         # Victory condition templates
         self.victory_templates = {
             DominationDomain.MARKET: [
@@ -208,13 +208,13 @@ class UniversalDominationPlanner:
                 "Network effects maximized"
             ]
         }
-        
+
         logger.info("UniversalDominationPlanner initialized - conquest begins")
-    
+
     # -------------------------------------------------------------------------
     # PLAN GENERATION
     # -------------------------------------------------------------------------
-    
+
     async def create_domination_plan(
         self,
         goal: str,
@@ -226,24 +226,24 @@ class UniversalDominationPlanner:
         # Get strategy-specific phases
         strategy_planner = self.strategy_templates.get(strategy, self._plan_blitzkrieg)
         phases = await strategy_planner(goal, domain, resource_constraint)
-        
+
         # Calculate totals
         total_duration = sum(p.duration_hours for p in phases)
         total_resources = defaultdict(float)
         for phase in phases:
             for resource, amount in phase.resources_required.items():
                 total_resources[resource] += amount
-        
+
         # Calculate success probability
         success_prob = self._calculate_success_probability(phases)
-        
+
         # Get victory conditions
         victory_conditions = self.victory_templates.get(domain, [
             "Achieve dominant position",
             "Neutralize all competitors",
             "Establish sustainable control"
         ])
-        
+
         plan = DominationPlan(
             id=self._gen_id("plan"),
             name=f"Operation {goal[:30]} - {strategy.value}",
@@ -257,10 +257,10 @@ class UniversalDominationPlanner:
             victory_conditions=victory_conditions,
             created_at=datetime.now()
         )
-        
+
         self.active_plans[plan.id] = plan
         return plan
-    
+
     async def create_zero_resource_plan(
         self,
         goal: str,
@@ -353,7 +353,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Maintain position", "Strategic retreat to rebuild"]
             )
         ]
-        
+
         return DominationPlan(
             id=self._gen_id("zero"),
             name=f"Zero-Resource Conquest: {goal[:30]}",
@@ -371,7 +371,7 @@ class UniversalDominationPlanner:
             ],
             created_at=datetime.now()
         )
-    
+
     async def create_silent_takeover_plan(
         self,
         target: str,
@@ -431,7 +431,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Maintain shadow control", "Delayed activation"]
             )
         ]
-        
+
         return DominationPlan(
             id=self._gen_id("silent"),
             name=f"Silent Takeover: {target[:30]}",
@@ -449,11 +449,11 @@ class UniversalDominationPlanner:
             ],
             created_at=datetime.now()
         )
-    
+
     # -------------------------------------------------------------------------
     # STRATEGY PLANNERS
     # -------------------------------------------------------------------------
-    
+
     async def _plan_blitzkrieg(
         self,
         goal: str,
@@ -514,7 +514,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Strategic retreat from weak points"]
             )
         ]
-    
+
     async def _plan_siege(
         self,
         goal: str,
@@ -558,7 +558,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Increase pressure", "Offer terms"]
             )
         ]
-    
+
     async def _plan_infiltration(
         self,
         goal: str,
@@ -602,7 +602,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Slower approach", "External pressure"]
             )
         ]
-    
+
     async def _plan_encirclement(
         self,
         goal: str,
@@ -646,7 +646,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Maintain pressure", "Final assault"]
             )
         ]
-    
+
     async def _plan_disruption(
         self,
         goal: str,
@@ -690,7 +690,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Maintain pressure", "Pivot to absorption"]
             )
         ]
-    
+
     async def _plan_absorption(
         self,
         goal: str,
@@ -734,7 +734,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Partial absorption", "Alliance instead"]
             )
         ]
-    
+
     async def _plan_subversion(
         self,
         goal: str,
@@ -778,7 +778,7 @@ class UniversalDominationPlanner:
                 fallback_options=["Maintain subversion", "Direct attack"]
             )
         ]
-    
+
     async def _plan_silent(
         self,
         goal: str,
@@ -822,27 +822,27 @@ class UniversalDominationPlanner:
                 fallback_options=["Maintain shadow presence", "Gradual reveal"]
             )
         ]
-    
+
     # -------------------------------------------------------------------------
     # HELPER METHODS
     # -------------------------------------------------------------------------
-    
+
     def _calculate_success_probability(self, phases: List[ConquestPhase]) -> float:
         """Calculate overall success probability."""
         if not phases:
             return 0.0
-        
+
         # Multiply all phase probabilities
         prob = 1.0
         for phase in phases:
             prob *= phase.success_probability
-        
+
         return prob
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get domination statistics."""
         return {
@@ -877,9 +877,9 @@ async def demo():
     print("=" * 60)
     print("👑 UNIVERSAL DOMINATION PLANNER 👑")
     print("=" * 60)
-    
+
     planner = get_domination_planner()
-    
+
     # Standard domination plan
     print("\n--- Blitzkrieg Market Domination ---")
     plan = await planner.create_domination_plan(
@@ -891,7 +891,7 @@ async def demo():
     print(f"Phases: {len(plan.phases)}")
     print(f"Duration: {plan.total_duration} hours")
     print(f"Success probability: {plan.success_probability:.0%}")
-    
+
     # Zero resource plan
     print("\n--- Zero-Resource Conquest ---")
     zero_plan = await planner.create_zero_resource_plan(
@@ -900,7 +900,7 @@ async def demo():
     )
     print(f"Plan: {zero_plan.name}")
     print(f"Resources needed: {zero_plan.resources_needed}")
-    
+
     # Silent takeover
     print("\n--- Silent Takeover ---")
     silent_plan = await planner.create_silent_takeover_plan(
@@ -909,7 +909,7 @@ async def demo():
     )
     print(f"Plan: {silent_plan.name}")
     print(f"Expected control: {silent_plan.expected_control_level.name}")
-    
+
     print("\n" + "=" * 60)
     print("👑 DOMINATION PLANNED 👑")
 

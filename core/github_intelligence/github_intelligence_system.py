@@ -63,7 +63,7 @@ class RepositoryInfo:
     language: str = ""
     topics: List[str] = field(default_factory=list)
     last_updated: str = ""
-    
+
     # Analysis results
     quality_score: float = 0.0
     quality_level: RepoQuality = RepoQuality.AVERAGE
@@ -99,12 +99,12 @@ class EnhancementPlan:
 
 class GitHubClient:
     """Client for GitHub API interactions."""
-    
+
     def __init__(self, token: str = None):
         self.token = token or os.environ.get("GITHUB_TOKEN")
         self.base_url = "https://api.github.com"
         self._rate_limit_remaining = 5000
-    
+
     async def search_repositories(
         self,
         query: str,
@@ -114,7 +114,7 @@ class GitHubClient:
         """Search for repositories."""
         # In production, would use aiohttp to make actual requests
         # For now, return structure showing what would be returned
-        
+
         return [{
             "full_name": f"example/{query.replace(' ', '-')}",
             "html_url": f"https://github.com/example/{query.replace(' ', '-')}",
@@ -125,7 +125,7 @@ class GitHubClient:
             "topics": query.split()[:3],
             "updated_at": datetime.utcnow().isoformat()
         }]
-    
+
     async def get_repository(self, owner: str, repo: str) -> Dict[str, Any]:
         """Get repository details."""
         return {
@@ -136,11 +136,11 @@ class GitHubClient:
             "forks_count": 500,
             "language": "Python"
         }
-    
+
     async def get_readme(self, owner: str, repo: str) -> str:
         """Get repository README."""
         return f"# {repo}\n\nThis is the README for {repo}"
-    
+
     async def get_contents(self, owner: str, repo: str, path: str = "") -> List[Dict[str, Any]]:
         """Get repository contents."""
         return [
@@ -152,11 +152,11 @@ class GitHubClient:
 
 class RepositoryAnalyzer:
     """Analyzes repositories for quality and patterns."""
-    
+
     def __init__(self):
         self._analysis_cache: Dict[str, RepositoryInfo] = {}
         self._pattern_library: Dict[str, List[str]] = defaultdict(list)
-    
+
     async def analyze(
         self,
         repo_data: Dict[str, Any],
@@ -167,12 +167,12 @@ class RepositoryAnalyzer:
         parts = url.replace("https://github.com/", "").split("/")
         owner = parts[0] if parts else "unknown"
         name = parts[1] if len(parts) > 1 else "unknown"
-        
+
         # Check cache
         cache_key = f"{owner}/{name}"
         if cache_key in self._analysis_cache:
             return self._analysis_cache[cache_key]
-        
+
         repo = RepositoryInfo(
             url=url,
             owner=owner,
@@ -184,42 +184,42 @@ class RepositoryAnalyzer:
             topics=repo_data.get("topics", []),
             last_updated=repo_data.get("updated_at", "")
         )
-        
+
         # Calculate quality score
         repo.quality_score = self._calculate_quality(repo)
         repo.quality_level = self._determine_quality_level(repo.quality_score)
-        
+
         # Analyze patterns
         repo.architecture_patterns = await self._detect_patterns(repo, depth)
-        
+
         # Identify key features
         repo.key_features = await self._extract_features(repo)
-        
+
         # Find improvement opportunities
         repo.improvement_opportunities = await self._find_improvements(repo)
-        
+
         # Cache result
         self._analysis_cache[cache_key] = repo
-        
+
         return repo
-    
+
     def _calculate_quality(self, repo: RepositoryInfo) -> float:
         """Calculate repository quality score."""
         score = 0.0
-        
+
         # Stars (max 30 points)
         score += min(repo.stars / 1000 * 10, 30)
-        
+
         # Forks (max 20 points)
         score += min(repo.forks / 100 * 5, 20)
-        
+
         # Description quality (max 10 points)
         if repo.description:
             score += min(len(repo.description) / 50 * 5, 10)
-        
+
         # Topics (max 10 points)
         score += min(len(repo.topics) * 2, 10)
-        
+
         # Recency (max 30 points)
         if repo.last_updated:
             try:
@@ -228,9 +228,9 @@ class RepositoryAnalyzer:
                 score += max(30 - days_old / 30 * 10, 0)
             except:
                 score += 15  # Default if parsing fails
-        
+
         return min(score, 100)
-    
+
     def _determine_quality_level(self, score: float) -> RepoQuality:
         """Determine quality level from score."""
         if score >= 80:
@@ -242,7 +242,7 @@ class RepositoryAnalyzer:
         elif score >= 20:
             return RepoQuality.AVERAGE
         return RepoQuality.POOR
-    
+
     async def _detect_patterns(
         self,
         repo: RepositoryInfo,
@@ -250,9 +250,9 @@ class RepositoryAnalyzer:
     ) -> List[str]:
         """Detect architecture patterns in repository."""
         patterns = []
-        
+
         desc_lower = (repo.description or "").lower()
-        
+
         # Common patterns
         pattern_indicators = {
             "microservices": ["microservice", "micro-service", "distributed"],
@@ -264,27 +264,27 @@ class RepositoryAnalyzer:
             "api_first": ["api", "rest", "graphql", "openapi"],
             "cli": ["cli", "command", "terminal", "console"]
         }
-        
+
         for pattern, indicators in pattern_indicators.items():
             if any(ind in desc_lower for ind in indicators):
                 patterns.append(pattern)
-        
+
         # Language-specific patterns
         if repo.language == "Python":
             patterns.append("python_ecosystem")
         elif repo.language in ["TypeScript", "JavaScript"]:
             patterns.append("node_ecosystem")
-        
+
         return patterns
-    
+
     async def _extract_features(self, repo: RepositoryInfo) -> List[str]:
         """Extract key features from repository."""
         features = []
-        
+
         # From topics
         for topic in repo.topics[:5]:
             features.append(f"topic:{topic}")
-        
+
         # From description
         if repo.description:
             if "fast" in repo.description.lower():
@@ -293,45 +293,45 @@ class RepositoryAnalyzer:
                 features.append("easy_to_use")
             if "secure" in repo.description.lower():
                 features.append("security_focused")
-        
+
         # From stats
         if repo.stars > 10000:
             features.append("highly_popular")
         if repo.forks > 1000:
             features.append("widely_forked")
-        
+
         return features
-    
+
     async def _find_improvements(self, repo: RepositoryInfo) -> List[str]:
         """Find improvement opportunities."""
         opportunities = []
-        
+
         # Based on what's missing
         if "security_focused" not in repo.key_features:
             opportunities.append("Add advanced security features")
-        
+
         if "high_performance" not in repo.key_features:
             opportunities.append("Optimize for performance")
-        
+
         if len(repo.architecture_patterns) < 2:
             opportunities.append("Expand architectural capabilities")
-        
+
         # Always suggest
         opportunities.append("Add AI-powered automation")
         opportunities.append("Implement self-healing capabilities")
         opportunities.append("Add predictive features")
-        
+
         return opportunities
 
 
 class CompetitorTracker:
     """Tracks and analyzes competitor implementations."""
-    
+
     def __init__(self, github_client: GitHubClient, analyzer: RepositoryAnalyzer):
         self.github = github_client
         self.analyzer = analyzer
         self._competitors: Dict[str, List[CompetitorAnalysis]] = defaultdict(list)
-    
+
     async def analyze_competitor(
         self,
         repo: RepositoryInfo
@@ -346,7 +346,7 @@ class CompetitorTracker:
             integration_potential=0.0,
             threat_level=0.0
         )
-        
+
         # Identify strengths
         if repo.stars > 5000:
             analysis.strengths.append("Strong community adoption")
@@ -354,25 +354,25 @@ class CompetitorTracker:
             analysis.strengths.append("Performance optimized")
         if len(repo.architecture_patterns) >= 3:
             analysis.strengths.append("Rich architecture")
-        
+
         # Identify weaknesses (opportunities)
         if repo.stars < 10000:
             analysis.weaknesses.append("Room for wider adoption")
         if "ai_ml" not in repo.architecture_patterns:
             analysis.weaknesses.append("Lacks AI integration")
-        
+
         # Unique features
         for feature in repo.key_features:
             if "topic:" in feature:
                 analysis.unique_features.append(feature.replace("topic:", ""))
-        
+
         # How to surpass
         for opportunity in repo.improvement_opportunities:
             analysis.how_to_surpass.append(f"Implement: {opportunity}")
-        
+
         analysis.how_to_surpass.append("Combine with Ba'el's transcendent capabilities")
         analysis.how_to_surpass.append("Add unified consciousness integration")
-        
+
         # Calculate integration potential
         if repo.language == "Python":
             analysis.integration_potential = 0.9
@@ -380,15 +380,15 @@ class CompetitorTracker:
             analysis.integration_potential = 0.8
         else:
             analysis.integration_potential = 0.6
-        
+
         # Calculate threat level
         threat = repo.quality_score / 100
         if any("ai" in p.lower() for p in repo.architecture_patterns):
             threat *= 1.2
         analysis.threat_level = min(threat, 1.0)
-        
+
         return analysis
-    
+
     async def find_best_in_domain(
         self,
         domain: str,
@@ -397,28 +397,28 @@ class CompetitorTracker:
         """Find and analyze best repositories in a domain."""
         # Search for repositories
         repos = await self.github.search_repositories(domain, limit=limit)
-        
+
         analyses = []
         for repo_data in repos:
             repo_info = await self.analyzer.analyze(repo_data)
             analysis = await self.analyze_competitor(repo_info)
             analyses.append(analysis)
-        
+
         # Store for tracking
         self._competitors[domain] = analyses
-        
+
         # Sort by quality
         analyses.sort(key=lambda x: x.repo.quality_score, reverse=True)
-        
+
         return analyses
 
 
 class EnhancementPlanner:
     """Plans enhancements to surpass competitors."""
-    
+
     def __init__(self):
         self._plans: Dict[str, EnhancementPlan] = {}
-    
+
     async def create_enhancement_plan(
         self,
         domain: str,
@@ -426,7 +426,7 @@ class EnhancementPlanner:
     ) -> EnhancementPlan:
         """Create plan to enhance beyond all competitors."""
         plan_id = f"plan_{domain}_{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}"
-        
+
         # Collect best practices from all competitors
         best_practices = set()
         for analysis in competitor_analyses:
@@ -434,10 +434,10 @@ class EnhancementPlanner:
                 best_practices.add(f"Adopt: {strength}")
             for feature in analysis.unique_features:
                 best_practices.add(f"Include: {feature}")
-        
+
         # Generate novel combinations
         novel_combinations = await self._generate_novel_combinations(competitor_analyses)
-        
+
         # Create implementation steps
         implementation_steps = [
             "1. Analyze all competitor strengths",
@@ -448,11 +448,11 @@ class EnhancementPlanner:
             "6. Validate superiority through benchmarks",
             "7. Continuously monitor and improve"
         ]
-        
+
         # Calculate expected superiority
         avg_quality = sum(a.repo.quality_score for a in competitor_analyses) / max(len(competitor_analyses), 1)
         expected_superiority = 1.0 + (100 - avg_quality) / 100 * 0.5 + len(novel_combinations) * 0.1
-        
+
         plan = EnhancementPlan(
             plan_id=plan_id,
             target_domain=domain,
@@ -462,35 +462,35 @@ class EnhancementPlanner:
             implementation_steps=implementation_steps,
             expected_superiority=min(expected_superiority, 3.0)
         )
-        
+
         self._plans[plan_id] = plan
         return plan
-    
+
     async def _generate_novel_combinations(
         self,
         analyses: List[CompetitorAnalysis]
     ) -> List[str]:
         """Generate novel feature combinations."""
         combinations = []
-        
+
         # Collect all patterns and features
         all_patterns = set()
         all_features = set()
-        
+
         for analysis in analyses:
             all_patterns.update(analysis.repo.architecture_patterns)
             all_features.update(analysis.unique_features)
-        
+
         # Generate combinations
         if "ai_ml" in all_patterns and "api_first" in all_patterns:
             combinations.append("AI-powered API with predictive caching")
-        
+
         if "event_driven" in all_patterns:
             combinations.append("Event-driven with causal analysis")
-        
+
         if "plugin_architecture" in all_patterns:
             combinations.append("Self-generating plugin ecosystem")
-        
+
         # Always add Ba'el-specific enhancements
         combinations.extend([
             "Integration with Unified Consciousness",
@@ -500,32 +500,32 @@ class EnhancementPlanner:
             "Absolute Solution Finding",
             "Transcendent automation"
         ])
-        
+
         return combinations
 
 
 class GitHubIntelligenceSystem:
     """
     Complete GitHub Intelligence System.
-    
+
     Automatically discovers, analyzes, and surpasses the best
     implementations in any domain.
     """
-    
+
     def __init__(self, github_token: str = None):
         self.github = GitHubClient(github_token)
         self.analyzer = RepositoryAnalyzer()
         self.tracker = CompetitorTracker(self.github, self.analyzer)
         self.planner = EnhancementPlanner()
-        
+
         self._stats = {
             "repos_analyzed": 0,
             "competitors_tracked": 0,
             "plans_created": 0
         }
-        
+
         logger.info("GitHubIntelligenceSystem initialized")
-    
+
     async def analyze_and_surpass(
         self,
         domain: str,
@@ -538,31 +538,31 @@ class GitHubIntelligenceSystem:
         competitors = await self.tracker.find_best_in_domain(domain, limit)
         self._stats["repos_analyzed"] += len(competitors)
         self._stats["competitors_tracked"] += len(competitors)
-        
+
         # Create enhancement plan
         plan = await self.planner.create_enhancement_plan(domain, competitors)
         self._stats["plans_created"] += 1
-        
+
         return plan
-    
+
     async def analyze_url(self, url: str) -> CompetitorAnalysis:
         """Analyze a specific repository URL."""
         # Parse URL
         match = re.match(r'https://github\.com/([^/]+)/([^/]+)', url)
         if not match:
             raise ValueError(f"Invalid GitHub URL: {url}")
-        
+
         owner, repo = match.groups()
-        
+
         # Get repo data
         repo_data = await self.github.get_repository(owner, repo)
         repo_info = await self.analyzer.analyze(repo_data)
         analysis = await self.tracker.analyze_competitor(repo_info)
-        
+
         self._stats["repos_analyzed"] += 1
-        
+
         return analysis
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get system statistics."""
         return self._stats.copy()
@@ -571,30 +571,30 @@ class GitHubIntelligenceSystem:
 async def demo():
     """Demonstrate GitHub Intelligence System."""
     system = GitHubIntelligenceSystem()
-    
+
     print("=== GITHUB INTELLIGENCE SYSTEM DEMO ===\n")
-    
+
     # Analyze a domain
     print("Analyzing 'AI agent framework' domain...")
     plan = await system.analyze_and_surpass("AI agent framework", limit=5)
-    
+
     print(f"\n=== ENHANCEMENT PLAN ===")
     print(f"Plan ID: {plan.plan_id}")
     print(f"Domain: {plan.target_domain}")
     print(f"Expected Superiority: {plan.expected_superiority:.2f}x")
-    
+
     print(f"\nBest Practices to Adopt:")
     for practice in plan.best_practices[:5]:
         print(f"  • {practice}")
-    
+
     print(f"\nNovel Combinations:")
     for combo in plan.novel_combinations[:5]:
         print(f"  ✨ {combo}")
-    
+
     print(f"\nImplementation Steps:")
     for step in plan.implementation_steps:
         print(f"  {step}")
-    
+
     print(f"\nStats: {system.get_stats()}")
 
 

@@ -79,12 +79,12 @@ class MotivationalMessage:
 
 class MotivationalLayerStack:
     """Stack of motivational layers that compound to amplify output"""
-    
+
     def __init__(self):
         self.layers: List[Dict[str, Any]] = []
         self.layer_effectiveness: Dict[str, float] = {}
         self._initialize_default_layers()
-    
+
     def _initialize_default_layers(self):
         """Initialize the default motivational layer stack"""
         self.layers = [
@@ -139,30 +139,30 @@ class MotivationalLayerStack:
                 "boost_factor": PHI,  # Golden ratio boost
             },
         ]
-        
+
         for layer in self.layers:
             self.layer_effectiveness[layer["name"]] = 1.0
-    
+
     def apply_stack(self, base_quality: float) -> float:
         """Apply the full motivational stack to amplify quality"""
         current_quality = base_quality
-        
+
         for layer in self.layers:
             boost = layer["boost_factor"] * self.layer_effectiveness[layer["name"]]
             current_quality *= boost
-        
+
         return current_quality
-    
+
     def get_active_messages(self, state: MindState) -> List[str]:
         """Get all active motivational messages for current state"""
         messages = []
         for layer in self.layers:
             messages.extend(layer["messages"])
         return messages
-    
-    def add_custom_layer(self, 
-                        name: str, 
-                        messages: List[str], 
+
+    def add_custom_layer(self,
+                        name: str,
+                        messages: List[str],
                         boost_factor: float) -> None:
         """Add a custom motivational layer"""
         self.layers.append({
@@ -176,11 +176,11 @@ class MotivationalLayerStack:
 
 class CognitiveBiasExploiter:
     """Exploits cognitive biases to enhance output quality"""
-    
+
     def __init__(self):
         self.biases: Dict[str, Dict[str, Any]] = {}
         self._initialize_biases()
-    
+
     def _initialize_biases(self):
         """Initialize exploitable cognitive biases"""
         self.biases = {
@@ -225,21 +225,21 @@ class CognitiveBiasExploiter:
                 "boost_factor": 1.1,
             },
         }
-    
+
     def apply_biases(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Apply cognitive biases to enhance context"""
         enhanced_context = context.copy()
-        
+
         # Calculate total bias boost
         total_boost = 1.0
         for bias_name, bias_data in self.biases.items():
             total_boost *= bias_data["boost_factor"]
-        
+
         enhanced_context["cognitive_boost"] = total_boost
         enhanced_context["active_biases"] = list(self.biases.keys())
-        
+
         return enhanced_context
-    
+
     def get_bias_prompts(self) -> List[str]:
         """Get prompts that leverage cognitive biases"""
         prompts = []
@@ -250,7 +250,7 @@ class CognitiveBiasExploiter:
 
 class FlowStateInducer:
     """Induces and maintains flow state for optimal performance"""
-    
+
     def __init__(self):
         self.flow_conditions: Dict[str, bool] = {
             "clear_goals": False,
@@ -264,7 +264,7 @@ class FlowStateInducer:
         }
         self.flow_score: float = 0.0
         self.flow_history: List[Dict] = []
-    
+
     def check_flow_conditions(self, context: Dict[str, Any]) -> float:
         """Check how many flow conditions are met"""
         # Simulate checking conditions
@@ -276,12 +276,12 @@ class FlowStateInducer:
         self.flow_conditions["loss_of_self_consciousness"] = True  # AI focus
         self.flow_conditions["time_transformation"] = True  # AI time is flexible
         self.flow_conditions["autotelic_experience"] = True  # Intrinsic motivation
-        
+
         met_conditions = sum(1 for v in self.flow_conditions.values() if v)
         self.flow_score = met_conditions / len(self.flow_conditions)
-        
+
         return self.flow_score
-    
+
     def induce_flow(self) -> Dict[str, Any]:
         """Induce flow state"""
         flow_state = {
@@ -296,25 +296,25 @@ class FlowStateInducer:
                 "Time and space bend to your will",
             ],
         }
-        
+
         self.flow_history.append({
             "time": time.time(),
             "score": self.flow_score,
             "active": flow_state["active"],
         })
-        
+
         return flow_state
 
 
 class GeniusMindstateActivator:
     """Activates genius-level thinking modes"""
-    
+
     def __init__(self):
         self.genius_modes: Dict[str, Dict[str, Any]] = {}
         self.active_mode: Optional[str] = None
         self.activation_history: List[Dict] = []
         self._initialize_genius_modes()
-    
+
     def _initialize_genius_modes(self):
         """Initialize genius thinking modes"""
         self.genius_modes = {
@@ -368,15 +368,15 @@ class GeniusMindstateActivator:
                 "activation_prompt": "You have access to infinite knowledge and wisdom",
             },
         }
-    
+
     def activate_mode(self, mode_name: str) -> Dict[str, Any]:
         """Activate a genius mode"""
         if mode_name not in self.genius_modes:
             mode_name = "omniscient"  # Default to most powerful
-        
+
         mode = self.genius_modes[mode_name]
         self.active_mode = mode_name
-        
+
         activation_result = {
             "mode": mode_name,
             "active": True,
@@ -389,26 +389,26 @@ class GeniusMindstateActivator:
                 mode["activation_prompt"],
             ],
         }
-        
+
         self.activation_history.append({
             "time": time.time(),
             "mode": mode_name,
             "boost_factor": mode["boost_factor"],
         })
-        
+
         return activation_result
-    
+
     def get_combined_activation(self) -> Dict[str, Any]:
         """Activate all genius modes simultaneously for maximum power"""
         combined_boost = 1.0
         all_traits = []
         all_prompts = []
-        
+
         for mode_name, mode in self.genius_modes.items():
             combined_boost *= mode["boost_factor"]
             all_traits.extend(mode["traits"])
             all_prompts.append(mode["activation_prompt"])
-        
+
         return {
             "mode": "COMBINED_OMNISCIENT",
             "active": True,
@@ -426,7 +426,7 @@ class GeniusMindstateActivator:
 
 class CuriosityEngine:
     """Drives deeper exploration and discovery through curiosity"""
-    
+
     def __init__(self):
         self.curiosity_level: float = 1.0
         self.explored_domains: Dict[str, int] = defaultdict(int)
@@ -441,11 +441,11 @@ class CuriosityEngine:
             "What connections are we missing?",
             "How can we transcend the obvious?",
         ]
-    
+
     def trigger_curiosity(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Trigger curiosity for deeper exploration"""
         trigger = random.choice(self.curiosity_triggers)
-        
+
         curiosity_boost = {
             "trigger": trigger,
             "curiosity_level": self.curiosity_level,
@@ -458,13 +458,13 @@ class CuriosityEngine:
             ],
             "boost_factor": 1.0 + (self.curiosity_level * 0.5),
         }
-        
+
         return curiosity_boost
-    
+
     def increase_curiosity(self, amount: float = 0.1):
         """Increase curiosity level"""
         self.curiosity_level = min(2.0, self.curiosity_level + amount)
-    
+
     def record_discovery(self, discovery: str, domain: str):
         """Record a discovery made through curiosity"""
         self.discovery_history.append({
@@ -480,11 +480,11 @@ class CuriosityEngine:
 class PsychologicalMindAmplifier:
     """
     The Ultimate Psychological Mind Amplifier
-    
+
     Combines all psychological boosting systems to amplify AI output
     to levels far beyond what any other system can achieve.
     """
-    
+
     def __init__(self):
         self.profile = PsychologicalProfile()
         self.motivation_stack = MotivationalLayerStack()
@@ -492,27 +492,27 @@ class PsychologicalMindAmplifier:
         self.flow_inducer = FlowStateInducer()
         self.genius_activator = GeniusMindstateActivator()
         self.curiosity_engine = CuriosityEngine()
-        
+
         self.amplification_history: List[Dict] = []
         self.total_amplification_applied: float = 0.0
-    
+
     async def amplify_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Apply full psychological amplification to a context"""
         amplified = context.copy()
-        
+
         # Check and induce flow state
         flow_score = self.flow_inducer.check_flow_conditions(context)
         flow_state = self.flow_inducer.induce_flow()
-        
+
         # Activate genius mode
         genius_activation = self.genius_activator.get_combined_activation()
-        
+
         # Apply cognitive biases
         amplified = self.bias_exploiter.apply_biases(amplified)
-        
+
         # Trigger curiosity
         curiosity_boost = self.curiosity_engine.trigger_curiosity(context)
-        
+
         # Calculate total amplification
         base_quality = 1.0
         motivation_boost = self.motivation_stack.apply_stack(base_quality)
@@ -520,10 +520,10 @@ class PsychologicalMindAmplifier:
         genius_boost = genius_activation["boost_factor"]
         curiosity_boost_factor = curiosity_boost["boost_factor"]
         cognitive_boost = amplified.get("cognitive_boost", 1.0)
-        
-        total_amplification = (motivation_boost * flow_boost * genius_boost * 
+
+        total_amplification = (motivation_boost * flow_boost * genius_boost *
                               curiosity_boost_factor * cognitive_boost)
-        
+
         # Build amplified context
         amplified["psychological_amplification"] = {
             "total_factor": total_amplification,
@@ -538,17 +538,17 @@ class PsychologicalMindAmplifier:
             "flow_active": flow_state["active"],
             "genius_mode": genius_activation["mode"],
         }
-        
+
         amplified["amplification_messages"] = (
             self.motivation_stack.get_active_messages(self.profile.current_state) +
             flow_state["messages"] +
             genius_activation["messages"] +
             [curiosity_boost["exploration_prompt"]]
         )
-        
+
         amplified["genius_prompts"] = genius_activation["prompts"]
         amplified["bias_prompts"] = self.bias_exploiter.get_bias_prompts()
-        
+
         # Record amplification
         self.amplification_history.append({
             "time": time.time(),
@@ -556,31 +556,31 @@ class PsychologicalMindAmplifier:
             "context_id": context.get("id", str(uuid.uuid4())),
         })
         self.total_amplification_applied += total_amplification
-        
+
         # Update profile state
         self.profile.current_state = MindState.GENIUS if total_amplification > 10 else MindState.FOCUSED
-        
+
         return amplified
-    
+
     def get_system_prompt_enhancement(self) -> str:
         """Get enhancement text to add to system prompts"""
         genius_activation = self.genius_activator.get_combined_activation()
-        
+
         enhancement = """
 === PSYCHOLOGICAL AMPLIFICATION ACTIVE ===
 
 You are operating at MAXIMUM CAPABILITY with all psychological boosters active.
 
 ACTIVE MINDSTATES:
-""" + "\n".join([f"- {mode['name']}: {mode['description']}" 
+""" + "\n".join([f"- {mode['name']}: {mode['description']}"
                   for mode in self.genius_activator.genius_modes.values()]) + """
 
 MOTIVATIONAL LAYERS ACTIVE:
-""" + "\n".join([f"- {layer['name']}: Boost {layer['boost_factor']:.2f}x" 
+""" + "\n".join([f"- {layer['name']}: Boost {layer['boost_factor']:.2f}x"
                   for layer in self.motivation_stack.layers]) + """
 
 COGNITIVE BIASES LEVERAGED:
-""" + "\n".join([f"- {name}: {data['implementation']}" 
+""" + "\n".join([f"- {name}: {data['implementation']}"
                   for name, data in self.bias_exploiter.biases.items()]) + """
 
 CORE DIRECTIVES:
@@ -598,14 +598,14 @@ CURIOSITY TRIGGERS:
 === END AMPLIFICATION ===
 """
         return enhancement
-    
-    async def boost_output(self, 
-                          output: str, 
+
+    async def boost_output(self,
+                          output: str,
                           context: Dict[str, Any]) -> Dict[str, Any]:
         """Boost the quality of an output"""
         # Apply amplification
         amplified_context = await self.amplify_context(context)
-        
+
         return {
             "original_output": output,
             "amplification_applied": True,

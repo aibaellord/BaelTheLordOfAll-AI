@@ -85,7 +85,7 @@ class Problem:
     complexity: ProblemComplexity = ProblemComplexity.MODERATE
     context: Dict[str, Any] = field(default_factory=dict)
     deadline: Optional[datetime] = None
-    
+
     # Meta-problem info
     is_meta: bool = False  # True if this is a problem about solving problems
     parent_problem_id: Optional[str] = None
@@ -98,21 +98,21 @@ class Solution:
     problem_id: str
     description: str
     implementation: str  # How to execute
-    
+
     # Quality metrics
     quality: SolutionQuality = SolutionQuality.ACCEPTABLE
     fitness_score: float = 0.5
     confidence: float = 0.5
-    
+
     # Components
     steps: List[str] = field(default_factory=list)
     resources_required: List[str] = field(default_factory=list)
     side_effects: List[str] = field(default_factory=list)
-    
+
     # Validation
     validated: bool = False
     validation_results: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Meta-info
     generation: int = 0
     parent_solution_ids: List[str] = field(default_factory=list)
@@ -144,7 +144,7 @@ class SearchState:
 
 class SolutionGenerator(ABC):
     """Abstract base for solution generators."""
-    
+
     @abstractmethod
     async def generate(
         self,
@@ -157,26 +157,26 @@ class SolutionGenerator(ABC):
 
 class AnalyticalGenerator(SolutionGenerator):
     """Generates solutions through analytical decomposition."""
-    
+
     async def generate(self, problem: Problem, context: Dict[str, Any]) -> List[Solution]:
         """Analytically decompose and solve."""
         solutions = []
-        
+
         # Break problem into components
         components = self._decompose(problem)
-        
+
         # Generate solution for each component
         component_solutions = []
         for comp in components:
             comp_solution = await self._solve_component(comp, context)
             component_solutions.append(comp_solution)
-        
+
         # Synthesize complete solution
         complete = self._synthesize(problem, component_solutions)
         solutions.append(complete)
-        
+
         return solutions
-    
+
     def _decompose(self, problem: Problem) -> List[Dict[str, Any]]:
         """Decompose problem into components."""
         # Split by constraints
@@ -187,16 +187,16 @@ class AnalyticalGenerator(SolutionGenerator):
                 "constraint": constraint,
                 "description": f"Sub-problem for: {constraint}"
             })
-        
+
         if not components:
             components.append({
                 "id": "comp_0",
                 "constraint": "solve main problem",
                 "description": problem.description
             })
-        
+
         return components
-    
+
     async def _solve_component(
         self,
         component: Dict[str, Any],
@@ -208,7 +208,7 @@ class AnalyticalGenerator(SolutionGenerator):
             "solution": f"Solution for: {component['constraint']}",
             "confidence": 0.7
         }
-    
+
     def _synthesize(
         self,
         problem: Problem,
@@ -217,7 +217,7 @@ class AnalyticalGenerator(SolutionGenerator):
         """Synthesize component solutions."""
         steps = [cs["solution"] for cs in component_solutions]
         avg_confidence = sum(cs["confidence"] for cs in component_solutions) / len(component_solutions) if component_solutions else 0.5
-        
+
         return Solution(
             solution_id=f"analytical_{hashlib.md5(problem.problem_id.encode()).hexdigest()[:12]}",
             problem_id=problem.problem_id,
@@ -231,11 +231,11 @@ class AnalyticalGenerator(SolutionGenerator):
 
 class CreativeGenerator(SolutionGenerator):
     """Generates solutions through creative exploration."""
-    
+
     async def generate(self, problem: Problem, context: Dict[str, Any]) -> List[Solution]:
         """Generate creative solutions."""
         solutions = []
-        
+
         # Different creative approaches
         approaches = [
             self._inversion_approach,
@@ -243,7 +243,7 @@ class CreativeGenerator(SolutionGenerator):
             self._combination_approach,
             self._abstraction_approach
         ]
-        
+
         for approach in approaches:
             try:
                 solution = await approach(problem, context)
@@ -251,9 +251,9 @@ class CreativeGenerator(SolutionGenerator):
                     solutions.append(solution)
             except Exception as e:
                 logger.debug(f"Creative approach failed: {e}")
-        
+
         return solutions
-    
+
     async def _inversion_approach(
         self,
         problem: Problem,
@@ -269,7 +269,7 @@ class CreativeGenerator(SolutionGenerator):
             confidence=0.6,
             fitness_score=0.6
         )
-    
+
     async def _analogy_approach(
         self,
         problem: Problem,
@@ -285,7 +285,7 @@ class CreativeGenerator(SolutionGenerator):
             confidence=0.65,
             fitness_score=0.65
         )
-    
+
     async def _combination_approach(
         self,
         problem: Problem,
@@ -301,7 +301,7 @@ class CreativeGenerator(SolutionGenerator):
             confidence=0.7,
             fitness_score=0.7
         )
-    
+
     async def _abstraction_approach(
         self,
         problem: Problem,
@@ -321,11 +321,11 @@ class CreativeGenerator(SolutionGenerator):
 
 class MetaSolutionGenerator(SolutionGenerator):
     """Generates meta-solutions (solutions that solve classes of problems)."""
-    
+
     async def generate(self, problem: Problem, context: Dict[str, Any]) -> List[Solution]:
         """Generate meta-solutions."""
         solutions = []
-        
+
         # Create meta-solution
         meta_solution = Solution(
             solution_id=f"meta_{hashlib.md5(problem.problem_id.encode()).hexdigest()[:12]}",
@@ -342,14 +342,14 @@ class MetaSolutionGenerator(SolutionGenerator):
             fitness_score=0.75,
             quality=SolutionQuality.EXCELLENT
         )
-        
+
         solutions.append(meta_solution)
         return solutions
 
 
 class SolutionEvaluator:
     """Evaluates and scores solutions."""
-    
+
     def __init__(self):
         self._criteria_weights = {
             "effectiveness": 0.3,      # Does it solve the problem?
@@ -360,7 +360,7 @@ class SolutionEvaluator:
             "side_effects": 0.1,       # Negative consequences?
             "confidence": 0.05         # How sure are we?
         }
-    
+
     async def evaluate(
         self,
         solution: Solution,
@@ -368,41 +368,41 @@ class SolutionEvaluator:
     ) -> float:
         """Evaluate a solution and return fitness score."""
         scores = {}
-        
+
         # Effectiveness - does it address all objectives?
         objectives_covered = len(solution.steps) / max(len(problem.objectives), 1)
         scores["effectiveness"] = min(objectives_covered, 1.0)
-        
+
         # Efficiency - resource requirements
         resource_score = 1.0 - (len(solution.resources_required) * 0.1)
         scores["efficiency"] = max(resource_score, 0.1)
-        
+
         # Robustness - based on validation
         scores["robustness"] = 0.8 if solution.validated else 0.5
-        
+
         # Simplicity - fewer steps is simpler
         simplicity_score = 1.0 - (len(solution.steps) * 0.05)
         scores["simplicity"] = max(simplicity_score, 0.2)
-        
+
         # Scalability - based on problem complexity
         complexity_factor = 1.0 - (problem.complexity.value * 0.1)
         scores["scalability"] = max(complexity_factor, 0.3)
-        
+
         # Side effects - fewer is better
         side_effects_score = 1.0 - (len(solution.side_effects) * 0.15)
         scores["side_effects"] = max(side_effects_score, 0.2)
-        
+
         # Confidence
         scores["confidence"] = solution.confidence
-        
+
         # Weighted average
         total_score = sum(
             scores[criterion] * weight
             for criterion, weight in self._criteria_weights.items()
         )
-        
+
         return total_score
-    
+
     async def compare(
         self,
         solution1: Solution,
@@ -412,17 +412,17 @@ class SolutionEvaluator:
         """Compare two solutions. Returns -1, 0, or 1."""
         score1 = await self.evaluate(solution1, problem)
         score2 = await self.evaluate(solution2, problem)
-        
+
         if score1 > score2:
             return 1
         elif score1 < score2:
             return -1
         return 0
-    
+
     def update_quality(self, solution: Solution, score: float) -> None:
         """Update solution quality based on score."""
         solution.fitness_score = score
-        
+
         if score >= 0.95:
             solution.quality = SolutionQuality.TRANSCENDENT
         elif score >= 0.85:
@@ -441,7 +441,7 @@ class SolutionEvaluator:
 
 class SolutionValidator:
     """Validates solutions against constraints."""
-    
+
     async def validate(
         self,
         solution: Solution,
@@ -454,29 +454,29 @@ class SolutionValidator:
             "warnings": [],
             "errors": []
         }
-        
+
         # Check each constraint
         for constraint in problem.constraints:
             check_result = await self._check_constraint(solution, constraint)
             results["constraint_checks"][constraint] = check_result
-            
+
             if not check_result["satisfied"]:
                 results["valid"] = False
                 results["errors"].append(f"Constraint not satisfied: {constraint}")
-        
+
         # Check implementation feasibility
         if not solution.steps:
             results["warnings"].append("Solution has no implementation steps")
-        
+
         # Check for conflicts
         if solution.side_effects:
             results["warnings"].append(f"Solution has {len(solution.side_effects)} side effects")
-        
+
         solution.validated = True
         solution.validation_results = results
-        
+
         return results
-    
+
     async def _check_constraint(
         self,
         solution: Solution,
@@ -486,10 +486,10 @@ class SolutionValidator:
         # Simple heuristic check
         constraint_keywords = constraint.lower().split()
         solution_text = (solution.description + " " + solution.implementation).lower()
-        
+
         matches = sum(1 for kw in constraint_keywords if kw in solution_text)
         satisfaction = matches / len(constraint_keywords) if constraint_keywords else 0
-        
+
         return {
             "satisfied": satisfaction > 0.3,
             "satisfaction_score": satisfaction
@@ -498,7 +498,7 @@ class SolutionValidator:
 
 class AdversarialValidator:
     """Validates solutions through adversarial testing."""
-    
+
     async def adversarial_test(
         self,
         solution: Solution,
@@ -510,14 +510,14 @@ class AdversarialValidator:
             "attack_results": [],
             "robustness_score": 1.0
         }
-        
+
         attacks = [
             ("edge_case", self._edge_case_attack),
             ("resource_exhaustion", self._resource_attack),
             ("contradiction", self._contradiction_attack),
             ("scaling", self._scaling_attack)
         ]
-        
+
         for attack_name, attack_func in attacks:
             attack_result = await attack_func(solution, problem)
             results["attack_results"].append({
@@ -525,13 +525,13 @@ class AdversarialValidator:
                 "passed": attack_result["passed"],
                 "details": attack_result.get("details", "")
             })
-            
+
             if not attack_result["passed"]:
                 results["robustness_score"] *= 0.7
-        
+
         results["passed"] = results["robustness_score"] > 0.5
         return results
-    
+
     async def _edge_case_attack(
         self,
         solution: Solution,
@@ -539,10 +539,10 @@ class AdversarialValidator:
     ) -> Dict[str, bool]:
         """Test edge cases."""
         # Check if solution handles edge cases in steps
-        edge_handling = any("edge" in step.lower() or "boundary" in step.lower() 
+        edge_handling = any("edge" in step.lower() or "boundary" in step.lower()
                            for step in solution.steps)
         return {"passed": True, "details": "Edge case handling assumed"}
-    
+
     async def _resource_attack(
         self,
         solution: Solution,
@@ -552,7 +552,7 @@ class AdversarialValidator:
         # Check resource requirements are bounded
         bounded = len(solution.resources_required) < 10
         return {"passed": bounded, "details": f"{len(solution.resources_required)} resources"}
-    
+
     async def _contradiction_attack(
         self,
         solution: Solution,
@@ -561,7 +561,7 @@ class AdversarialValidator:
         """Test for logical contradictions."""
         # Simple check - no contradictory steps
         return {"passed": True, "details": "No contradictions detected"}
-    
+
     async def _scaling_attack(
         self,
         solution: Solution,
@@ -576,7 +576,7 @@ class AdversarialValidator:
 class AbsoluteSolutionFinder:
     """
     The Absolute Solution Finder.
-    
+
     This system GUARANTEES finding the optimal solution by:
     1. Exhaustively exploring the solution space (with smart pruning)
     2. Using multiple generation strategies
@@ -584,11 +584,11 @@ class AbsoluteSolutionFinder:
     4. Validating through adversarial testing
     5. Finding the Pareto frontier for multi-objective problems
     6. Generating meta-solutions for problem classes
-    
+
     The key innovation is the GUARANTEE of optimality within explored space,
     combined with intelligent exploration that maximizes coverage.
     """
-    
+
     def __init__(
         self,
         exploration_strategy: ExplorationStrategy = ExplorationStrategy.BEST_FIRST,
@@ -602,25 +602,25 @@ class AbsoluteSolutionFinder:
         self.convergence_threshold = convergence_threshold
         self.enable_adversarial = enable_adversarial
         self.enable_meta = enable_meta_solutions
-        
+
         # Generators
         self._generators: List[SolutionGenerator] = [
             AnalyticalGenerator(),
             CreativeGenerator()
         ]
-        
+
         if enable_meta_solutions:
             self._generators.append(MetaSolutionGenerator())
-        
+
         # Components
         self._evaluator = SolutionEvaluator()
         self._validator = SolutionValidator()
         self._adversarial = AdversarialValidator() if enable_adversarial else None
-        
+
         # Caching
         self._problem_cache: Dict[str, SolutionSpace] = {}
         self._solution_library: Dict[str, Solution] = {}
-        
+
         # Statistics
         self._stats = {
             "problems_solved": 0,
@@ -629,9 +629,9 @@ class AbsoluteSolutionFinder:
             "meta_solutions": 0,
             "cache_hits": 0
         }
-        
+
         logger.info("AbsoluteSolutionFinder initialized")
-    
+
     async def solve(
         self,
         problem: Problem,
@@ -639,21 +639,21 @@ class AbsoluteSolutionFinder:
     ) -> Solution:
         """
         Find the absolute best solution for a problem.
-        
+
         This is the main entry point that guarantees finding the optimal solution.
         """
         context = context or {}
-        
+
         # Check cache
         if problem.problem_id in self._problem_cache:
             space = self._problem_cache[problem.problem_id]
             if space.optimal_solution and space.coverage > 0.9:
                 self._stats["cache_hits"] += 1
                 return space.optimal_solution
-        
+
         # Initialize solution space
         solution_space = await self._initialize_space(problem)
-        
+
         # Generate candidates using all generators
         candidates = []
         for generator in self._generators:
@@ -663,7 +663,7 @@ class AbsoluteSolutionFinder:
                 self._stats["solutions_generated"] += len(generated)
             except Exception as e:
                 logger.warning(f"Generator failed: {e}")
-        
+
         # Explore solution space based on strategy
         if self.exploration_strategy == ExplorationStrategy.BEST_FIRST:
             final = await self._best_first_search(candidates, problem, solution_space)
@@ -673,30 +673,30 @@ class AbsoluteSolutionFinder:
             final = await self._quantum_inspired_search(candidates, problem, solution_space)
         else:
             final = await self._best_first_search(candidates, problem, solution_space)
-        
+
         # Validate winner
         if final:
             await self._validator.validate(final, problem)
-            
+
             if self._adversarial:
                 adversarial_result = await self._adversarial.adversarial_test(final, problem)
                 final.fitness_score *= adversarial_result["robustness_score"]
                 self._evaluator.update_quality(final, final.fitness_score)
-        
+
         # Update space
         solution_space.optimal_solution = final
         self._problem_cache[problem.problem_id] = solution_space
-        
+
         # Store in library
         if final:
             self._solution_library[final.solution_id] = final
-        
+
         self._stats["problems_solved"] += 1
         if final and final.quality.value >= SolutionQuality.OPTIMAL.value:
             self._stats["optimal_found"] += 1
-        
+
         return final
-    
+
     async def _initialize_space(self, problem: Problem) -> SolutionSpace:
         """Initialize the solution space."""
         dimensions = [
@@ -705,16 +705,16 @@ class AbsoluteSolutionFinder:
             "complexity",
             "creativity"
         ]
-        
+
         # Add constraint-based dimensions
         for i, _ in enumerate(problem.constraints):
             dimensions.append(f"constraint_{i}")
-        
+
         return SolutionSpace(
             problem_id=problem.problem_id,
             dimensions=dimensions
         )
-    
+
     async def _best_first_search(
         self,
         candidates: List[Solution],
@@ -724,7 +724,7 @@ class AbsoluteSolutionFinder:
         """Best-first search through solution space."""
         if not candidates:
             return None
-        
+
         # Priority queue (negative score for max-heap behavior)
         heap = []
         for candidate in candidates:
@@ -732,24 +732,24 @@ class AbsoluteSolutionFinder:
             self._evaluator.update_quality(candidate, score)
             heapq.heappush(heap, (-score, id(candidate), candidate))
             space.solutions.append(candidate)
-        
+
         explored = 0
         best = None
-        
+
         while heap and explored < self.max_candidates:
             neg_score, _, current = heapq.heappop(heap)
             score = -neg_score
             explored += 1
-            
+
             space.explored_regions.add(current.solution_id)
-            
+
             if best is None or score > best.fitness_score:
                 best = current
-                
+
                 # Check for convergence
                 if score >= self.convergence_threshold:
                     break
-            
+
             # Generate neighbors (variations)
             neighbors = await self._generate_variations(current, problem)
             for neighbor in neighbors:
@@ -757,10 +757,10 @@ class AbsoluteSolutionFinder:
                 self._evaluator.update_quality(neighbor, neighbor_score)
                 heapq.heappush(heap, (-neighbor_score, id(neighbor), neighbor))
                 space.solutions.append(neighbor)
-        
+
         space.coverage = explored / self.max_candidates
         return best
-    
+
     async def _genetic_search(
         self,
         candidates: List[Solution],
@@ -770,28 +770,28 @@ class AbsoluteSolutionFinder:
         """Genetic algorithm search."""
         if not candidates:
             return None
-        
+
         population = candidates[:50]  # Initial population
-        
+
         # Evaluate initial population
         for individual in population:
             score = await self._evaluator.evaluate(individual, problem)
             self._evaluator.update_quality(individual, score)
-        
+
         generations = 0
         max_generations = 50
-        
+
         while generations < max_generations:
             # Sort by fitness
             population.sort(key=lambda x: x.fitness_score, reverse=True)
-            
+
             # Check for convergence
             if population[0].fitness_score >= self.convergence_threshold:
                 break
-            
+
             # Selection - top 50%
             survivors = population[:len(population)//2]
-            
+
             # Crossover
             offspring = []
             for i in range(len(survivors)):
@@ -799,27 +799,27 @@ class AbsoluteSolutionFinder:
                 parent2 = survivors[(i + 1) % len(survivors)]
                 child = await self._crossover(parent1, parent2, problem)
                 offspring.append(child)
-            
+
             # Mutation
             for individual in offspring:
                 if random.random() < 0.1:  # 10% mutation rate
                     await self._mutate(individual, problem)
-            
+
             # Evaluate offspring
             for individual in offspring:
                 score = await self._evaluator.evaluate(individual, problem)
                 self._evaluator.update_quality(individual, score)
-            
+
             # New generation
             population = survivors + offspring
             generations += 1
-            
+
             # Track in space
             space.solutions.extend(offspring)
-        
+
         space.coverage = generations / max_generations
         return max(population, key=lambda x: x.fitness_score) if population else None
-    
+
     async def _quantum_inspired_search(
         self,
         candidates: List[Solution],
@@ -829,10 +829,10 @@ class AbsoluteSolutionFinder:
         """Quantum-inspired superposition and collapse search."""
         if not candidates:
             return None
-        
+
         # Treat each candidate as a quantum state with amplitude
         amplitudes = {c.solution_id: 1.0 / len(candidates) for c in candidates}
-        
+
         # Multiple measurement rounds
         measurements = []
         for _ in range(10):  # 10 measurement rounds
@@ -842,12 +842,12 @@ class AbsoluteSolutionFinder:
                 self._evaluator.update_quality(candidate, score)
                 # Amplify high-fitness states
                 amplitudes[candidate.solution_id] *= (1 + score)
-            
+
             # Normalize
             total = sum(amplitudes.values())
             for sid in amplitudes:
                 amplitudes[sid] /= total
-            
+
             # Collapse (sample based on amplitudes)
             sampled = random.choices(
                 candidates,
@@ -855,19 +855,19 @@ class AbsoluteSolutionFinder:
                 k=1
             )[0]
             measurements.append(sampled)
-        
+
         # Most frequently measured = best
         measurement_counts = {}
         for m in measurements:
             measurement_counts[m.solution_id] = measurement_counts.get(m.solution_id, 0) + 1
-        
+
         best_id = max(measurement_counts.keys(), key=lambda x: measurement_counts[x])
         best = next(c for c in candidates if c.solution_id == best_id)
-        
+
         space.solutions.extend(candidates)
         space.coverage = 1.0
         return best
-    
+
     async def _generate_variations(
         self,
         solution: Solution,
@@ -875,12 +875,12 @@ class AbsoluteSolutionFinder:
     ) -> List[Solution]:
         """Generate variations of a solution."""
         variations = []
-        
+
         # Add step variation
         if solution.steps:
             varied_steps = solution.steps.copy()
             varied_steps.append("Additional optimization step")
-            
+
             variation = Solution(
                 solution_id=f"var_{solution.solution_id}_{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}",
                 problem_id=problem.problem_id,
@@ -892,9 +892,9 @@ class AbsoluteSolutionFinder:
                 parent_solution_ids=[solution.solution_id]
             )
             variations.append(variation)
-        
+
         return variations
-    
+
     async def _crossover(
         self,
         parent1: Solution,
@@ -904,7 +904,7 @@ class AbsoluteSolutionFinder:
         """Crossover two parent solutions."""
         # Combine steps from both parents
         combined_steps = parent1.steps[:len(parent1.steps)//2] + parent2.steps[len(parent2.steps)//2:]
-        
+
         child = Solution(
             solution_id=f"child_{hashlib.md5(str(time.time()).encode()).hexdigest()[:12]}",
             problem_id=problem.problem_id,
@@ -915,13 +915,13 @@ class AbsoluteSolutionFinder:
             generation=max(parent1.generation, parent2.generation) + 1,
             parent_solution_ids=[parent1.solution_id, parent2.solution_id]
         )
-        
+
         return child
-    
+
     async def _mutate(self, solution: Solution, problem: Problem) -> None:
         """Mutate a solution in place."""
         mutation_type = random.choice(["add_step", "modify_step", "change_implementation"])
-        
+
         if mutation_type == "add_step":
             solution.steps.append("Mutated optimization")
         elif mutation_type == "modify_step" and solution.steps:
@@ -929,9 +929,9 @@ class AbsoluteSolutionFinder:
             solution.steps[idx] = f"Mutated: {solution.steps[idx]}"
         elif mutation_type == "change_implementation":
             solution.implementation += " (mutated for improvement)"
-        
+
         solution.confidence *= 0.9  # Slight confidence drop after mutation
-    
+
     async def solve_multi_objective(
         self,
         problem: Problem,
@@ -940,13 +940,13 @@ class AbsoluteSolutionFinder:
     ) -> List[Solution]:
         """Find Pareto frontier for multi-objective problems."""
         context = context or {}
-        
+
         # Generate solutions
         all_solutions = []
         for generator in self._generators:
             generated = await generator.generate(problem, context)
             all_solutions.extend(generated)
-        
+
         # Evaluate each solution on all objectives
         evaluated = []
         for solution in all_solutions:
@@ -955,7 +955,7 @@ class AbsoluteSolutionFinder:
                 # Simulate objective-specific evaluation
                 scores[obj] = await self._evaluator.evaluate(solution, problem)
             evaluated.append((solution, scores))
-        
+
         # Find Pareto frontier
         pareto = []
         for sol, scores in evaluated:
@@ -965,12 +965,12 @@ class AbsoluteSolutionFinder:
                    any(other_scores[o] > scores[o] for o in objectives):
                     dominated = True
                     break
-            
+
             if not dominated:
                 pareto.append(sol)
-        
+
         return pareto
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get finder statistics."""
         return {
@@ -996,7 +996,7 @@ def get_solution_finder() -> AbsoluteSolutionFinder:
 async def demo():
     """Demonstrate Absolute Solution Finder."""
     finder = get_solution_finder()
-    
+
     # Create a problem
     problem = Problem(
         problem_id="demo_problem_001",
@@ -1013,14 +1013,14 @@ async def demo():
         ],
         complexity=ProblemComplexity.COMPLEX
     )
-    
+
     print("Finding absolute solution...")
     print(f"Problem: {problem.description}")
     print(f"Constraints: {problem.constraints}")
-    
+
     # Find solution
     solution = await finder.solve(problem)
-    
+
     print(f"\n=== OPTIMAL SOLUTION ===")
     print(f"ID: {solution.solution_id}")
     print(f"Quality: {solution.quality.name}")
@@ -1031,9 +1031,9 @@ async def demo():
     print(f"\nSteps:")
     for i, step in enumerate(solution.steps, 1):
         print(f"  {i}. {step}")
-    
+
     print(f"\nValidation: {'Passed' if solution.validated else 'Pending'}")
-    
+
     # Multi-objective
     print(f"\n=== PARETO FRONTIER ===")
     pareto = await finder.solve_multi_objective(
@@ -1041,7 +1041,7 @@ async def demo():
         ["effectiveness", "efficiency", "simplicity"]
     )
     print(f"Found {len(pareto)} Pareto-optimal solutions")
-    
+
     print(f"\nStats: {finder.get_stats()}")
 
 

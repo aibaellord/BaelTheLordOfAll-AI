@@ -87,17 +87,17 @@ class GeneratedResource:
     replicable: bool
     scalable: bool
     created_at: datetime
-    
+
     @property
     def is_zero_cost(self) -> bool:
         return self.input_cost == 0
-    
+
     @property
     def roi_display(self) -> str:
         if self.input_cost == 0:
             return "∞ (infinite)"
         return f"{self.roi:.2%}"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -142,7 +142,7 @@ class LeverageOpportunity:
 class ResourceGeneratorEngine:
     """
     The Resource Generator - create value from nothing.
-    
+
     Provides:
     - Zero-investment value creation
     - Resource multiplication strategies
@@ -150,19 +150,19 @@ class ResourceGeneratorEngine:
     - Infinite ROI generation
     - Value transmutation
     """
-    
+
     def __init__(self):
         self.generated_resources: Dict[str, GeneratedResource] = {}
         self.strategies: Dict[str, ZeroCostStrategy] = {}
         self.leverage_opportunities: List[LeverageOpportunity] = []
         self.total_value_generated: float = 0.0
-        
+
         # Initialize strategies
         self._init_strategies()
         self._init_leverage_opportunities()
-        
+
         logger.info("ResourceGeneratorEngine initialized - value from nothing")
-    
+
     def _init_strategies(self):
         """Initialize zero-cost strategies."""
         strategy_templates = [
@@ -279,7 +279,7 @@ class ResourceGeneratorEngine:
                 "time": "6-12 months"
             }
         ]
-        
+
         for i, template in enumerate(strategy_templates):
             strategy = ZeroCostStrategy(
                 id=f"strategy_{i:04d}",
@@ -294,7 +294,7 @@ class ResourceGeneratorEngine:
                 scalability="high"
             )
             self.strategies[strategy.id] = strategy
-    
+
     def _init_leverage_opportunities(self):
         """Initialize leverage opportunities."""
         self.leverage_opportunities = [
@@ -344,11 +344,11 @@ class ResourceGeneratorEngine:
                 requirements=["Analysis skills", "Pattern recognition"]
             )
         ]
-    
+
     # -------------------------------------------------------------------------
     # RESOURCE GENERATION
     # -------------------------------------------------------------------------
-    
+
     async def generate_resource(
         self,
         resource_type: ResourceType,
@@ -358,7 +358,7 @@ class ResourceGeneratorEngine:
         """Generate a resource from nothing."""
         # Generate based on type and method
         value = target_value * random.uniform(0.8, 1.5)
-        
+
         resource = GeneratedResource(
             id=self._gen_id("res"),
             resource_type=resource_type,
@@ -373,12 +373,12 @@ class ResourceGeneratorEngine:
             scalable=True,
             created_at=datetime.now()
         )
-        
+
         self.generated_resources[resource.id] = resource
         self.total_value_generated += value
-        
+
         return resource
-    
+
     async def generate_from_strategy(
         self,
         strategy_id: str
@@ -387,7 +387,7 @@ class ResourceGeneratorEngine:
         strategy = self.strategies.get(strategy_id)
         if not strategy:
             raise ValueError(f"Strategy {strategy_id} not found")
-        
+
         resources = []
         for resource_type in strategy.target_resources:
             resource = await self.generate_resource(
@@ -397,9 +397,9 @@ class ResourceGeneratorEngine:
             )
             resource.description = f"Generated via '{strategy.name}'"
             resources.append(resource)
-        
+
         return resources
-    
+
     async def multiply_resource(
         self,
         base_value: float,
@@ -408,29 +408,29 @@ class ResourceGeneratorEngine:
     ) -> GeneratedResource:
         """Multiply existing resource value."""
         multiplied_value = base_value * multiplication_factor
-        
+
         resource = await self.generate_resource(
             resource_type=resource_type,
             method=GenerationMethod.MULTIPLICATION,
             target_value=multiplied_value
         )
-        
+
         resource.description = f"Multiplied {multiplication_factor}x from base {base_value}"
-        
+
         return resource
-    
+
     async def find_hidden_resources(
         self,
         scan_depth: int = 3
     ) -> List[GeneratedResource]:
         """Discover hidden resources that can be leveraged."""
         hidden_resources = []
-        
+
         # Simulate finding hidden resources
         for _ in range(scan_depth * 2):
             resource_type = random.choice(list(ResourceType))
             value = random.uniform(100, 10000)
-            
+
             resource = GeneratedResource(
                 id=self._gen_id("hidden"),
                 resource_type=resource_type,
@@ -445,13 +445,13 @@ class ResourceGeneratorEngine:
                 scalable=True,
                 created_at=datetime.now()
             )
-            
+
             hidden_resources.append(resource)
             self.generated_resources[resource.id] = resource
             self.total_value_generated += value
-        
+
         return hidden_resources
-    
+
     async def transmute_resource(
         self,
         source_type: ResourceType,
@@ -462,7 +462,7 @@ class ResourceGeneratorEngine:
         # Transmutation may increase or decrease value
         transmutation_efficiency = random.uniform(0.5, 2.0)
         target_value = source_value * transmutation_efficiency
-        
+
         resource = GeneratedResource(
             id=self._gen_id("trans"),
             resource_type=target_type,
@@ -477,16 +477,16 @@ class ResourceGeneratorEngine:
             scalable=True,
             created_at=datetime.now()
         )
-        
+
         self.generated_resources[resource.id] = resource
         self.total_value_generated += max(0, target_value - source_value)
-        
+
         return resource
-    
+
     # -------------------------------------------------------------------------
     # VALUE OPTIMIZATION
     # -------------------------------------------------------------------------
-    
+
     async def optimize_value_chain(
         self,
         start_type: ResourceType,
@@ -496,17 +496,17 @@ class ResourceGeneratorEngine:
         # Find leverage opportunities in the chain
         chain = []
         current_type = start_type
-        
+
         for opportunity in self.leverage_opportunities:
             if opportunity.input_resource == current_type:
                 chain.append(opportunity)
                 current_type = opportunity.output_resource
-                
+
                 if current_type == end_type:
                     break
-        
+
         return chain
-    
+
     async def calculate_total_leverage(
         self,
         chain: List[LeverageOpportunity]
@@ -516,11 +516,11 @@ class ResourceGeneratorEngine:
         for opportunity in chain:
             total *= opportunity.multiplication_factor
         return total
-    
+
     # -------------------------------------------------------------------------
     # ZERO-COST ANALYSIS
     # -------------------------------------------------------------------------
-    
+
     def get_best_strategies(
         self,
         target_value: Optional[float] = None,
@@ -528,23 +528,23 @@ class ResourceGeneratorEngine:
     ) -> List[ZeroCostStrategy]:
         """Get the best zero-cost strategies."""
         strategies = list(self.strategies.values())
-        
+
         # Filter by target value if specified
         if target_value:
             strategies = [s for s in strategies if s.potential_value >= target_value]
-        
+
         # Sort by expected value (potential * probability)
         strategies.sort(
             key=lambda s: s.potential_value * s.success_probability,
             reverse=True
         )
-        
+
         return strategies[:limit]
-    
+
     def get_resource_stats(self) -> Dict[str, Any]:
         """Get resource generation statistics."""
         resources = list(self.generated_resources.values())
-        
+
         return {
             "total_resources_generated": len(resources),
             "total_value_generated": f"${self.total_value_generated:,.2f}",
@@ -561,11 +561,11 @@ class ResourceGeneratorEngine:
             "strategies_available": len(self.strategies),
             "leverage_opportunities": len(self.leverage_opportunities)
         }
-    
+
     # -------------------------------------------------------------------------
     # HELPERS
     # -------------------------------------------------------------------------
-    
+
     def _determine_value_level(self, value: float) -> ValueLevel:
         """Determine value level from amount."""
         if value >= 1000000:
@@ -580,7 +580,7 @@ class ResourceGeneratorEngine:
             return ValueLevel.LOW
         else:
             return ValueLevel.MINIMAL
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
@@ -610,26 +610,26 @@ async def demo():
     print("=" * 60)
     print("💎 RESOURCE GENERATOR ENGINE 💎")
     print("=" * 60)
-    
+
     generator = get_resource_generator()
-    
+
     # Generate resources
     print("\n--- Generating Resources from Nothing ---")
-    
+
     for rt in list(ResourceType)[:5]:
         resource = await generator.generate_resource(rt, target_value=10000)
         print(f"\n  {resource.name}")
         print(f"    Value: ${resource.value_estimate:,.2f}")
         print(f"    ROI: {resource.roi_display}")
         print(f"    Method: {resource.generation_method.value}")
-    
+
     # Find hidden resources
     print("\n--- Discovering Hidden Resources ---")
     hidden = await generator.find_hidden_resources(scan_depth=3)
     print(f"Found {len(hidden)} hidden resources")
     total_hidden_value = sum(r.value_estimate for r in hidden)
     print(f"Total hidden value: ${total_hidden_value:,.2f}")
-    
+
     # Best strategies
     print("\n--- Best Zero-Cost Strategies ---")
     strategies = generator.get_best_strategies(limit=3)
@@ -638,7 +638,7 @@ async def demo():
         print(f"    Potential: ${strategy.potential_value:,.2f}")
         print(f"    Time: {strategy.time_to_value}")
         print(f"    Success: {strategy.success_probability:.0%}")
-    
+
     # Execute a strategy
     print("\n--- Executing Strategy ---")
     if strategies:
@@ -646,19 +646,19 @@ async def demo():
         print(f"Generated {len(resources)} resources")
         for r in resources:
             print(f"  - {r.name}: ${r.value_estimate:,.2f}")
-    
+
     # Multiply resources
     print("\n--- Multiplying Resources ---")
     multiplied = await generator.multiply_resource(1000, ResourceType.KNOWLEDGE, 100)
     print(f"Multiplied: ${multiplied.value_estimate:,.2f}")
-    
+
     # Stats
     print("\n--- Statistics ---")
     stats = generator.get_resource_stats()
     print(f"Total generated: {stats['total_resources_generated']}")
     print(f"Total value: {stats['total_value_generated']}")
     print(f"Infinite ROI: {stats['infinite_roi_resources']}")
-    
+
     print("\n" + "=" * 60)
     print("💎 VALUE CREATED FROM NOTHING 💎")
 

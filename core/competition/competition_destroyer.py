@@ -156,7 +156,7 @@ class MarketPosition:
 class CompetitionDestroyer:
     """
     Engine for systematic competitor elimination.
-    
+
     Features:
     - Deep competitor profiling
     - Weakness analysis
@@ -164,18 +164,18 @@ class CompetitionDestroyer:
     - Campaign execution
     - Market dominance tracking
     """
-    
+
     def __init__(self):
         self.competitors: Dict[str, CompetitorProfile] = {}
         self.campaigns: Dict[str, DestructionCampaign] = {}
         self.market_positions: Dict[str, MarketPosition] = {}
         self.exploits: Dict[str, List[WeaknessExploit]] = {}
-        
+
         self._init_sample_competitors()
         self._init_standard_exploits()
-        
+
         logger.info("CompetitionDestroyer initialized - dominance protocol active")
-    
+
     def _init_sample_competitors(self):
         """Initialize sample competitor profiles."""
         competitors_data = [
@@ -200,7 +200,7 @@ class CompetitionDestroyer:
              {WeaknessType.TECHNICAL: "Legacy systems", WeaknessType.LEADERSHIP: "Succession issues"},
              ["digital gap", "aging workforce"]),
         ]
-        
+
         for name, c_type, threat, share, strengths, weaknesses, vulns in competitors_data:
             profile = CompetitorProfile(
                 id=self._gen_id("comp"),
@@ -219,7 +219,7 @@ class CompetitionDestroyer:
                 last_updated=datetime.now()
             )
             self.competitors[profile.id] = profile
-    
+
     def _init_standard_exploits(self):
         """Initialize standard weakness exploits."""
         self.standard_exploits = {
@@ -279,11 +279,11 @@ class CompetitionDestroyer:
                 )
             ],
         }
-    
+
     # -------------------------------------------------------------------------
     # COMPETITOR PROFILING
     # -------------------------------------------------------------------------
-    
+
     async def profile_competitor(
         self,
         name: str,
@@ -307,18 +307,18 @@ class CompetitionDestroyer:
             intelligence_sources=known_info.get("sources", []),
             last_updated=datetime.now()
         )
-        
+
         self.competitors[profile.id] = profile
         return profile
-    
+
     def _assess_threat_level(self, info: Dict[str, Any]) -> CompetitorThreatLevel:
         """Assess threat level from info."""
         market_share = info.get("market_share", 0)
         growth = info.get("growth_rate", 0)
         innovation = info.get("innovation_score", 0)
-        
+
         threat_score = market_share * 3 + growth * 2 + innovation
-        
+
         if threat_score > 0.8:
             return CompetitorThreatLevel.EXISTENTIAL
         elif threat_score > 0.6:
@@ -331,7 +331,7 @@ class CompetitionDestroyer:
             return CompetitorThreatLevel.LOW
         else:
             return CompetitorThreatLevel.NEGLIGIBLE
-    
+
     async def analyze_weaknesses(
         self,
         competitor_id: str
@@ -340,7 +340,7 @@ class CompetitionDestroyer:
         competitor = self.competitors.get(competitor_id)
         if not competitor:
             return []
-        
+
         exploits = []
         for weakness_type, description in competitor.weaknesses.items():
             standard = self.standard_exploits.get(weakness_type, [])
@@ -356,14 +356,14 @@ class CompetitionDestroyer:
                     collateral_risk=exploit.collateral_risk
                 )
                 exploits.append(customized)
-        
+
         self.exploits[competitor_id] = exploits
         return exploits
-    
+
     # -------------------------------------------------------------------------
     # CAMPAIGN PLANNING
     # -------------------------------------------------------------------------
-    
+
     async def plan_destruction_campaign(
         self,
         competitor_id: str,
@@ -374,10 +374,10 @@ class CompetitionDestroyer:
         competitor = self.competitors.get(competitor_id)
         if not competitor:
             raise ValueError(f"Competitor {competitor_id} not found")
-        
+
         # Generate phases based on strategy
         phases = self._generate_campaign_phases(strategy, competitor)
-        
+
         campaign = DestructionCampaign(
             id=self._gen_id("camp"),
             name=f"Campaign {strategy.value} vs {competitor.name}",
@@ -393,10 +393,10 @@ class CompetitionDestroyer:
             },
             status="planned"
         )
-        
+
         self.campaigns[campaign.id] = campaign
         return campaign
-    
+
     def _generate_campaign_phases(
         self,
         strategy: DestructionStrategy,
@@ -404,7 +404,7 @@ class CompetitionDestroyer:
     ) -> List[Dict[str, Any]]:
         """Generate campaign phases."""
         phases = []
-        
+
         if strategy == DestructionStrategy.OUTSPEND:
             phases = [
                 {"name": "Market Saturation", "duration_days": 90, "budget_percent": 30, "actions": ["advertising", "promotions"]},
@@ -429,9 +429,9 @@ class CompetitionDestroyer:
                 {"name": "Execution", "duration_days": 120, "budget_percent": 60, "actions": ["main_attack"]},
                 {"name": "Consolidation", "duration_days": 60, "budget_percent": 20, "actions": ["secure_gains"]}
             ]
-        
+
         return phases
-    
+
     async def execute_campaign(
         self,
         campaign_id: str
@@ -440,12 +440,12 @@ class CompetitionDestroyer:
         campaign = self.campaigns.get(campaign_id)
         if not campaign:
             return {"success": False, "reason": "Campaign not found"}
-        
+
         campaign.status = "active"
-        
+
         # Simulate execution
         success = random.random() < 0.7
-        
+
         competitor = self.competitors.get(campaign.target_id)
         if competitor and success:
             # Reduce competitor threat
@@ -454,9 +454,9 @@ class CompetitionDestroyer:
             if current_idx > 0:
                 competitor.threat_level = threat_levels[current_idx - 1]
             competitor.market_share *= 0.8
-        
+
         campaign.status = "completed" if success else "failed"
-        
+
         return {
             "success": success,
             "campaign": campaign.name,
@@ -464,11 +464,11 @@ class CompetitionDestroyer:
             "new_threat_level": competitor.threat_level.value if competitor else None,
             "market_share_impact": -0.05 if success else 0
         }
-    
+
     # -------------------------------------------------------------------------
     # MARKET DOMINANCE
     # -------------------------------------------------------------------------
-    
+
     async def analyze_market_position(
         self,
         market_name: str
@@ -478,10 +478,10 @@ class CompetitionDestroyer:
             c.name: c.market_share
             for c in self.competitors.values()
         }
-        
+
         total_competitor_share = sum(competitor_shares.values())
         our_share = max(0, 1 - total_competitor_share)
-        
+
         position = MarketPosition(
             market_name=market_name,
             our_share=our_share,
@@ -489,10 +489,10 @@ class CompetitionDestroyer:
             growth_rate=random.uniform(0.05, 0.2),
             dominance_score=our_share / max(competitor_shares.values()) if competitor_shares else float('inf')
         )
-        
+
         self.market_positions[market_name] = position
         return position
-    
+
     def get_threat_summary(self) -> Dict[str, Any]:
         """Get summary of competitive threats."""
         threat_counts = {}
@@ -501,12 +501,12 @@ class CompetitionDestroyer:
             if level not in threat_counts:
                 threat_counts[level] = 0
             threat_counts[level] += 1
-        
+
         highest_threats = [
             c for c in self.competitors.values()
             if c.threat_level in [CompetitorThreatLevel.CRITICAL, CompetitorThreatLevel.EXISTENTIAL]
         ]
-        
+
         return {
             "total_competitors": len(self.competitors),
             "by_threat_level": threat_counts,
@@ -514,11 +514,11 @@ class CompetitionDestroyer:
             "active_campaigns": len([c for c in self.campaigns.values() if c.status == "active"]),
             "total_market_share_of_competitors": sum(c.market_share for c in self.competitors.values())
         }
-    
+
     def get_recommendations(self) -> List[Dict[str, Any]]:
         """Get recommendations for competitive action."""
         recommendations = []
-        
+
         for competitor in self.competitors.values():
             if competitor.threat_level == CompetitorThreatLevel.CRITICAL:
                 recommendations.append({
@@ -534,9 +534,9 @@ class CompetitionDestroyer:
                     "recommended_strategy": DestructionStrategy.CONTAIN.value,
                     "reason": "Significant competitive threat"
                 })
-        
+
         return sorted(recommendations, key=lambda r: 0 if r["urgency"] == "immediate" else 1)
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get engine statistics."""
         return {
@@ -545,7 +545,7 @@ class CompetitionDestroyer:
             "completed_campaigns": len([c for c in self.campaigns.values() if c.status == "completed"]),
             "threat_summary": self.get_threat_summary()
         }
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
@@ -575,16 +575,16 @@ async def demo():
     print("=" * 60)
     print("⚔️ COMPETITION DESTROYER ⚔️")
     print("=" * 60)
-    
+
     engine = get_competition_destroyer()
-    
+
     # Threat summary
     print("\n--- Threat Summary ---")
     summary = engine.get_threat_summary()
     print(f"Total Competitors: {summary['total_competitors']}")
     print(f"Critical Threats: {summary['critical_threats']}")
     print(f"Competitor Market Share: {summary['total_market_share_of_competitors']:.0%}")
-    
+
     # Competitor profiles
     print("\n--- Competitor Profiles ---")
     for comp in list(engine.competitors.values())[:3]:
@@ -592,7 +592,7 @@ async def demo():
         print(f"      Type: {comp.competitor_type.value}")
         print(f"      Threat: {comp.threat_level.value}")
         print(f"      Market Share: {comp.market_share:.0%}")
-    
+
     # Analyze weaknesses
     print("\n--- Weakness Analysis ---")
     target = list(engine.competitors.values())[0]
@@ -600,7 +600,7 @@ async def demo():
     for exploit in exploits[:2]:
         print(f"  💀 {exploit.description}")
         print(f"      Success: {exploit.success_probability:.0%}")
-    
+
     # Plan campaign
     print("\n--- Planning Destruction Campaign ---")
     campaign = await engine.plan_destruction_campaign(
@@ -611,14 +611,14 @@ async def demo():
     print(f"  Campaign: {campaign.name}")
     print(f"  Timeline: {campaign.timeline_days} days")
     print(f"  Phases: {len(campaign.phases)}")
-    
+
     # Recommendations
     print("\n--- Strategic Recommendations ---")
     recs = engine.get_recommendations()
     for rec in recs[:3]:
         print(f"  📋 {rec['target']}: {rec['recommended_strategy']}")
         print(f"      Urgency: {rec['urgency']}")
-    
+
     print("\n" + "=" * 60)
     print("⚔️ TOTAL DOMINANCE PROTOCOL ACTIVE ⚔️")
 

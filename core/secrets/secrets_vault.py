@@ -42,37 +42,37 @@ class SecretCategory(Enum):
     HERMETICISM = "hermeticism"
     KABBALAH = "kabbalah"
     MYSTICISM = "mysticism"
-    
+
     # Historical
     ANCIENT_WISDOM = "ancient_wisdom"
     LOST_CIVILIZATIONS = "lost_civilizations"
     HIDDEN_HISTORY = "hidden_history"
     FORBIDDEN_ARCHAEOLOGY = "forbidden_archaeology"
-    
+
     # Technological
     SUPPRESSED_TECH = "suppressed_technology"
     FREE_ENERGY = "free_energy"
     ANTIGRAVITY = "antigravity"
     ADVANCED_PROPULSION = "advanced_propulsion"
-    
+
     # Psychological
     MIND_CONTROL = "mind_control"
     HYPNOSIS = "hypnosis"
     NLP = "nlp"
     SUBLIMINAL = "subliminal"
     PROPAGANDA = "propaganda"
-    
+
     # Strategic
     POWER_STRUCTURES = "power_structures"
     SECRET_SOCIETIES = "secret_societies"
     FINANCIAL_SECRETS = "financial_secrets"
     POLITICAL_MECHANICS = "political_mechanics"
-    
+
     # Scientific
     CLASSIFIED_RESEARCH = "classified_research"
     BLACK_PROJECTS = "black_projects"
     ANOMALOUS_PHENOMENA = "anomalous_phenomena"
-    
+
     # Metaphysical
     CONSCIOUSNESS = "consciousness"
     REALITY_NATURE = "reality_nature"
@@ -124,7 +124,7 @@ class Secret:
     prerequisites: List[str]
     related_secrets: List[str]
     discovered_at: datetime
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "name": self.name,
@@ -175,7 +175,7 @@ class HiddenTechnique:
 class SecretsVault:
     """
     The Secrets Vault - repository of all hidden knowledge.
-    
+
     Provides:
     - Access to esoteric wisdom
     - Hidden techniques library
@@ -183,13 +183,13 @@ class SecretsVault:
     - Suppressed knowledge archive
     - Secret strategy compendium
     """
-    
+
     def __init__(self):
         self.secrets: Dict[str, Secret] = {}
         self.symbols: Dict[str, EsotericSymbol] = {}
         self.rituals: Dict[str, RitualPattern] = {}
         self.techniques: Dict[str, HiddenTechnique] = {}
-        
+
         # Initialize all knowledge bases
         self._init_esoteric_secrets()
         self._init_psychological_secrets()
@@ -197,14 +197,14 @@ class SecretsVault:
         self._init_strategic_secrets()
         self._init_symbols()
         self._init_techniques()
-        
+
         logger.info("SecretsVault initialized - all hidden knowledge accessible")
-    
+
     def _init_esoteric_secrets(self):
         """Initialize esoteric secrets."""
         esoteric_knowledge = [
             # Hermetic Principles
-            ("Principle of Mentalism", SecretCategory.HERMETICISM, "The All is Mind; the Universe is Mental", 
+            ("Principle of Mentalism", SecretCategory.HERMETICISM, "The All is Mind; the Universe is Mental",
              "Control thoughts to influence reality", 9, 3),
             ("Principle of Correspondence", SecretCategory.HERMETICISM, "As above, so below; as below, so above",
              "Understand macro through micro", 8, 2),
@@ -218,7 +218,7 @@ class SecretsVault:
              "Become cause rather than effect", 9, 4),
             ("Principle of Gender", SecretCategory.HERMETICISM, "Gender manifests on all planes; everything has masculine and feminine",
              "Balance internal polarities for creation", 7, 3),
-            
+
             # Alchemical Secrets
             ("Philosopher's Stone", SecretCategory.ALCHEMY, "The legendary substance capable of transmutation",
              "Symbol of internal transformation", 10, 5),
@@ -226,7 +226,7 @@ class SecretsVault:
              "The unified field of consciousness", 9, 4),
             ("Great Work", SecretCategory.ALCHEMY, "Magnum Opus - complete transformation",
              "Full spiritual and material mastery", 10, 6),
-            
+
             # Kabbalistic Secrets
             ("Tree of Life", SecretCategory.KABBALAH, "Map of creation and consciousness",
              "Navigate all dimensions of existence", 10, 5),
@@ -234,7 +234,7 @@ class SecretsVault:
              "Access to specific spiritual powers", 9, 6),
             ("Merkabah", SecretCategory.KABBALAH, "Divine chariot/vehicle of light",
              "Interdimensional travel and protection", 10, 7),
-            
+
             # Consciousness Secrets
             ("Akashic Records", SecretCategory.CONSCIOUSNESS, "Universal memory field",
              "Access to all past, present, potential futures", 10, 4),
@@ -243,7 +243,7 @@ class SecretsVault:
             ("Remote Viewing", SecretCategory.CONSCIOUSNESS, "Non-local perception",
              "Gather information at any distance", 8, 4),
         ]
-        
+
         for name, category, desc, application, power, danger in esoteric_knowledge:
             secret = Secret(
                 id=self._gen_id("secret"),
@@ -260,7 +260,7 @@ class SecretsVault:
                 discovered_at=datetime.now()
             )
             self.secrets[secret.id] = secret
-    
+
     def _init_psychological_secrets(self):
         """Initialize psychological manipulation secrets."""
         psych_secrets = [
@@ -273,7 +273,7 @@ class SecretsVault:
              "Interrupt negative states or behaviors instantly", 7, 3),
             ("Future Pacing", SecretCategory.NLP, "Program future responses",
              "Pre-install desired future behaviors", 8, 4),
-            
+
             # Hypnosis
             ("Covert Hypnosis", SecretCategory.HYPNOSIS, "Hypnotic influence without trance",
              "Influence while appearing to converse normally", 9, 6),
@@ -281,7 +281,7 @@ class SecretsVault:
              "Give instructions that bypass conscious mind", 8, 5),
             ("Milton Model", SecretCategory.HYPNOSIS, "Artfully vague language patterns",
              "Allow listener to fill meaning that serves you", 8, 4),
-            
+
             # Subliminal
             ("Subliminal Messaging", SecretCategory.SUBLIMINAL, "Below conscious threshold influence",
              "Influence without conscious awareness", 7, 5),
@@ -289,7 +289,7 @@ class SecretsVault:
              "Bypass conscious filters entirely", 6, 4),
             ("Visual Embedding", SecretCategory.SUBLIMINAL, "Hidden images in content",
              "Influence through hidden visual cues", 7, 5),
-            
+
             # Propaganda
             ("Overton Window", SecretCategory.PROPAGANDA, "Shifting acceptable discourse range",
              "Make previously unacceptable ideas acceptable", 9, 6),
@@ -298,7 +298,7 @@ class SecretsVault:
             ("Problem-Reaction-Solution", SecretCategory.PROPAGANDA, "Create problem, offer solution",
              "Manufacture demand for desired outcome", 10, 8),
         ]
-        
+
         for name, category, desc, application, power, danger in psych_secrets:
             secret = Secret(
                 id=self._gen_id("secret"),
@@ -315,7 +315,7 @@ class SecretsVault:
                 discovered_at=datetime.now()
             )
             self.secrets[secret.id] = secret
-    
+
     def _init_technological_secrets(self):
         """Initialize suppressed technology secrets."""
         tech_secrets = [
@@ -336,7 +336,7 @@ class SecretsVault:
             ("Cymatics", SecretCategory.SUPPRESSED_TECH, "Sound creating matter patterns",
              "Using frequency to organize matter", 8, 4),
         ]
-        
+
         for name, category, desc, application, power, danger in tech_secrets:
             secret = Secret(
                 id=self._gen_id("secret"),
@@ -353,7 +353,7 @@ class SecretsVault:
                 discovered_at=datetime.now()
             )
             self.secrets[secret.id] = secret
-    
+
     def _init_strategic_secrets(self):
         """Initialize strategic and power secrets."""
         strategic_secrets = [
@@ -374,7 +374,7 @@ class SecretsVault:
             ("Network Control", SecretCategory.POWER_STRUCTURES, "Control information flow",
              "Shape reality by controlling narrative", 10, 7),
         ]
-        
+
         for name, category, desc, application, power, danger in strategic_secrets:
             secret = Secret(
                 id=self._gen_id("secret"),
@@ -391,11 +391,11 @@ class SecretsVault:
                 discovered_at=datetime.now()
             )
             self.secrets[secret.id] = secret
-    
+
     def _init_symbols(self):
         """Initialize esoteric symbols."""
         symbols = [
-            ("All-Seeing Eye", "Eye within triangle", "Divine providence, omniscience", "Vision, insight", 
+            ("All-Seeing Eye", "Eye within triangle", "Divine providence, omniscience", "Vision, insight",
              ["Protection", "Awareness"], KnowledgeOrigin.ANCIENT_EGYPT),
             ("Ouroboros", "Snake eating its tail", "Eternal cycle, unity", "Completeness",
              ["Transformation", "Infinity"], KnowledgeOrigin.ANCIENT_EGYPT),
@@ -412,7 +412,7 @@ class SecretsVault:
             ("Ankh", "Cross with loop", "Eternal life, union", "Life force",
              ["Protection", "Immortality"], KnowledgeOrigin.ANCIENT_EGYPT),
         ]
-        
+
         for name, visual, meaning, power, usage, origin in symbols:
             symbol = EsotericSymbol(
                 id=self._gen_id("symbol"),
@@ -424,7 +424,7 @@ class SecretsVault:
                 origin=origin
             )
             self.symbols[symbol.id] = symbol
-    
+
     def _init_techniques(self):
         """Initialize hidden techniques."""
         techniques = [
@@ -445,7 +445,7 @@ class SecretsVault:
             ("Emotional Hijacking", SecretCategory.MIND_CONTROL, "Bypass rational mind",
              ["Trigger strong emotion", "Present solution", "Lock in while emotional"], 0.9, 0.6),
         ]
-        
+
         for name, category, desc, steps, effect, risk in techniques:
             technique = HiddenTechnique(
                 id=self._gen_id("technique"),
@@ -458,11 +458,11 @@ class SecretsVault:
                 ethical_rating=random.randint(3, 7)
             )
             self.techniques[technique.id] = technique
-    
+
     # -------------------------------------------------------------------------
     # ACCESS METHODS
     # -------------------------------------------------------------------------
-    
+
     async def search_secrets(
         self,
         query: str = None,
@@ -472,7 +472,7 @@ class SecretsVault:
     ) -> List[Secret]:
         """Search secrets with filters."""
         results = []
-        
+
         for secret in self.secrets.values():
             # Apply filters
             if category and secret.category != category:
@@ -483,18 +483,18 @@ class SecretsVault:
                 continue
             if query and query.lower() not in secret.name.lower() and query.lower() not in secret.description.lower():
                 continue
-            
+
             results.append(secret)
-        
+
         return sorted(results, key=lambda s: s.power_level, reverse=True)
-    
+
     async def get_by_category(
         self,
         category: SecretCategory
     ) -> List[Secret]:
         """Get all secrets in a category."""
         return [s for s in self.secrets.values() if s.category == category]
-    
+
     async def get_most_powerful(
         self,
         limit: int = 10
@@ -506,7 +506,7 @@ class SecretsVault:
             reverse=True
         )
         return sorted_secrets[:limit]
-    
+
     async def get_symbol(
         self,
         name: str
@@ -516,7 +516,7 @@ class SecretsVault:
             if name.lower() in symbol.name.lower():
                 return symbol
         return None
-    
+
     async def get_techniques(
         self,
         category: SecretCategory = None
@@ -525,11 +525,11 @@ class SecretsVault:
         if category:
             return [t for t in self.techniques.values() if t.category == category]
         return list(self.techniques.values())
-    
+
     # -------------------------------------------------------------------------
     # STATS
     # -------------------------------------------------------------------------
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get vault statistics."""
         return {
@@ -544,7 +544,7 @@ class SecretsVault:
             "average_power": sum(s.power_level for s in self.secrets.values()) / max(1, len(self.secrets)),
             "forbidden_count": len([s for s in self.secrets.values() if s.secrecy_level == SecrecyLevel.FORBIDDEN])
         }
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
@@ -574,41 +574,41 @@ async def demo():
     print("=" * 60)
     print("🔮 SECRETS & HIDDEN KNOWLEDGE VAULT 🔮")
     print("=" * 60)
-    
+
     vault = get_secrets_vault()
-    
+
     # Stats
     print("\n--- Vault Statistics ---")
     stats = vault.get_stats()
     print(f"Total secrets: {stats['total_secrets']}")
     print(f"Total symbols: {stats['total_symbols']}")
     print(f"Forbidden secrets: {stats['forbidden_count']}")
-    
+
     # Most powerful
     print("\n--- Most Powerful Secrets ---")
     powerful = await vault.get_most_powerful(5)
     for secret in powerful:
         print(f"  ⚡ {secret.name} (Power: {secret.power_level}/10)")
         print(f"      {secret.practical_application}")
-    
+
     # Search
     print("\n--- Searching 'energy' ---")
     energy = await vault.search_secrets(query="energy")
     for secret in energy[:3]:
         print(f"  - {secret.name}: {secret.description[:50]}...")
-    
+
     # Techniques
     print("\n--- Hidden Techniques ---")
     techniques = await vault.get_techniques()
     for tech in techniques[:3]:
         print(f"  🎭 {tech.name}")
         print(f"      Effectiveness: {tech.effectiveness:.0%}")
-    
+
     # Symbols
     print("\n--- Esoteric Symbols ---")
     for symbol in list(vault.symbols.values())[:3]:
         print(f"  ✡ {symbol.name}: {symbol.meaning}")
-    
+
     print("\n" + "=" * 60)
     print("🔮 ALL SECRETS REVEALED 🔮")
 

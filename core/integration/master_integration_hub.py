@@ -30,12 +30,12 @@ logger = logging.getLogger("BAEL.INTEGRATION")
 class MasterIntegrationHub:
     """
     The Master Integration Hub - connects all Ba'el systems.
-    
+
     This is the central nervous system of Ba'el, providing
     unified access to all capabilities and managing cross-system
     operations.
     """
-    
+
     def __init__(self):
         self._systems: Dict[str, Any] = {}
         self._initialized = False
@@ -44,16 +44,16 @@ class MasterIntegrationHub:
             "initialized_at": None,
             "commands_executed": 0
         }
-        
+
         logger.info("MasterIntegrationHub created - awaiting initialization")
-    
+
     async def initialize(self):
         """Initialize and connect all Ba'el systems."""
         if self._initialized:
             return
-        
+
         logger.info("Initializing all Ba'el systems...")
-        
+
         # Import and initialize all systems
         systems_to_init = [
             ("creativity", "core.creativity.creative_genius_engine", "get_creative_engine"),
@@ -63,7 +63,7 @@ class MasterIntegrationHub:
             ("influence", "core.influence.psychological_influence_engine", "get_influence_engine"),
             ("console", "core.console.unified_power_console", "get_console"),
         ]
-        
+
         for name, module_path, getter_name in systems_to_init:
             try:
                 # Dynamic import
@@ -75,54 +75,54 @@ class MasterIntegrationHub:
                 logger.warning(f"  ✗ {name} not available: {e}")
             except Exception as e:
                 logger.error(f"  ✗ {name} failed: {e}")
-        
+
         self._stats["total_systems"] = len(self._systems)
         self._stats["initialized_at"] = datetime.now().isoformat()
         self._initialized = True
-        
+
         logger.info(f"Initialized {len(self._systems)} systems")
-    
+
     def get_system(self, name: str) -> Optional[Any]:
         """Get a specific system by name."""
         return self._systems.get(name)
-    
+
     @property
     def creativity(self):
         """Get the Creative Genius Engine."""
         return self._systems.get("creativity")
-    
+
     @property
     def orchestrator(self):
         """Get the Master Orchestrator."""
         return self._systems.get("orchestrator")
-    
+
     @property
     def resources(self):
         """Get the Resource Generator Engine."""
         return self._systems.get("resources")
-    
+
     @property
     def strategy(self):
         """Get the Ultimate Strategy Engine."""
         return self._systems.get("strategy")
-    
+
     @property
     def influence(self):
         """Get the Psychological Influence Engine."""
         return self._systems.get("influence")
-    
+
     @property
     def console(self):
         """Get the Unified Power Console."""
         return self._systems.get("console")
-    
+
     async def execute(self, command: str, params: Optional[Dict] = None) -> Dict[str, Any]:
         """Execute a command through the hub."""
         if not self._initialized:
             await self.initialize()
-        
+
         self._stats["commands_executed"] += 1
-        
+
         # Route to console if available
         if self.console:
             result = await self.console.execute(command)
@@ -131,16 +131,16 @@ class MasterIntegrationHub:
                 "message": result.message,
                 "data": result.data
             }
-        
+
         return {"success": False, "message": "Console not available"}
-    
+
     def get_all_systems(self) -> Dict[str, str]:
         """Get all registered systems."""
         return {
             name: type(system).__name__
             for name, system in self._systems.items()
         }
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get hub statistics."""
         return {
@@ -214,34 +214,34 @@ async def demo():
     print("=" * 60)
     print("🔗 MASTER INTEGRATION HUB 🔗")
     print("=" * 60)
-    
+
     # Initialize
     hub = await bael()
-    
+
     print("\n--- Available Systems ---")
     systems = hub.get_all_systems()
     for name, cls in systems.items():
         print(f"  ✓ {name}: {cls}")
-    
+
     print("\n--- Quick Commands ---")
-    
+
     result = await dominate("market")
     print(f"Dominate: {result.get('message', 'executed')}")
-    
+
     result = await create("breakthrough ideas")
     print(f"Create: {result.get('message', 'executed')}")
-    
+
     result = await simulate(5000)
     print(f"Simulate: {result.get('message', 'executed')}")
-    
+
     result = await hunt("opportunities")
     print(f"Hunt: {result.get('message', 'executed')}")
-    
+
     print("\n--- Hub Statistics ---")
     stats = hub.get_stats()
     print(f"Total systems: {stats['total_systems']}")
     print(f"Commands executed: {stats['commands_executed']}")
-    
+
     print("\n" + "=" * 60)
     print("🔗 ALL SYSTEMS INTEGRATED 🔗")
 

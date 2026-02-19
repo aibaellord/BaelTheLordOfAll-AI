@@ -32,14 +32,14 @@ class Mission:
     objectives: List[str] = field(default_factory=list)
     constraints: List[str] = field(default_factory=list)
     priority: int = 5  # 1-10
-    
+
     # Status
     status: str = "pending"  # pending, active, completed, failed
     progress: float = 0.0  # 0-100
-    
+
     # Results
     results: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     # Meta
     created_at: datetime = field(default_factory=datetime.utcnow)
     completed_at: Optional[datetime] = None
@@ -58,19 +58,19 @@ class SystemStatus:
 class WorldDominationProtocol:
     """
     The Supreme Command System for Ba'el.
-    
+
     Coordinates all systems for maximum capability and control.
     """
-    
+
     def __init__(self):
         self._missions: Dict[str, Mission] = {}
         self._systems: Dict[str, Any] = {}
         self._global_state: Dict[str, Any] = {}
-        
+
         self._register_systems()
-        
+
         logger.info("WorldDominationProtocol initialized - BA'EL IS AWAKE")
-    
+
     def _register_systems(self):
         """Register all Ba'el subsystems."""
         system_names = [
@@ -91,7 +91,7 @@ class WorldDominationProtocol:
             ("psychological_amplifier", "Psychological Amplifier", ["motivation", "performance_boost", "confidence"]),
             ("transcendent_automation", "Transcendent Automation", ["ultimate_automation", "infinite_capability", "beyond_limits"])
         ]
-        
+
         for sys_id, name, capabilities in system_names:
             self._systems[sys_id] = SystemStatus(
                 system_name=name,
@@ -99,7 +99,7 @@ class WorldDominationProtocol:
                 health=100.0,
                 capabilities=capabilities
             )
-    
+
     async def execute_mission(
         self,
         name: str,
@@ -109,7 +109,7 @@ class WorldDominationProtocol:
     ) -> Mission:
         """Execute a mission using all available systems."""
         mission_id = f"mission_{hashlib.md5(f'{name}{datetime.utcnow()}'.encode()).hexdigest()[:8]}"
-        
+
         mission = Mission(
             mission_id=mission_id,
             name=name,
@@ -117,47 +117,47 @@ class WorldDominationProtocol:
             objectives=objectives,
             status="active"
         )
-        
+
         self._missions[mission_id] = mission
-        
+
         # Execute each objective
         for i, objective in enumerate(objectives):
             result = await self._execute_objective(objective)
             mission.results.append(result)
             mission.progress = ((i + 1) / len(objectives)) * 100
-        
+
         mission.status = "completed"
         mission.completed_at = datetime.utcnow()
-        
+
         return mission
-    
+
     async def _execute_objective(self, objective: str) -> Dict[str, Any]:
         """Execute a single objective using appropriate systems."""
         systems_used = []
         results = []
-        
+
         # Determine which systems to use based on objective
         objective_lower = objective.lower()
-        
+
         if any(word in objective_lower for word in ["create", "generate", "build"]):
             systems_used.extend(["autonomous_mcp_genesis", "skill_genesis", "golden_ratio"])
-        
+
         if any(word in objective_lower for word in ["analyze", "research", "find"]):
             systems_used.extend(["github_intelligence", "solution_finder", "parallel_mind"])
-        
+
         if any(word in objective_lower for word in ["automate", "optimize", "improve"]):
             systems_used.extend(["comfort_automation", "perpetual_enhancement", "zero_invest_genius"])
-        
+
         if any(word in objective_lower for word in ["decide", "deliberate", "plan"]):
             systems_used.extend(["council_swarm", "intention_prediction"])
-        
+
         if any(word in objective_lower for word in ["compete", "surpass", "dominate"]):
             systems_used.extend(["competitor_annihilation", "swarm_genesis"])
-        
+
         # Default to all core systems if nothing specific matched
         if not systems_used:
             systems_used = ["solution_finder", "parallel_mind", "council_swarm"]
-        
+
         # Simulate execution
         for sys_id in systems_used:
             if sys_id in self._systems:
@@ -165,14 +165,14 @@ class WorldDominationProtocol:
                     "system": self._systems[sys_id].system_name,
                     "contribution": f"Processed objective using {', '.join(self._systems[sys_id].capabilities)}"
                 })
-        
+
         return {
             "objective": objective,
             "systems_used": systems_used,
             "results": results,
             "success": True
         }
-    
+
     def get_system_status(self) -> Dict[str, Any]:
         """Get status of all systems."""
         return {
@@ -190,7 +190,7 @@ class WorldDominationProtocol:
                 for sys_id, sys in self._systems.items()
             }
         }
-    
+
     def get_mission_status(self) -> Dict[str, Any]:
         """Get status of all missions."""
         return {
@@ -208,13 +208,13 @@ class WorldDominationProtocol:
                 for m_id, m in self._missions.items()
             }
         }
-    
+
     def get_capabilities_summary(self) -> Dict[str, Any]:
         """Get summary of all capabilities."""
         all_capabilities = []
         for sys in self._systems.values():
             all_capabilities.extend(sys.capabilities)
-        
+
         return {
             "total_capabilities": len(all_capabilities),
             "unique_capabilities": len(set(all_capabilities)),
@@ -227,12 +227,12 @@ class WorldDominationProtocol:
             },
             "all_capabilities": sorted(set(all_capabilities))
         }
-    
+
     def declare_supremacy(self) -> str:
         """Declare Ba'el's supremacy."""
         status = self.get_system_status()
         caps = self.get_capabilities_summary()
-        
+
         return f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
@@ -274,9 +274,9 @@ def get_world_domination() -> WorldDominationProtocol:
 async def demo():
     """Demonstrate world domination protocol."""
     protocol = get_world_domination()
-    
+
     print(protocol.declare_supremacy())
-    
+
     print("\nExecuting Mission...")
     mission = await protocol.execute_mission(
         name="Achieve Total Capability Supremacy",
@@ -288,12 +288,12 @@ async def demo():
             "Optimize all systems for maximum performance"
         ]
     )
-    
+
     print(f"\nMission: {mission.name}")
     print(f"Status: {mission.status}")
     print(f"Progress: {mission.progress}%")
     print(f"Results: {len(mission.results)} objectives completed")
-    
+
     print("\nCapabilities Summary:")
     caps = protocol.get_capabilities_summary()
     for category, count in caps["by_category"].items():

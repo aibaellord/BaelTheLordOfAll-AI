@@ -137,7 +137,7 @@ class ResourceAllocation:
 class MasterOrchestrator:
     """
     The Master Orchestrator - controls all systems.
-    
+
     Provides:
     - Unified control over all Ba'el systems
     - Workflow automation and chaining
@@ -145,7 +145,7 @@ class MasterOrchestrator:
     - Resource management
     - Real-time monitoring
     """
-    
+
     def __init__(self):
         self.systems: Dict[SystemType, SystemStatus] = {}
         self.tasks: Dict[str, OrchestratedTask] = {}
@@ -154,13 +154,13 @@ class MasterOrchestrator:
         self.running_tasks: Set[str] = set()
         self.resource_allocations: Dict[SystemType, ResourceAllocation] = {}
         self.mode: OrchestrationMode = OrchestrationMode.AUTOMATIC
-        
+
         # System handlers (would connect to actual systems)
         self.handlers: Dict[SystemType, Callable] = {}
-        
+
         # Initialize all systems
         self._init_systems()
-        
+
         # Command registry
         self.commands: Dict[str, Callable] = {
             "dominate": self._cmd_dominate,
@@ -174,9 +174,9 @@ class MasterOrchestrator:
             "status": self._cmd_status,
             "abort": self._cmd_abort
         }
-        
+
         logger.info("MasterOrchestrator initialized - all systems under control")
-    
+
     def _init_systems(self):
         """Initialize all managed systems."""
         system_configs = [
@@ -196,7 +196,7 @@ class MasterOrchestrator:
             (SystemType.REASONING, "Infinity Loop Reasoning", ["reason", "loop", "conclude"]),
             (SystemType.EXECUTION, "Execution Engine", ["execute", "run", "deploy"])
         ]
-        
+
         for sys_type, name, capabilities in system_configs:
             self.systems[sys_type] = SystemStatus(
                 system_type=sys_type,
@@ -208,7 +208,7 @@ class MasterOrchestrator:
                 last_activity=datetime.now(),
                 capabilities=capabilities
             )
-            
+
             # Default resource allocation
             self.resource_allocations[sys_type] = ResourceAllocation(
                 system=sys_type,
@@ -217,11 +217,11 @@ class MasterOrchestrator:
                 priority_weight=1.0,
                 max_concurrent_tasks=5
             )
-    
+
     # -------------------------------------------------------------------------
     # UNIFIED COMMAND INTERFACE
     # -------------------------------------------------------------------------
-    
+
     async def execute_command(
         self,
         command: str,
@@ -230,18 +230,18 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Execute a unified command."""
         params = params or {}
-        
+
         # Parse command
         cmd_parts = command.lower().split()
         base_cmd = cmd_parts[0] if cmd_parts else ""
-        
+
         handler = self.commands.get(base_cmd)
         if handler:
             return await handler(params, priority)
-        
+
         # Default: route to best system
         return await self._route_to_system(command, params)
-    
+
     async def _cmd_dominate(
         self,
         params: Dict[str, Any],
@@ -249,20 +249,20 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Handle domination commands."""
         target = params.get("target", "market")
-        
+
         task = await self.create_task(
             name=f"Dominate: {target}",
             description=f"Execute domination plan for {target}",
             target_systems=[SystemType.DOMINATION, SystemType.CONTROL],
             priority=priority
         )
-        
+
         return {
             "status": "initiated",
             "task_id": task.id,
             "message": f"Domination of {target} initiated"
         }
-    
+
     async def _cmd_analyze(
         self,
         params: Dict[str, Any],
@@ -270,20 +270,20 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Handle analysis commands."""
         subject = params.get("subject", "everything")
-        
+
         task = await self.create_task(
             name=f"Analyze: {subject}",
             description=f"Deep analysis of {subject}",
             target_systems=[SystemType.ANALYTICS, SystemType.REASONING],
             priority=priority
         )
-        
+
         return {
             "status": "analyzing",
             "task_id": task.id,
             "message": f"Analysis of {subject} in progress"
         }
-    
+
     async def _cmd_create(
         self,
         params: Dict[str, Any],
@@ -291,20 +291,20 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Handle creation commands."""
         what = params.get("what", "ideas")
-        
+
         task = await self.create_task(
             name=f"Create: {what}",
             description=f"Creative generation of {what}",
             target_systems=[SystemType.CREATIVITY, SystemType.AGENTS],
             priority=priority
         )
-        
+
         return {
             "status": "creating",
             "task_id": task.id,
             "message": f"Creating {what}"
         }
-    
+
     async def _cmd_simulate(
         self,
         params: Dict[str, Any],
@@ -313,21 +313,21 @@ class MasterOrchestrator:
         """Handle simulation commands."""
         scenario = params.get("scenario", "default")
         iterations = params.get("iterations", 1000)
-        
+
         task = await self.create_task(
             name=f"Simulate: {scenario}",
             description=f"Running {iterations} simulations of {scenario}",
             target_systems=[SystemType.SIMULATION],
             priority=priority
         )
-        
+
         return {
             "status": "simulating",
             "task_id": task.id,
             "iterations": iterations,
             "message": f"Simulation running"
         }
-    
+
     async def _cmd_hunt(
         self,
         params: Dict[str, Any],
@@ -335,20 +335,20 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Handle opportunity hunting commands."""
         domain = params.get("domain", "all")
-        
+
         task = await self.create_task(
             name=f"Hunt: {domain}",
             description=f"Hunting opportunities in {domain}",
             target_systems=[SystemType.OPPORTUNITY],
             priority=priority
         )
-        
+
         return {
             "status": "hunting",
             "task_id": task.id,
             "message": f"Hunting opportunities in {domain}"
         }
-    
+
     async def _cmd_control(
         self,
         params: Dict[str, Any],
@@ -356,20 +356,20 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Handle control commands."""
         target = params.get("target", "system")
-        
+
         task = await self.create_task(
             name=f"Control: {target}",
             description=f"Taking control of {target}",
             target_systems=[SystemType.CONTROL],
             priority=priority
         )
-        
+
         return {
             "status": "controlling",
             "task_id": task.id,
             "message": f"Control sequence initiated for {target}"
         }
-    
+
     async def _cmd_torture(
         self,
         params: Dict[str, Any],
@@ -378,20 +378,20 @@ class MasterOrchestrator:
         """Handle torture/pressure commands."""
         agents = params.get("agents", ["all"])
         intensity = params.get("intensity", "extreme")
-        
+
         task = await self.create_task(
             name=f"Torture: {len(agents)} agents",
             description=f"Pressure testing agents at {intensity} intensity",
             target_systems=[SystemType.TORTURE, SystemType.AGENTS],
             priority=priority
         )
-        
+
         return {
             "status": "torturing",
             "task_id": task.id,
             "message": f"Pressure chamber activated"
         }
-    
+
     async def _cmd_extract(
         self,
         params: Dict[str, Any],
@@ -399,20 +399,20 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Handle truth extraction commands."""
         subject = params.get("subject", "target")
-        
+
         task = await self.create_task(
             name=f"Extract: {subject}",
             description=f"Extracting truth from {subject}",
             target_systems=[SystemType.TRUTH],
             priority=priority
         )
-        
+
         return {
             "status": "extracting",
             "task_id": task.id,
             "message": f"Truth extraction in progress"
         }
-    
+
     async def _cmd_status(
         self,
         params: Dict[str, Any],
@@ -420,7 +420,7 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Get system status."""
         return await self.get_full_status()
-    
+
     async def _cmd_abort(
         self,
         params: Dict[str, Any],
@@ -428,7 +428,7 @@ class MasterOrchestrator:
     ) -> Dict[str, Any]:
         """Abort tasks or operations."""
         task_id = params.get("task_id")
-        
+
         if task_id:
             await self.cancel_task(task_id)
             return {"status": "aborted", "task_id": task_id}
@@ -439,7 +439,7 @@ class MasterOrchestrator:
                 await self.cancel_task(tid)
                 cancelled.append(tid)
             return {"status": "all_aborted", "cancelled": cancelled}
-    
+
     async def _route_to_system(
         self,
         command: str,
@@ -456,33 +456,33 @@ class MasterOrchestrator:
             SystemType.AGENTS: ["agent", "deploy", "create agent"],
             SystemType.SECURITY: ["security", "protect", "attack", "scan"]
         }
-        
+
         command_lower = command.lower()
         best_system = SystemType.EXECUTION  # Default
         best_score = 0
-        
+
         for sys_type, kws in keywords.items():
             score = sum(1 for kw in kws if kw in command_lower)
             if score > best_score:
                 best_score = score
                 best_system = sys_type
-        
+
         task = await self.create_task(
             name=command,
             description=f"Routed to {best_system.value}",
             target_systems=[best_system],
             priority=TaskPriority.MEDIUM
         )
-        
+
         return {
             "routed_to": best_system.value,
             "task_id": task.id
         }
-    
+
     # -------------------------------------------------------------------------
     # TASK MANAGEMENT
     # -------------------------------------------------------------------------
-    
+
     async def create_task(
         self,
         name: str,
@@ -502,37 +502,37 @@ class MasterOrchestrator:
             created_at=datetime.now(),
             dependencies=dependencies or []
         )
-        
+
         self.tasks[task.id] = task
-        
+
         # Auto-queue if automatic mode
         if self.mode == OrchestrationMode.AUTOMATIC:
             await self.queue_task(task.id)
-        
+
         return task
-    
+
     async def queue_task(self, task_id: str):
         """Add task to queue."""
         if task_id in self.tasks:
             self.tasks[task_id].status = TaskStatus.QUEUED
             self.task_queue.append(task_id)
-    
+
     async def run_task(self, task_id: str) -> OrchestratedTask:
         """Run a specific task."""
         task = self.tasks.get(task_id)
         if not task:
             raise ValueError(f"Task {task_id} not found")
-        
+
         # Check dependencies
         for dep_id in task.dependencies:
             dep_task = self.tasks.get(dep_id)
             if dep_task and dep_task.status != TaskStatus.COMPLETED:
                 raise ValueError(f"Dependency {dep_id} not completed")
-        
+
         task.status = TaskStatus.RUNNING
         task.started_at = datetime.now()
         self.running_tasks.add(task_id)
-        
+
         try:
             # Simulate execution (would call actual systems)
             for i, sys_type in enumerate(task.target_systems):
@@ -540,30 +540,30 @@ class MasterOrchestrator:
                 if system:
                     system.last_activity = datetime.now()
                     system.tasks_pending += 1
-                
+
                 # Progress update
                 task.progress = (i + 1) / len(task.target_systems)
                 await asyncio.sleep(0.1)  # Simulate work
-                
+
                 if system:
                     system.tasks_pending -= 1
                     system.tasks_completed += 1
-            
+
             task.status = TaskStatus.COMPLETED
             task.completed_at = datetime.now()
             task.progress = 1.0
             task.result = {"success": True, "message": f"Task {task.name} completed"}
-            
+
         except Exception as e:
             task.status = TaskStatus.FAILED
             task.error = str(e)
             task.completed_at = datetime.now()
-        
+
         finally:
             self.running_tasks.discard(task_id)
-        
+
         return task
-    
+
     async def cancel_task(self, task_id: str):
         """Cancel a task."""
         task = self.tasks.get(task_id)
@@ -573,11 +573,11 @@ class MasterOrchestrator:
             self.running_tasks.discard(task_id)
             if task_id in self.task_queue:
                 self.task_queue.remove(task_id)
-    
+
     # -------------------------------------------------------------------------
     # WORKFLOW MANAGEMENT
     # -------------------------------------------------------------------------
-    
+
     async def create_workflow(
         self,
         name: str,
@@ -594,21 +594,21 @@ class MasterOrchestrator:
             results=[],
             created_at=datetime.now()
         )
-        
+
         self.workflows[workflow.id] = workflow
         return workflow
-    
+
     async def run_workflow(self, workflow_id: str) -> Workflow:
         """Run a workflow."""
         workflow = self.workflows.get(workflow_id)
         if not workflow:
             raise ValueError(f"Workflow {workflow_id} not found")
-        
+
         workflow.status = TaskStatus.RUNNING
-        
+
         for i, step in enumerate(workflow.steps):
             workflow.current_step = i
-            
+
             try:
                 # Execute step command
                 result = await self.execute_command(
@@ -616,20 +616,20 @@ class MasterOrchestrator:
                     step.get("params", {})
                 )
                 workflow.results.append(result)
-                
+
             except Exception as e:
                 workflow.results.append({"error": str(e)})
                 if step.get("stop_on_error", False):
                     workflow.status = TaskStatus.FAILED
                     return workflow
-        
+
         workflow.status = TaskStatus.COMPLETED
         return workflow
-    
+
     # -------------------------------------------------------------------------
     # MONITORING & STATUS
     # -------------------------------------------------------------------------
-    
+
     async def get_full_status(self) -> Dict[str, Any]:
         """Get complete orchestrator status."""
         return {
@@ -656,68 +656,68 @@ class MasterOrchestrator:
                 "running": len([w for w in self.workflows.values() if w.status == TaskStatus.RUNNING])
             }
         }
-    
+
     async def get_system_health(self) -> Dict[str, float]:
         """Get health of all systems."""
         return {
             s.system_type.value: s.health_score
             for s in self.systems.values()
         }
-    
+
     async def set_mode(self, mode: OrchestrationMode):
         """Set orchestration mode."""
         self.mode = mode
         logger.info(f"Orchestration mode set to {mode.value}")
-    
+
     # -------------------------------------------------------------------------
     # EMERGENCY CONTROLS
     # -------------------------------------------------------------------------
-    
+
     async def emergency_stop(self):
         """Emergency stop all operations."""
         self.mode = OrchestrationMode.EMERGENCY
-        
+
         # Cancel all running tasks
         for task_id in list(self.running_tasks):
             await self.cancel_task(task_id)
-        
+
         # Clear queue
         self.task_queue.clear()
-        
+
         logger.warning("EMERGENCY STOP activated")
         return {"status": "emergency_stop", "cancelled": len(self.tasks)}
-    
+
     async def resume_operations(self):
         """Resume normal operations."""
         self.mode = OrchestrationMode.AUTOMATIC
         logger.info("Operations resumed")
         return {"status": "resumed", "mode": self.mode.value}
-    
+
     # -------------------------------------------------------------------------
     # BATCH OPERATIONS
     # -------------------------------------------------------------------------
-    
+
     async def batch_execute(
         self,
         commands: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Execute multiple commands in batch."""
         results = []
-        
+
         for cmd_spec in commands:
             command = cmd_spec.get("command", "")
             params = cmd_spec.get("params", {})
             priority = TaskPriority(cmd_spec.get("priority", "medium"))
-            
+
             result = await self.execute_command(command, params, priority)
             results.append(result)
-        
+
         return results
-    
+
     # -------------------------------------------------------------------------
     # HELPERS
     # -------------------------------------------------------------------------
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}".encode()).hexdigest()[:12]
@@ -747,21 +747,21 @@ async def demo():
     print("=" * 60)
     print("🎭 MASTER ORCHESTRATOR 🎭")
     print("=" * 60)
-    
+
     orchestrator = get_orchestrator()
-    
+
     # Execute commands
     print("\n--- Executing Commands ---")
-    
+
     result = await orchestrator.execute_command("dominate", {"target": "market"})
     print(f"Dominate: {result['status']}")
-    
+
     result = await orchestrator.execute_command("simulate", {"scenario": "conquest", "iterations": 10000})
     print(f"Simulate: {result['status']}")
-    
+
     result = await orchestrator.execute_command("hunt", {"domain": "opportunities"})
     print(f"Hunt: {result['status']}")
-    
+
     # Create workflow
     print("\n--- Creating Workflow ---")
     workflow = await orchestrator.create_workflow(
@@ -773,11 +773,11 @@ async def demo():
         ]
     )
     print(f"Created workflow: {workflow.name}")
-    
+
     # Run workflow
     await orchestrator.run_workflow(workflow.id)
     print(f"Workflow completed with {len(workflow.results)} results")
-    
+
     # Get status
     print("\n--- System Status ---")
     status = await orchestrator.get_full_status()
@@ -785,7 +785,7 @@ async def demo():
     print(f"Active systems: {len(status['systems'])}")
     print(f"Total tasks: {status['tasks']['total']}")
     print(f"Completed: {status['tasks']['completed']}")
-    
+
     # Batch execute
     print("\n--- Batch Execution ---")
     batch_results = await orchestrator.batch_execute([
@@ -794,7 +794,7 @@ async def demo():
         {"command": "control", "params": {"target": "system"}}
     ])
     print(f"Batch completed: {len(batch_results)} commands")
-    
+
     print("\n" + "=" * 60)
     print("🎭 ALL SYSTEMS UNDER CONTROL 🎭")
 

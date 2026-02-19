@@ -89,11 +89,11 @@ class Idea:
     source_concepts: List[str]
     variations: List[str]
     created_at: datetime
-    
+
     @property
     def overall_score(self) -> float:
         return (self.novelty_score + self.feasibility_score + self.impact_potential) / 3
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -133,7 +133,7 @@ class CreativeChallenge:
 class CreativeGeniusEngine:
     """
     The Creative Genius - unlimited creative power.
-    
+
     Provides:
     - Infinite idea generation
     - Concept fusion and combination
@@ -141,17 +141,17 @@ class CreativeGeniusEngine:
     - Creative problem solving
     - Innovation on demand
     """
-    
+
     def __init__(self):
         self.ideas: Dict[str, Idea] = {}
         self.fusions: Dict[str, ConceptFusion] = {}
         self.challenges: Dict[str, CreativeChallenge] = {}
         self.concept_library: List[str] = []
         self.creative_patterns: Dict[str, List[str]] = {}
-        
+
         # Initialize concept library
         self._init_concept_library()
-        
+
         # Creative technique templates
         self.technique_templates = {
             CreativityMethod.RANDOM_ASSOCIATION: self._random_association,
@@ -164,9 +164,9 @@ class CreativeGeniusEngine:
             CreativityMethod.PERSPECTIVE_SHIFT: self._perspective_shift,
             CreativityMethod.CONSTRAINT_REMOVAL: self._constraint_removal
         }
-        
+
         logger.info("CreativeGeniusEngine initialized - imagination unleashed")
-    
+
     def _init_concept_library(self):
         """Initialize the concept library."""
         self.concept_library = [
@@ -189,11 +189,11 @@ class CreativeGeniusEngine:
             "domination", "infiltration", "encirclement", "blitzkrieg", "guerrilla",
             "alliance", "acquisition", "disruption"
         ]
-    
+
     # -------------------------------------------------------------------------
     # IDEA GENERATION
     # -------------------------------------------------------------------------
-    
+
     async def generate_ideas(
         self,
         topic: str,
@@ -204,21 +204,21 @@ class CreativeGeniusEngine:
         """Generate multiple creative ideas."""
         if methods is None:
             methods = list(CreativityMethod)
-        
+
         ideas = []
         for i in range(count):
             method = random.choice(methods)
             technique = self.technique_templates.get(method, self._random_association)
-            
+
             idea = await technique(topic, domain or CreativityDomain.CONCEPTUAL)
             ideas.append(idea)
             self.ideas[idea.id] = idea
-        
+
         # Sort by overall score
         ideas.sort(key=lambda x: x.overall_score, reverse=True)
-        
+
         return ideas
-    
+
     async def generate_breakthrough_idea(
         self,
         topic: str,
@@ -228,26 +228,26 @@ class CreativeGeniusEngine:
         """Generate until breakthrough idea found."""
         best_idea = None
         best_score = 0
-        
+
         for _ in range(attempts):
             method = random.choice(list(CreativityMethod))
             technique = self.technique_templates.get(method, self._random_association)
-            
+
             idea = await technique(topic, domain)
-            
+
             if idea.overall_score > best_score:
                 best_score = idea.overall_score
                 best_idea = idea
-            
+
             if idea.quality == IdeaQuality.BREAKTHROUGH:
                 break
-        
+
         if best_idea:
             best_idea.quality = IdeaQuality.BREAKTHROUGH if best_score > 0.85 else best_idea.quality
             self.ideas[best_idea.id] = best_idea
-        
+
         return best_idea
-    
+
     async def brainstorm(
         self,
         topic: str,
@@ -257,116 +257,116 @@ class CreativeGeniusEngine:
         """Intensive brainstorming session."""
         start_time = time.time()
         ideas = []
-        
+
         while (time.time() - start_time) < duration_seconds or len(ideas) < min_ideas:
             # Rapid idea generation
             method = random.choice(list(CreativityMethod))
             technique = self.technique_templates.get(method, self._random_association)
-            
+
             domain = random.choice(list(CreativityDomain))
             idea = await technique(topic, domain)
             ideas.append(idea)
             self.ideas[idea.id] = idea
-            
+
             await asyncio.sleep(0.01)  # Small delay for async
-        
+
         # Sort by quality
         ideas.sort(key=lambda x: x.overall_score, reverse=True)
-        
+
         return ideas
-    
+
     # -------------------------------------------------------------------------
     # CREATIVE TECHNIQUES
     # -------------------------------------------------------------------------
-    
+
     async def _random_association(self, topic: str, domain: CreativityDomain) -> Idea:
         """Random association technique."""
         random_concepts = random.sample(self.concept_library, 3)
-        
+
         title = f"{topic} + {random_concepts[0]}"
         description = f"Combining {topic} with {', '.join(random_concepts)} to create something new"
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.RANDOM_ASSOCIATION,
             random_concepts
         )
-    
+
     async def _forced_connection(self, topic: str, domain: CreativityDomain) -> Idea:
         """Force connection between unrelated concepts."""
         unrelated = random.choice(self.concept_library)
-        
+
         title = f"{topic} through {unrelated}"
         description = f"Applying principles of {unrelated} to solve {topic}"
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.FORCED_CONNECTION,
             [topic, unrelated]
         )
-    
+
     async def _inversion(self, topic: str, domain: CreativityDomain) -> Idea:
         """Invert the problem or solution."""
         title = f"Inverse {topic}"
         description = f"What if we did the opposite of the conventional approach to {topic}?"
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.INVERSION,
             [topic, "inversion"]
         )
-    
+
     async def _combination(self, topic: str, domain: CreativityDomain) -> Idea:
         """Combine multiple elements."""
         elements = random.sample(self.concept_library, 2)
-        
+
         title = f"Hybrid: {topic} x {elements[0]} x {elements[1]}"
         description = f"Combining {topic} with {elements[0]} and {elements[1]} for synergistic effect"
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.COMBINATION,
             [topic] + elements
         )
-    
+
     async def _subtraction(self, topic: str, domain: CreativityDomain) -> Idea:
         """Remove elements to find essence."""
         title = f"Essential {topic}"
         description = f"Stripping {topic} to its absolute core - what remains when everything unnecessary is removed?"
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.SUBTRACTION,
             [topic, "minimalism"]
         )
-    
+
     async def _exaggeration(self, topic: str, domain: CreativityDomain) -> Idea:
         """Exaggerate to extreme."""
         title = f"Extreme {topic}"
         description = f"What if {topic} was taken to its absolute extreme? 1000x scale?"
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.EXAGGERATION,
             [topic, "extreme", "scale"]
         )
-    
+
     async def _analogy(self, topic: str, domain: CreativityDomain) -> Idea:
         """Use analogy from different domain."""
         analogy_source = random.choice([
             "nature", "music", "sports", "warfare", "cooking",
             "architecture", "medicine", "physics", "art"
         ])
-        
+
         title = f"{topic} is like {analogy_source}"
         description = f"Approaching {topic} through the lens of {analogy_source}"
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.ANALOGY,
             [topic, analogy_source]
         )
-    
+
     async def _perspective_shift(self, topic: str, domain: CreativityDomain) -> Idea:
         """Shift perspective completely."""
         perspectives = [
@@ -374,16 +374,16 @@ class CreativeGeniusEngine:
             "from nature's view", "from an alien perspective", "from the opposite side"
         ]
         perspective = random.choice(perspectives)
-        
+
         title = f"{topic} {perspective}"
         description = f"Viewing {topic} {perspective} - what new insights emerge?"
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.PERSPECTIVE_SHIFT,
             [topic, perspective]
         )
-    
+
     async def _constraint_removal(self, topic: str, domain: CreativityDomain) -> Idea:
         """Remove all constraints."""
         constraints = [
@@ -391,20 +391,20 @@ class CreativeGeniusEngine:
             "permissions", "knowledge", "people", "laws"
         ]
         removed = random.sample(constraints, 3)
-        
+
         title = f"Unconstrained {topic}"
         description = f"What if {topic} had no constraints of {', '.join(removed)}? Pure possibility."
-        
+
         return self._create_idea(
             title, description, domain,
             CreativityMethod.CONSTRAINT_REMOVAL,
             [topic] + removed
         )
-    
+
     # -------------------------------------------------------------------------
     # CONCEPT FUSION
     # -------------------------------------------------------------------------
-    
+
     async def fuse_concepts(
         self,
         concepts: List[str],
@@ -414,13 +414,13 @@ class CreativeGeniusEngine:
         # Generate fusion name
         name_parts = [c.split()[0] for c in concepts[:3]]
         fusion_name = "".join(p.capitalize() for p in name_parts)
-        
+
         # Determine fusion method
         methods = [
             "synthesis", "hybridization", "integration",
             "emergence", "metamorphosis", "transcendence"
         ]
-        
+
         fusion = ConceptFusion(
             id=self._gen_id("fusion"),
             name=fusion_name,
@@ -430,16 +430,16 @@ class CreativeGeniusEngine:
             synergy_score=random.uniform(0.6, 1.0),
             applications=self._generate_applications(concepts)
         )
-        
+
         self.fusions[fusion.id] = fusion
-        
+
         # Recursive fusion for depth
         if fusion_depth > 1 and len(concepts) >= 2:
             sub_concepts = random.sample(concepts, min(2, len(concepts)))
             await self.fuse_concepts(sub_concepts, fusion_depth - 1)
-        
+
         return fusion
-    
+
     def _generate_applications(self, concepts: List[str]) -> List[str]:
         """Generate potential applications for fused concepts."""
         application_templates = [
@@ -450,11 +450,11 @@ class CreativeGeniusEngine:
             f"Develop novel strategies"
         ]
         return random.sample(application_templates, 3)
-    
+
     # -------------------------------------------------------------------------
     # CREATIVE PROBLEM SOLVING
     # -------------------------------------------------------------------------
-    
+
     async def solve_creatively(
         self,
         problem: str,
@@ -469,42 +469,42 @@ class CreativeGeniusEngine:
             domain=CreativityDomain.CONCEPTUAL,
             difficulty=5
         )
-        
+
         solutions = []
-        
+
         for _ in range(attempt_limit):
             # Try different methods
             method = random.choice(list(CreativityMethod))
-            
+
             # Generate solution idea
             idea = await self.technique_templates.get(
                 method, self._random_association
             )(problem, CreativityDomain.CONCEPTUAL)
-            
+
             # Check against constraints (simplified)
             constraint_violation = False
             for constraint in (constraints or []):
                 if constraint.lower() in idea.description.lower():
                     # Would need more sophisticated checking
                     pass
-            
+
             if not constraint_violation:
                 solutions.append(idea)
                 self.ideas[idea.id] = idea
-            
+
             # Stop if we have enough good solutions
             if len([s for s in solutions if s.overall_score > 0.7]) >= 5:
                 break
-        
+
         # Sort by quality
         solutions.sort(key=lambda x: x.overall_score, reverse=True)
-        
+
         challenge.solutions = solutions
         challenge.solved = len(solutions) > 0
         self.challenges[challenge.id] = challenge
-        
+
         return solutions
-    
+
     async def think_impossible(
         self,
         goal: str
@@ -516,24 +516,24 @@ class CreativeGeniusEngine:
             CreativityMethod.INVERSION,
             CreativityMethod.PERSPECTIVE_SHIFT
         ]
-        
+
         ideas = []
         for method in impossible_methods:
             technique = self.technique_templates.get(method, self._random_association)
-            
+
             idea = await technique(f"Impossible: {goal}", CreativityDomain.CONCEPTUAL)
             idea.title = f"Making Possible: {goal}"
             idea.description = f"Path to achieving 'impossible' goal: {goal}"
-            
+
             ideas.append(idea)
             self.ideas[idea.id] = idea
-        
+
         return ideas
-    
+
     # -------------------------------------------------------------------------
     # HELPER METHODS
     # -------------------------------------------------------------------------
-    
+
     def _create_idea(
         self,
         title: str,
@@ -546,7 +546,7 @@ class CreativeGeniusEngine:
         novelty = random.uniform(0.4, 1.0)
         feasibility = random.uniform(0.3, 0.9)
         impact = random.uniform(0.4, 1.0)
-        
+
         # Determine quality
         avg_score = (novelty + feasibility + impact) / 3
         if avg_score > 0.85:
@@ -561,7 +561,7 @@ class CreativeGeniusEngine:
             quality = IdeaQuality.INTERESTING
         else:
             quality = IdeaQuality.BASIC
-        
+
         return Idea(
             id=self._gen_id("idea"),
             title=title,
@@ -576,17 +576,17 @@ class CreativeGeniusEngine:
             variations=[],
             created_at=datetime.now()
         )
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
-    
+
     def get_best_ideas(self, limit: int = 10) -> List[Idea]:
         """Get the best ideas generated."""
         all_ideas = list(self.ideas.values())
         all_ideas.sort(key=lambda x: x.overall_score, reverse=True)
         return all_ideas[:limit]
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get creativity statistics."""
         ideas = list(self.ideas.values())
@@ -625,49 +625,49 @@ async def demo():
     print("=" * 60)
     print("🎨 CREATIVE GENIUS ENGINE 🎨")
     print("=" * 60)
-    
+
     engine = get_creative_engine()
-    
+
     # Generate ideas
     print("\n--- Generating Ideas ---")
     ideas = await engine.generate_ideas("market domination", count=10)
     print(f"Generated {len(ideas)} ideas")
-    
+
     for idea in ideas[:3]:
         print(f"\n  {idea.title}")
         print(f"    Quality: {idea.quality.value}")
         print(f"    Score: {idea.overall_score:.2f}")
-    
+
     # Brainstorm
     print("\n--- Brainstorming Session ---")
     brainstorm_ideas = await engine.brainstorm("zero investment success", duration_seconds=2)
     print(f"Brainstormed {len(brainstorm_ideas)} ideas in 2 seconds")
-    
+
     # Concept fusion
     print("\n--- Concept Fusion ---")
     fusion = await engine.fuse_concepts(["AI", "domination", "creativity"])
     print(f"Created fusion: {fusion.name}")
     print(f"  Synergy: {fusion.synergy_score:.2f}")
-    
+
     # Creative problem solving
     print("\n--- Creative Problem Solving ---")
     solutions = await engine.solve_creatively("Dominate market with zero money")
     print(f"Found {len(solutions)} solutions")
     if solutions:
         print(f"  Best: {solutions[0].title}")
-    
+
     # Think impossible
     print("\n--- Thinking Impossible ---")
     impossible = await engine.think_impossible("Control everything")
     print(f"Generated {len(impossible)} impossible paths")
-    
+
     # Stats
     print("\n--- Statistics ---")
     stats = engine.get_stats()
     print(f"Total ideas: {stats['total_ideas']}")
     print(f"Breakthroughs: {stats['breakthrough_ideas']}")
     print(f"Average score: {stats['average_score']:.2f}")
-    
+
     print("\n" + "=" * 60)
     print("🎨 CREATIVITY UNLEASHED 🎨")
 

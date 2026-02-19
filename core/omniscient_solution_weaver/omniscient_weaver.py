@@ -59,7 +59,7 @@ class SolutionVector:
     created_at: datetime
     iteration: int = 0
     parent_solution: Optional[str] = None
-    
+
     def score(self) -> float:
         return sum(self.dimensions.values()) / len(self.dimensions)
 
@@ -88,46 +88,46 @@ class SolutionBundle:
 
 class KnowledgeWeaver:
     """Weaves knowledge fragments into solutions"""
-    
+
     def __init__(self):
         self.knowledge_base: Dict[str, KnowledgeFragment] = {}
         self.domain_index: Dict[str, Set[str]] = defaultdict(set)
-    
+
     def add_knowledge(self, fragment: KnowledgeFragment):
         """Add knowledge fragment to the weaver"""
         self.knowledge_base[fragment.id] = fragment
         self.domain_index[fragment.domain].add(fragment.id)
-    
+
     async def weave(
-        self, 
-        problem: str, 
+        self,
+        problem: str,
         domains: List[str]
     ) -> List[KnowledgeFragment]:
         """Weave relevant knowledge for a problem"""
         relevant = []
-        
+
         for domain in domains:
             fragment_ids = self.domain_index.get(domain, set())
             for fid in fragment_ids:
                 fragment = self.knowledge_base.get(fid)
                 if fragment and fragment.relevance > 0.5:
                     relevant.append(fragment)
-        
+
         # Sort by relevance * reliability
         relevant.sort(
             key=lambda f: f.relevance * f.reliability,
             reverse=True
         )
-        
+
         return relevant
 
 
 class SolutionSpaceExplorer:
     """Explores the multi-dimensional solution space"""
-    
+
     def __init__(self):
         self.explored_regions: List[Dict[str, Any]] = []
-    
+
     async def explore(
         self,
         problem: str,
@@ -136,12 +136,12 @@ class SolutionSpaceExplorer:
     ) -> List[SolutionVector]:
         """Explore solution space from a starting point"""
         solutions = []
-        
+
         # Generate initial solution if none provided
         if not starting_point:
             starting_point = self._generate_initial_solution(problem)
             solutions.append(starting_point)
-        
+
         # Explore in each dimension
         for dimension in SolutionDimension:
             variant = await self._explore_dimension(
@@ -149,7 +149,7 @@ class SolutionSpaceExplorer:
             )
             if variant:
                 solutions.append(variant)
-        
+
         # Record exploration
         self.explored_regions.append({
             "problem": problem,
@@ -157,9 +157,9 @@ class SolutionSpaceExplorer:
             "depth": depth,
             "dimensions_explored": len(SolutionDimension)
         })
-        
+
         return solutions
-    
+
     def _generate_initial_solution(self, problem: str) -> SolutionVector:
         """Generate initial solution"""
         return SolutionVector(
@@ -171,7 +171,7 @@ class SolutionSpaceExplorer:
             source_knowledge=[],
             created_at=datetime.now()
         )
-    
+
     async def _explore_dimension(
         self,
         base: SolutionVector,
@@ -181,7 +181,7 @@ class SolutionSpaceExplorer:
         """Explore along a single dimension"""
         new_dims = base.dimensions.copy()
         new_dims[dimension] = min(1.0, base.dimensions[dimension] + 0.1 * depth)
-        
+
         # Calculate new quality
         avg_score = sum(new_dims.values()) / len(new_dims)
         if avg_score > 0.9:
@@ -196,7 +196,7 @@ class SolutionSpaceExplorer:
             quality = SolutionQuality.EXCELLENT
         else:
             quality = SolutionQuality.GOOD
-        
+
         return SolutionVector(
             id=str(uuid.uuid4()),
             content=f"Optimized for {dimension.name}: {base.content}",
@@ -212,10 +212,10 @@ class SolutionSpaceExplorer:
 
 class SolutionSynthesizer:
     """Synthesizes multiple solutions into optimal hybrid"""
-    
+
     def __init__(self):
         self.syntheses: List[Dict[str, Any]] = []
-    
+
     async def synthesize(
         self,
         solutions: List[SolutionVector]
@@ -223,22 +223,22 @@ class SolutionSynthesizer:
         """Synthesize multiple solutions into one optimal solution"""
         if not solutions:
             raise ValueError("No solutions to synthesize")
-        
+
         # Take best value for each dimension
         optimal_dims = {}
         for dim in SolutionDimension:
             values = [s.dimensions.get(dim, 0) for s in solutions]
             optimal_dims[dim] = max(values)
-        
+
         # Combine content
         combined_content = "SYNTHESIZED SOLUTION:\n"
         for solution in solutions:
             combined_content += f"  - {solution.content}\n"
-        
+
         # Calculate quality
         avg = sum(optimal_dims.values()) / len(optimal_dims)
         quality = SolutionQuality.OMNISCIENT if avg > 0.85 else SolutionQuality.PERFECT
-        
+
         synthesis = SolutionVector(
             id=str(uuid.uuid4()),
             content=combined_content,
@@ -251,22 +251,22 @@ class SolutionSynthesizer:
             created_at=datetime.now(),
             iteration=max(s.iteration for s in solutions) + 1
         )
-        
+
         self.syntheses.append({
             "source_count": len(solutions),
             "synthesis_id": synthesis.id,
             "quality": quality.name
         })
-        
+
         return synthesis
 
 
 class CompetitiveAnalyzer:
     """Analyzes competitive solutions to find advantages"""
-    
+
     def __init__(self):
         self.analyses: List[Dict[str, Any]] = []
-    
+
     async def analyze_competition(
         self,
         our_solution: SolutionVector,
@@ -281,7 +281,7 @@ class CompetitiveAnalyzer:
             "gaps": [],
             "recommendations": []
         }
-        
+
         # Find our strong dimensions
         strong_dims = [
             dim.name for dim, val in our_solution.dimensions.items()
@@ -290,7 +290,7 @@ class CompetitiveAnalyzer:
         analysis["advantages"] = [
             f"Strong in {dim}" for dim in strong_dims
         ]
-        
+
         # Find weak dimensions
         weak_dims = [
             dim.name for dim, val in our_solution.dimensions.items()
@@ -299,25 +299,25 @@ class CompetitiveAnalyzer:
         analysis["gaps"] = [
             f"Needs improvement in {dim}" for dim in weak_dims
         ]
-        
+
         # Generate recommendations
         for dim in weak_dims:
             analysis["recommendations"].append(
                 f"Invest in improving {dim} dimension"
             )
-        
+
         self.analyses.append(analysis)
         return analysis
 
 
 class InfiniteIterator:
     """Iterates solutions infinitely toward perfection"""
-    
+
     def __init__(self, synthesizer: SolutionSynthesizer):
         self.synthesizer = synthesizer
         self.iterations: List[SolutionVector] = []
         self.improvement_rate: float = 0.0
-    
+
     async def iterate_to_perfection(
         self,
         initial: SolutionVector,
@@ -327,42 +327,42 @@ class InfiniteIterator:
         """Iterate a solution until target quality is reached"""
         current = initial
         self.iterations = [current]
-        
+
         for i in range(max_iterations):
             # Check if target reached
             if current.quality.value >= target_quality.value:
                 break
-            
+
             # Generate variations
             variations = await self._generate_variations(current)
-            
+
             # Synthesize best version
             all_solutions = [current] + variations
             current = await self.synthesizer.synthesize(all_solutions)
-            
+
             self.iterations.append(current)
-            
+
             # Calculate improvement rate
             if len(self.iterations) >= 2:
                 prev_score = self.iterations[-2].score()
                 curr_score = current.score()
                 self.improvement_rate = curr_score - prev_score
-        
+
         return current
-    
+
     async def _generate_variations(
         self,
         solution: SolutionVector
     ) -> List[SolutionVector]:
         """Generate variations of a solution"""
         variations = []
-        
+
         # Improve each weak dimension
         for dim, val in solution.dimensions.items():
             if val < 0.9:
                 new_dims = solution.dimensions.copy()
                 new_dims[dim] = min(1.0, val + 0.1)
-                
+
                 variation = SolutionVector(
                     id=str(uuid.uuid4()),
                     content=f"Variation improving {dim.name}: {solution.content}",
@@ -375,18 +375,18 @@ class InfiniteIterator:
                     parent_solution=solution.id
                 )
                 variations.append(variation)
-        
+
         return variations
 
 
 class OmniscientSolutionWeaver:
     """
     THE OMNISCIENT SOLUTION WEAVER
-    
+
     Finds solutions to everything by weaving all knowledge together.
     Explores infinite solution spaces.
     Delivers perfect solutions.
-    
+
     Features:
     - Multi-dimensional solution exploration
     - Knowledge weaving
@@ -394,16 +394,16 @@ class OmniscientSolutionWeaver:
     - Infinite iteration to perfection
     - Competitive analysis
     """
-    
+
     def __init__(self):
         self.knowledge_weaver = KnowledgeWeaver()
         self.space_explorer = SolutionSpaceExplorer()
         self.synthesizer = SolutionSynthesizer()
         self.competitive_analyzer = CompetitiveAnalyzer()
         self.iterator = InfiniteIterator(self.synthesizer)
-        
+
         self.solution_bundles: Dict[str, SolutionBundle] = {}
-    
+
     async def solve(
         self,
         problem: str,
@@ -412,27 +412,27 @@ class OmniscientSolutionWeaver:
     ) -> SolutionBundle:
         """Solve a problem with omniscient capability"""
         domains = domains or ["general", "technical", "business"]
-        
+
         # Weave relevant knowledge
         knowledge = await self.knowledge_weaver.weave(problem, domains)
-        
+
         # Explore solution space
         solutions = await self.space_explorer.explore(problem)
-        
+
         # Synthesize best solution
         synthesized = await self.synthesizer.synthesize(solutions)
-        
+
         # Iterate to target quality
         perfected = await self.iterator.iterate_to_perfection(
             synthesized, target_quality=target_quality
         )
-        
+
         # Calculate coverage
         coverage = {
             dim: max(s.dimensions.get(dim, 0) for s in solutions)
             for dim in SolutionDimension
         }
-        
+
         # Create bundle
         bundle = SolutionBundle(
             id=str(uuid.uuid4()),
@@ -442,10 +442,10 @@ class OmniscientSolutionWeaver:
             coverage=coverage,
             synthesis=perfected.content
         )
-        
+
         self.solution_bundles[bundle.id] = bundle
         return bundle
-    
+
     async def solve_against_competition(
         self,
         problem: str,
@@ -454,14 +454,14 @@ class OmniscientSolutionWeaver:
         """Solve while analyzing competition"""
         # First solve normally
         bundle = await self.solve(problem)
-        
+
         # Then analyze against competition
         if bundle.best_solution:
             analysis = await self.competitive_analyzer.analyze_competition(
                 bundle.best_solution,
                 competitor_solutions
             )
-            
+
             # If we have gaps, iterate more
             if analysis["gaps"]:
                 improved = await self.iterator.iterate_to_perfection(
@@ -469,15 +469,15 @@ class OmniscientSolutionWeaver:
                     target_quality=SolutionQuality.TRANSCENDENT
                 )
                 bundle.best_solution = improved
-            
+
             return {
                 "bundle": bundle,
                 "competitive_analysis": analysis,
                 "final_quality": bundle.best_solution.quality.name
             }
-        
+
         return {"bundle": bundle, "competitive_analysis": None}
-    
+
     def add_knowledge(
         self,
         domain: str,
@@ -494,7 +494,7 @@ class OmniscientSolutionWeaver:
             connections=set()
         )
         self.knowledge_weaver.add_knowledge(fragment)
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get weaver statistics"""
         return {

@@ -139,7 +139,7 @@ class UserPreferences:
 class UnifiedPowerConsole:
     """
     The Unified Power Console - all control in one place.
-    
+
     Provides:
     - Universal command interface
     - Real-time system monitoring
@@ -147,7 +147,7 @@ class UnifiedPowerConsole:
     - Alert management
     - User customization
     """
-    
+
     def __init__(self):
         self.widgets: Dict[str, SystemWidget] = {}
         self.alerts: Dict[str, Alert] = {}
@@ -163,11 +163,11 @@ class UnifiedPowerConsole:
             favorite_actions=[],
             pinned_systems=[]
         )
-        
+
         # Initialize widgets and actions
         self._init_widgets()
         self._init_quick_actions()
-        
+
         # Command registry
         self.commands: Dict[str, Callable] = {
             "status": self._cmd_status,
@@ -183,9 +183,9 @@ class UnifiedPowerConsole:
             "alert": self._cmd_alert,
             "history": self._cmd_history
         }
-        
+
         logger.info("UnifiedPowerConsole initialized - all power unified")
-    
+
     def _init_widgets(self):
         """Initialize dashboard widgets."""
         widget_configs = [
@@ -204,7 +204,7 @@ class UnifiedPowerConsole:
             ("orchestrator", "Master Orchestrator", SystemCategory.OPERATIONAL, ["orchestrate", "workflow"]),
             ("security", "Security Arsenal", SystemCategory.DEFENSIVE, ["scan", "protect"])
         ]
-        
+
         for id, name, category, actions in widget_configs:
             self.widgets[id] = SystemWidget(
                 id=id,
@@ -217,7 +217,7 @@ class UnifiedPowerConsole:
                 quick_actions=actions,
                 metrics={"tasks_completed": 0, "success_rate": 1.0}
             )
-    
+
     def _init_quick_actions(self):
         """Initialize quick action shortcuts."""
         actions = [
@@ -232,7 +232,7 @@ class UnifiedPowerConsole:
             ("!max", "Maximum Power", "Enable max power", ActionType.TOGGLE, "mode absolute", "Ctrl+X", "⚡"),
             ("!workflow", "Run Workflow", "Execute saved workflow", ActionType.WORKFLOW, "workflow --last", "Ctrl+W", "🔄")
         ]
-        
+
         for id, name, desc, action_type, command, hotkey, icon in actions:
             self.quick_actions[id] = QuickAction(
                 id=id,
@@ -243,23 +243,23 @@ class UnifiedPowerConsole:
                 hotkey=hotkey,
                 icon=icon
             )
-    
+
     # -------------------------------------------------------------------------
     # COMMAND EXECUTION
     # -------------------------------------------------------------------------
-    
+
     async def execute(self, command_line: str) -> CommandResult:
         """Execute a command from the console."""
         start_time = time.time()
-        
+
         # Parse command
         parts = command_line.strip().split()
         if not parts:
             return CommandResult(False, "No command provided")
-        
+
         cmd = parts[0].lower().lstrip("!")
         args = parts[1:]
-        
+
         # Check for quick action
         if command_line.startswith("!"):
             quick_action = self.quick_actions.get(command_line.split()[0])
@@ -269,7 +269,7 @@ class UnifiedPowerConsole:
                 parts = command_line.split()
                 cmd = parts[0].lower()
                 args = parts[1:]
-        
+
         # Find and execute handler
         handler = self.commands.get(cmd)
         if handler:
@@ -277,10 +277,10 @@ class UnifiedPowerConsole:
         else:
             # Try to route to appropriate system
             result = await self._route_command(cmd, args)
-        
+
         execution_time = time.time() - start_time
         result.execution_time = execution_time
-        
+
         # Log to history
         self.command_history.append({
             "command": command_line,
@@ -288,9 +288,9 @@ class UnifiedPowerConsole:
             "time": datetime.now().isoformat(),
             "execution_time": execution_time
         })
-        
+
         return result
-    
+
     async def _route_command(self, cmd: str, args: List[str]) -> CommandResult:
         """Route command to appropriate system."""
         # Find matching widget
@@ -298,24 +298,24 @@ class UnifiedPowerConsole:
             if cmd in widget.quick_actions or cmd == widget.id:
                 widget.active_tasks += 1
                 widget.last_activity = datetime.now()
-                
+
                 # Simulate execution
                 await asyncio.sleep(0.1)
                 widget.active_tasks -= 1
                 widget.metrics["tasks_completed"] += 1
-                
+
                 return CommandResult(
                     success=True,
                     message=f"Command routed to {widget.name}",
                     system_used=widget.id
                 )
-        
+
         return CommandResult(False, f"Unknown command: {cmd}")
-    
+
     # -------------------------------------------------------------------------
     # COMMAND HANDLERS
     # -------------------------------------------------------------------------
-    
+
     async def _cmd_status(self, args: List[str]) -> CommandResult:
         """Get system status."""
         if "--full" in args:
@@ -336,9 +336,9 @@ class UnifiedPowerConsole:
                 "power_mode": self.preferences.power_mode.value,
                 "alerts": len([a for a in self.alerts.values() if not a.resolved])
             }
-        
+
         return CommandResult(True, "Status retrieved", data)
-    
+
     async def _cmd_help(self, args: List[str]) -> CommandResult:
         """Show help information."""
         commands = list(self.commands.keys())
@@ -346,13 +346,13 @@ class UnifiedPowerConsole:
             f"{a.id}: {a.description}"
             for a in self.quick_actions.values()
         ]
-        
+
         return CommandResult(
             True,
             "Help information",
             {"commands": commands, "quick_actions": quick_actions[:5]}
         )
-    
+
     async def _cmd_mode(self, args: List[str]) -> CommandResult:
         """Set power mode."""
         if not args:
@@ -360,7 +360,7 @@ class UnifiedPowerConsole:
                 True,
                 f"Current mode: {self.preferences.power_mode.value}"
             )
-        
+
         mode_name = args[0].upper()
         try:
             new_mode = PowerMode[mode_name]
@@ -368,48 +368,48 @@ class UnifiedPowerConsole:
             return CommandResult(True, f"Power mode set to {new_mode.value}")
         except KeyError:
             return CommandResult(False, f"Unknown mode: {mode_name}")
-    
+
     async def _cmd_exec(self, args: List[str]) -> CommandResult:
         """Execute arbitrary command."""
         if not args:
             return CommandResult(False, "No command to execute")
-        
+
         return await self._route_command(args[0], args[1:])
-    
+
     async def _cmd_dominate(self, args: List[str]) -> CommandResult:
         """Quick domination command."""
         target = args[0] if args else "all"
         self.widgets["domination"].active_tasks += 1
         self.widgets["domination"].last_activity = datetime.now()
-        
+
         await asyncio.sleep(0.1)
-        
+
         self.widgets["domination"].active_tasks -= 1
         self.widgets["domination"].metrics["tasks_completed"] += 1
-        
+
         return CommandResult(
             True,
             f"Domination initiated for: {target}",
             {"target": target, "status": "executing"},
             system_used="domination"
         )
-    
+
     async def _cmd_simulate(self, args: List[str]) -> CommandResult:
         """Run simulation."""
         count = int(args[0]) if args and args[0].isdigit() else 1000
-        
+
         self.widgets["simulation"].active_tasks += 1
         await asyncio.sleep(0.1)
         self.widgets["simulation"].active_tasks -= 1
         self.widgets["simulation"].metrics["tasks_completed"] += 1
-        
+
         return CommandResult(
             True,
             f"Simulation completed: {count} iterations",
             {"iterations": count, "success_rate": 0.87},
             system_used="simulation"
         )
-    
+
     async def _cmd_analyze(self, args: List[str]) -> CommandResult:
         """Analyze target."""
         target = " ".join(args) if args else "everything"
@@ -419,31 +419,31 @@ class UnifiedPowerConsole:
             {"target": target, "findings": ["Pattern A", "Weakness B", "Opportunity C"]},
             system_used="orchestrator"
         )
-    
+
     async def _cmd_create(self, args: List[str]) -> CommandResult:
         """Create something."""
         what = " ".join(args) if args else "ideas"
-        
+
         self.widgets["creativity"].active_tasks += 1
         await asyncio.sleep(0.1)
         self.widgets["creativity"].active_tasks -= 1
         self.widgets["creativity"].metrics["tasks_completed"] += 1
-        
+
         return CommandResult(
             True,
             f"Created: {what}",
             {"created": what, "count": 10},
             system_used="creativity"
         )
-    
+
     async def _cmd_hunt(self, args: List[str]) -> CommandResult:
         """Hunt opportunities."""
         aggressive = "--aggressive" in args
-        
+
         self.widgets["opportunity"].active_tasks += 1
         await asyncio.sleep(0.1)
         self.widgets["opportunity"].active_tasks -= 1
-        
+
         opportunities = 15 if aggressive else 5
         return CommandResult(
             True,
@@ -451,7 +451,7 @@ class UnifiedPowerConsole:
             {"opportunities": opportunities, "top_value": "$50,000"},
             system_used="opportunity"
         )
-    
+
     async def _cmd_control(self, args: List[str]) -> CommandResult:
         """Control target."""
         target = args[0] if args else "system"
@@ -461,7 +461,7 @@ class UnifiedPowerConsole:
             {"target": target, "control_level": "full"},
             system_used="control"
         )
-    
+
     async def _cmd_alert(self, args: List[str]) -> CommandResult:
         """Manage alerts."""
         if not args or args[0] == "list":
@@ -471,24 +471,24 @@ class UnifiedPowerConsole:
                 if not a.resolved
             ]
             return CommandResult(True, f"{len(active)} active alerts", active)
-        
+
         elif args[0] == "clear":
             for alert in self.alerts.values():
                 alert.resolved = True
             return CommandResult(True, "All alerts cleared")
-        
+
         return CommandResult(False, "Unknown alert command")
-    
+
     async def _cmd_history(self, args: List[str]) -> CommandResult:
         """Show command history."""
         limit = int(args[0]) if args and args[0].isdigit() else 10
         recent = self.command_history[-limit:]
         return CommandResult(True, f"Last {len(recent)} commands", recent)
-    
+
     # -------------------------------------------------------------------------
     # ALERT MANAGEMENT
     # -------------------------------------------------------------------------
-    
+
     async def create_alert(
         self,
         title: str,
@@ -505,25 +505,25 @@ class UnifiedPowerConsole:
             source_system=source,
             created_at=datetime.now()
         )
-        
+
         self.alerts[alert.id] = alert
         return alert
-    
+
     async def acknowledge_alert(self, alert_id: str):
         """Acknowledge an alert."""
         if alert_id in self.alerts:
             self.alerts[alert_id].acknowledged = True
-    
+
     async def resolve_alert(self, alert_id: str, notes: str = ""):
         """Resolve an alert."""
         if alert_id in self.alerts:
             self.alerts[alert_id].resolved = True
             self.alerts[alert_id].resolution_notes = notes
-    
+
     # -------------------------------------------------------------------------
     # DASHBOARD
     # -------------------------------------------------------------------------
-    
+
     def get_dashboard(self) -> Dict[str, Any]:
         """Get dashboard data."""
         return {
@@ -551,11 +551,11 @@ class UnifiedPowerConsole:
             "recent_commands": self.command_history[-5:],
             "system_health": sum(w.health for w in self.widgets.values()) / len(self.widgets)
         }
-    
+
     # -------------------------------------------------------------------------
     # HELPERS
     # -------------------------------------------------------------------------
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}".encode()).hexdigest()[:12]
@@ -585,19 +585,19 @@ async def demo():
     print("=" * 60)
     print("🖥️ UNIFIED POWER CONSOLE 🖥️")
     print("=" * 60)
-    
+
     console = get_console()
-    
+
     # Get dashboard
     print("\n--- Dashboard ---")
     dashboard = console.get_dashboard()
     print(f"Power Mode: {dashboard['power_mode']}")
     print(f"Systems: {len(dashboard['systems'])}")
     print(f"System Health: {dashboard['system_health']:.0%}")
-    
+
     # Execute commands
     print("\n--- Executing Commands ---")
-    
+
     commands = [
         "status",
         "mode AGGRESSIVE",
@@ -606,17 +606,17 @@ async def demo():
         "hunt --aggressive",
         "create ideas for domination"
     ]
-    
+
     for cmd in commands:
         result = await console.execute(cmd)
         status = "✓" if result.success else "✗"
         print(f"  {status} {cmd}: {result.message}")
-    
+
     # Quick actions
     print("\n--- Available Quick Actions ---")
     for action in list(console.quick_actions.values())[:5]:
         print(f"  {action.icon} {action.id}: {action.description}")
-    
+
     # Create alert
     print("\n--- Alert Management ---")
     alert = await console.create_alert(
@@ -626,19 +626,19 @@ async def demo():
         "security"
     )
     print(f"Created alert: {alert.title} ({alert.severity.value})")
-    
+
     # Get updated dashboard
     print("\n--- Updated Status ---")
     dashboard = console.get_dashboard()
     print(f"Active alerts: {dashboard['alerts']['total_active']}")
     print(f"Recent commands: {len(dashboard['recent_commands'])}")
-    
+
     # Command history
     print("\n--- Command History ---")
     result = await console.execute("history 3")
     for cmd in result.data:
         print(f"  {cmd['command']}")
-    
+
     print("\n" + "=" * 60)
     print("🖥️ ALL POWER UNIFIED 🖥️")
 

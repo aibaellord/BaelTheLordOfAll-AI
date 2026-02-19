@@ -61,15 +61,15 @@ class MCPToolSchema:
     input_schema: Dict[str, Any]
     output_schema: Dict[str, Any] = field(default_factory=dict)
     category: ToolCategory = ToolCategory.UTILITY
-    
+
     # Implementation details
     implementation_code: str = ""
     dependencies: List[str] = field(default_factory=list)
-    
+
     # Metadata
     created_at: datetime = field(default_factory=datetime.utcnow)
     version: str = "1.0.0"
-    
+
     def to_mcp_format(self) -> Dict[str, Any]:
         """Convert to MCP tool format."""
         return {
@@ -86,7 +86,7 @@ class MCPResourceSchema:
     name: str
     description: str
     mime_type: str = "application/json"
-    
+
     def to_mcp_format(self) -> Dict[str, Any]:
         """Convert to MCP resource format."""
         return {
@@ -104,7 +104,7 @@ class MCPPromptSchema:
     description: str
     arguments: List[Dict[str, Any]] = field(default_factory=list)
     template: str = ""
-    
+
     def to_mcp_format(self) -> Dict[str, Any]:
         """Convert to MCP prompt format."""
         return {
@@ -120,27 +120,27 @@ class MCPServerConfig:
     name: str
     description: str
     version: str = "1.0.0"
-    
+
     # Transport
     mcp_type: MCPType = MCPType.STDIO
-    
+
     # Capabilities
     tools: List[MCPToolSchema] = field(default_factory=list)
     resources: List[MCPResourceSchema] = field(default_factory=list)
     prompts: List[MCPPromptSchema] = field(default_factory=list)
-    
+
     # Server settings
     host: str = "localhost"
     port: int = 3000
-    
+
     # Dependencies
     python_dependencies: List[str] = field(default_factory=list)
     node_dependencies: List[str] = field(default_factory=list)
-    
+
     # Generated code
     server_code: str = ""
     client_code: str = ""
-    
+
     # Metadata
     created_at: datetime = field(default_factory=datetime.utcnow)
     source_repo: Optional[str] = None
@@ -151,20 +151,20 @@ class GitHubRepoAnalysis:
     """Analysis of a GitHub repository."""
     repo_url: str
     repo_name: str
-    
+
     # Detected capabilities
     languages: List[str] = field(default_factory=list)
     frameworks: List[str] = field(default_factory=list)
     apis: List[str] = field(default_factory=list)
-    
+
     # Suggested tools
     suggested_tools: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     # Quality metrics
     stars: int = 0
     forks: int = 0
     last_updated: Optional[str] = None
-    
+
     # Better alternatives
     better_alternatives: List[str] = field(default_factory=list)
 
@@ -172,7 +172,7 @@ class GitHubRepoAnalysis:
 class AutoMCPFactory:
     """
     Automated MCP Factory - Creates MCP servers and tools automatically.
-    
+
     Revolutionary capabilities:
     1. Natural Language to MCP Tool - Describe what you want, get a tool
     2. GitHub Repo to MCP Server - Point at any repo, get MCP integration
@@ -182,7 +182,7 @@ class AutoMCPFactory:
     6. Auto-Discovery - Find and integrate existing MCPs
     7. Competitive Analysis - Find best tools, surpass them
     """
-    
+
     def __init__(
         self,
         llm_provider: Optional[Callable] = None,
@@ -192,18 +192,18 @@ class AutoMCPFactory:
         self.llm_provider = llm_provider
         self.output_dir = Path(output_dir)
         self.enable_competitive = enable_competitive_analysis
-        
+
         # Registry of generated MCPs
         self._generated_servers: Dict[str, MCPServerConfig] = {}
         self._generated_tools: Dict[str, MCPToolSchema] = {}
-        
+
         # Templates
         self._tool_templates = self._load_tool_templates()
         self._server_templates = self._load_server_templates()
-        
+
         # Discovery cache
         self._discovered_mcps: Dict[str, Dict[str, Any]] = {}
-        
+
         # Statistics
         self._stats = {
             "servers_generated": 0,
@@ -212,9 +212,9 @@ class AutoMCPFactory:
             "apis_bridged": 0,
             "competitive_analyses": 0
         }
-        
+
         logger.info("AutoMCPFactory initialized")
-    
+
     def _load_tool_templates(self) -> Dict[str, str]:
         """Load tool code templates."""
         return {
@@ -225,10 +225,10 @@ async def {tool_name}({params}):
     """
     import os
     from pathlib import Path
-    
+
     # Implementation
     {implementation}
-    
+
     return {{"result": result}}
 ''',
             "api_call": '''
@@ -237,11 +237,11 @@ async def {tool_name}({params}):
     {description}
     """
     import aiohttp
-    
+
     async with aiohttp.ClientSession() as session:
         async with session.{method}("{url}", {request_params}) as response:
             result = await response.json()
-    
+
     return result
 ''',
             "code_analysis": '''
@@ -250,10 +250,10 @@ async def {tool_name}({params}):
     {description}
     """
     import ast
-    
+
     # Parse and analyze code
     {implementation}
-    
+
     return {{"analysis": result}}
 ''',
             "database": '''
@@ -262,10 +262,10 @@ async def {tool_name}({params}):
     {description}
     """
     import asyncpg
-    
+
     # Database operation
     {implementation}
-    
+
     return {{"data": result}}
 ''',
             "generic": '''
@@ -275,11 +275,11 @@ async def {tool_name}({params}):
     """
     # Implementation
     {implementation}
-    
+
     return {{"result": result}}
 '''
         }
-    
+
     def _load_server_templates(self) -> Dict[str, str]:
         """Load MCP server templates."""
         return {
@@ -303,11 +303,11 @@ from typing import Any, Dict, List
 class MCPServer:
     def __init__(self):
         self.tools = {tool_registry}
-    
+
     async def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         method = request.get("method", "")
         params = request.get("params", {{}})
-        
+
         if method == "initialize":
             return self._handle_initialize(params)
         elif method == "tools/list":
@@ -316,7 +316,7 @@ class MCPServer:
             return await self._handle_tools_call(params)
         else:
             return {{"error": {{"code": -32601, "message": "Method not found"}}}}
-    
+
     def _handle_initialize(self, params: Dict[str, Any]) -> Dict[str, Any]:
         return {{
             "protocolVersion": "2024-11-05",
@@ -330,21 +330,21 @@ class MCPServer:
                 "version": "{version}"
             }}
         }}
-    
+
     def _handle_tools_list(self) -> Dict[str, Any]:
         return {{
             "tools": [
                 {tools_list}
             ]
         }}
-    
+
     async def _handle_tools_call(self, params: Dict[str, Any]) -> Dict[str, Any]:
         tool_name = params.get("name")
         arguments = params.get("arguments", {{}})
-        
+
         if tool_name not in self.tools:
             return {{"error": {{"code": -32602, "message": f"Tool not found: {{tool_name}}"}}}}
-        
+
         try:
             result = await self.tools[tool_name](**arguments)
             return {{"content": [{{"type": "text", "text": json.dumps(result)}}]}}
@@ -353,19 +353,19 @@ class MCPServer:
 
 async def main():
     server = MCPServer()
-    
+
     while True:
         try:
             line = sys.stdin.readline()
             if not line:
                 break
-            
+
             request = json.loads(line)
             response = await server.handle_request(request)
-            
+
             response["jsonrpc"] = "2.0"
             response["id"] = request.get("id")
-            
+
             print(json.dumps(response), flush=True)
         except Exception as e:
             error_response = {{
@@ -415,7 +415,7 @@ async def list_tools():
 async def call_tool(request: ToolCallRequest):
     if request.name not in tools:
         raise HTTPException(status_code=404, detail=f"Tool not found: {{request.name}}")
-    
+
     try:
         result = await tools[request.name](**request.arguments)
         return {{"content": [{{"type": "text", "text": str(result)}}]}}
@@ -426,7 +426,7 @@ if __name__ == "__main__":
     uvicorn.run(app, host="{host}", port={port})
 '''
         }
-    
+
     async def create_tool_from_description(
         self,
         description: str,
@@ -435,20 +435,20 @@ if __name__ == "__main__":
     ) -> MCPToolSchema:
         """
         Create an MCP tool from natural language description.
-        
+
         Example: "A tool that counts words in a text file"
         """
         # Generate tool name
         tool_name = self._generate_tool_name(description)
-        
+
         # Generate input schema
         input_schema = await self._infer_input_schema(description, examples)
-        
+
         # Generate implementation
         implementation = await self._generate_tool_implementation(
             description, category, input_schema
         )
-        
+
         tool = MCPToolSchema(
             name=tool_name,
             description=description,
@@ -456,13 +456,13 @@ if __name__ == "__main__":
             category=category,
             implementation_code=implementation
         )
-        
+
         self._generated_tools[tool_name] = tool
         self._stats["tools_generated"] += 1
-        
+
         logger.info(f"Generated tool: {tool_name}")
         return tool
-    
+
     async def analyze_github_repo(
         self,
         repo_url: str,
@@ -473,30 +473,30 @@ if __name__ == "__main__":
         Optionally find better alternatives.
         """
         self._stats["repos_analyzed"] += 1
-        
+
         # Extract repo info
         repo_name = repo_url.split("/")[-1].replace(".git", "")
-        
+
         # Analyze repo (would use GitHub API in production)
         analysis = GitHubRepoAnalysis(
             repo_url=repo_url,
             repo_name=repo_name
         )
-        
+
         # Infer languages and frameworks
         analysis.languages = await self._detect_languages(repo_url)
         analysis.frameworks = await self._detect_frameworks(repo_url)
-        
+
         # Suggest tools based on analysis
         analysis.suggested_tools = await self._suggest_tools_for_repo(analysis)
-        
+
         # Find better alternatives
         if find_alternatives and self.enable_competitive:
             analysis.better_alternatives = await self._find_better_alternatives(analysis)
             self._stats["competitive_analyses"] += 1
-        
+
         return analysis
-    
+
     async def create_mcp_from_repo(
         self,
         repo_url: str,
@@ -513,14 +513,14 @@ if __name__ == "__main__":
                 repo_url=repo_url,
                 repo_name=repo_url.split("/")[-1].replace(".git", "")
             )
-        
+
         # Generate server config
         server = MCPServerConfig(
             name=f"mcp-{analysis.repo_name}",
             description=f"MCP server for {analysis.repo_name}",
             source_repo=repo_url
         )
-        
+
         # Generate tools based on analysis
         for tool_spec in analysis.suggested_tools:
             tool = await self.create_tool_from_description(
@@ -528,18 +528,18 @@ if __name__ == "__main__":
                 category=ToolCategory(tool_spec.get("category", "utility"))
             )
             server.tools.append(tool)
-        
+
         # Generate server code
         server.server_code = await self._generate_server_code(server)
-        
+
         # Generate client code
         server.client_code = await self._generate_client_code(server)
-        
+
         self._generated_servers[server.name] = server
         self._stats["servers_generated"] += 1
-        
+
         return server
-    
+
     async def create_api_bridge(
         self,
         api_spec: Dict[str, Any],
@@ -549,13 +549,13 @@ if __name__ == "__main__":
         Create MCP tools from an OpenAPI/Swagger specification.
         """
         self._stats["apis_bridged"] += 1
-        
+
         # Parse API spec
         server = MCPServerConfig(
             name=f"mcp-api-{hashlib.md5(base_url.encode()).hexdigest()[:8]}",
             description=f"MCP bridge for API at {base_url}"
         )
-        
+
         # Convert endpoints to tools
         paths = api_spec.get("paths", {})
         for path, methods in paths.items():
@@ -565,12 +565,12 @@ if __name__ == "__main__":
                         path, method, spec, base_url
                     )
                     server.tools.append(tool)
-        
+
         # Generate server code
         server.server_code = await self._generate_server_code(server)
-        
+
         return server
-    
+
     async def create_meta_mcp(
         self,
         child_mcps: List[MCPServerConfig],
@@ -583,7 +583,7 @@ if __name__ == "__main__":
             name=name,
             description=f"Meta-MCP orchestrating {len(child_mcps)} child servers"
         )
-        
+
         # Create orchestration tools
         for child in child_mcps:
             # Create tool to invoke each child's tools
@@ -595,7 +595,7 @@ if __name__ == "__main__":
                     category=child_tool.category
                 )
                 meta_server.tools.append(meta_tool)
-        
+
         # Add meta-orchestration tools
         meta_server.tools.extend([
             MCPToolSchema(
@@ -646,9 +646,9 @@ if __name__ == "__main__":
                 category=ToolCategory.AI_ML
             )
         ])
-        
+
         return meta_server
-    
+
     async def save_mcp_server(
         self,
         server: MCPServerConfig,
@@ -657,11 +657,11 @@ if __name__ == "__main__":
         """Save generated MCP server to disk."""
         output_path = Path(output_dir or self.output_dir) / server.name
         output_path.mkdir(parents=True, exist_ok=True)
-        
+
         # Save server code
         server_file = output_path / "server.py"
         server_file.write_text(server.server_code)
-        
+
         # Save configuration
         config_file = output_path / "config.json"
         config = {
@@ -674,12 +674,12 @@ if __name__ == "__main__":
             "prompts": [p.to_mcp_format() for p in server.prompts]
         }
         config_file.write_text(json.dumps(config, indent=2))
-        
+
         # Save requirements
         requirements_file = output_path / "requirements.txt"
         requirements = ["mcp>=1.0.0"] + server.python_dependencies
         requirements_file.write_text("\n".join(requirements))
-        
+
         # Create Claude Desktop config entry
         claude_config = {
             "mcpServers": {
@@ -691,21 +691,21 @@ if __name__ == "__main__":
         }
         claude_config_file = output_path / "claude_desktop_config.json"
         claude_config_file.write_text(json.dumps(claude_config, indent=2))
-        
+
         logger.info(f"Saved MCP server to {output_path}")
         return str(output_path)
-    
+
     def _generate_tool_name(self, description: str) -> str:
         """Generate a tool name from description."""
         # Extract key words
         words = re.findall(r'\b\w+\b', description.lower())
-        important_words = [w for w in words if len(w) > 3 and w not in 
+        important_words = [w for w in words if len(w) > 3 and w not in
                          ["that", "this", "with", "from", "into", "when", "what"]]
-        
+
         # Create snake_case name
         name = "_".join(important_words[:3])
         return name or f"tool_{hashlib.md5(description.encode()).hexdigest()[:6]}"
-    
+
     async def _infer_input_schema(
         self,
         description: str,
@@ -717,7 +717,7 @@ if __name__ == "__main__":
             "properties": {},
             "required": []
         }
-        
+
         # Simple pattern matching for common parameters
         patterns = {
             "file": ("file_path", "string", "Path to the file"),
@@ -731,7 +731,7 @@ if __name__ == "__main__":
             "name": ("name", "string", "Name identifier"),
             "data": ("data", "object", "Data object")
         }
-        
+
         description_lower = description.lower()
         for keyword, (param_name, param_type, param_desc) in patterns.items():
             if keyword in description_lower:
@@ -740,7 +740,7 @@ if __name__ == "__main__":
                     "description": param_desc
                 }
                 schema["required"].append(param_name)
-        
+
         # Ensure at least one parameter
         if not schema["properties"]:
             schema["properties"]["input"] = {
@@ -748,9 +748,9 @@ if __name__ == "__main__":
                 "description": "Input for the tool"
             }
             schema["required"].append("input")
-        
+
         return schema
-    
+
     async def _generate_tool_implementation(
         self,
         description: str,
@@ -759,13 +759,13 @@ if __name__ == "__main__":
     ) -> str:
         """Generate tool implementation code."""
         template = self._tool_templates.get(category.value, self._tool_templates["generic"])
-        
+
         # Generate parameter list
         params = ", ".join(input_schema.get("properties", {}).keys())
-        
+
         # Generate basic implementation
         implementation = "result = f'Executed with: {locals()}'"
-        
+
         if self.llm_provider:
             try:
                 prompt = f"""
@@ -780,52 +780,52 @@ Provide only the implementation code, no function definition.
                 implementation = await self.llm_provider(prompt)
             except:
                 pass
-        
+
         return template.format(
             tool_name=self._generate_tool_name(description),
             params=params,
             description=description,
             implementation=implementation
         )
-    
+
     async def _detect_languages(self, repo_url: str) -> List[str]:
         """Detect programming languages in repo."""
         # Would use GitHub API in production
         return ["python", "javascript"]
-    
+
     async def _detect_frameworks(self, repo_url: str) -> List[str]:
         """Detect frameworks in repo."""
         return ["fastapi", "react"]
-    
+
     async def _suggest_tools_for_repo(
         self,
         analysis: GitHubRepoAnalysis
     ) -> List[Dict[str, Any]]:
         """Suggest MCP tools based on repo analysis."""
         tools = []
-        
+
         # Basic tools based on languages
         if "python" in analysis.languages:
             tools.append({
                 "description": f"Run Python code from {analysis.repo_name}",
                 "category": "code_analysis"
             })
-        
+
         if "javascript" in analysis.languages:
             tools.append({
                 "description": f"Execute JavaScript functions from {analysis.repo_name}",
                 "category": "code_analysis"
             })
-        
+
         # Framework-specific tools
         if "fastapi" in analysis.frameworks:
             tools.append({
                 "description": f"Invoke API endpoints from {analysis.repo_name}",
                 "category": "api_integration"
             })
-        
+
         return tools
-    
+
     async def _find_better_alternatives(
         self,
         analysis: GitHubRepoAnalysis
@@ -833,20 +833,20 @@ Provide only the implementation code, no function definition.
         """Find better alternatives to the analyzed repo."""
         # Would search GitHub/npm/pypi for alternatives
         alternatives = []
-        
+
         # Check for known better alternatives
         alternatives_db = {
             "langchain": ["llamaindex", "haystack"],
             "autogpt": ["bael", "agent-zero"],
             "openai": ["anthropic", "local-llm"]
         }
-        
+
         for name, alts in alternatives_db.items():
             if name in analysis.repo_name.lower():
                 alternatives.extend(alts)
-        
+
         return alternatives
-    
+
     async def _create_tool_from_endpoint(
         self,
         path: str,
@@ -858,14 +858,14 @@ Provide only the implementation code, no function definition.
         # Generate tool name from path
         name = path.replace("/", "_").replace("{", "").replace("}", "").strip("_")
         name = f"{method}_{name}"
-        
+
         # Build input schema from parameters
         input_schema = {
             "type": "object",
             "properties": {},
             "required": []
         }
-        
+
         for param in spec.get("parameters", []):
             param_name = param.get("name")
             input_schema["properties"][param_name] = {
@@ -874,7 +874,7 @@ Provide only the implementation code, no function definition.
             }
             if param.get("required"):
                 input_schema["required"].append(param_name)
-        
+
         return MCPToolSchema(
             name=name,
             description=spec.get("summary", f"{method.upper()} {path}"),
@@ -889,31 +889,31 @@ Provide only the implementation code, no function definition.
                 request_params="json=arguments" if method in ["post", "put"] else "params=arguments"
             )
         )
-    
+
     async def _generate_server_code(self, server: MCPServerConfig) -> str:
         """Generate MCP server code."""
         template = self._server_templates.get(
             server.mcp_type.value,
             self._server_templates["stdio"]
         )
-        
+
         # Generate tool implementations
         tool_implementations = "\n\n".join([
             t.implementation_code for t in server.tools
         ])
-        
+
         # Generate tool registry
         tool_registry = "{\n" + ",\n".join([
             f'        "{t.name}": {self._generate_tool_name(t.description)}'
             for t in server.tools
         ]) + "\n    }"
-        
+
         # Generate tools list
         tools_list = ",\n                ".join([
             json.dumps(t.to_mcp_format())
             for t in server.tools
         ])
-        
+
         return template.format(
             name=server.name,
             description=server.description,
@@ -924,7 +924,7 @@ Provide only the implementation code, no function definition.
             host=server.host,
             port=server.port
         )
-    
+
     async def _generate_client_code(self, server: MCPServerConfig) -> str:
         """Generate MCP client code."""
         return f'''#!/usr/bin/env python3
@@ -943,16 +943,16 @@ async def main():
         command="python",
         args=["server.py"]
     )
-    
+
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             # Initialize
             await session.initialize()
-            
+
             # List available tools
             tools = await session.list_tools()
             print(f"Available tools: {{[t.name for t in tools.tools]}}")
-            
+
             # Example: Call first tool
             if tools.tools:
                 result = await session.call_tool(
@@ -964,7 +964,7 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 '''
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get factory statistics."""
         return {
@@ -989,9 +989,9 @@ def get_auto_mcp_factory() -> AutoMCPFactory:
 async def demo():
     """Demonstrate the AutoMCPFactory."""
     factory = get_auto_mcp_factory()
-    
+
     print("=== AUTO MCP FACTORY DEMO ===\n")
-    
+
     # Create tool from description
     tool = await factory.create_tool_from_description(
         "A tool that counts the number of words in a text file",
@@ -1000,7 +1000,7 @@ async def demo():
     print(f"Generated Tool: {tool.name}")
     print(f"  Description: {tool.description}")
     print(f"  Schema: {json.dumps(tool.input_schema, indent=2)}")
-    
+
     # Analyze a repo
     print("\n--- Analyzing Repository ---")
     analysis = await factory.analyze_github_repo(
@@ -1011,7 +1011,7 @@ async def demo():
     print(f"Languages: {analysis.languages}")
     print(f"Suggested tools: {len(analysis.suggested_tools)}")
     print(f"Better alternatives: {analysis.better_alternatives}")
-    
+
     # Show stats
     print("\n--- Factory Stats ---")
     for key, value in factory.get_stats().items():

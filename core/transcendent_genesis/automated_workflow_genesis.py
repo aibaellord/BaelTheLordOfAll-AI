@@ -75,28 +75,28 @@ class WorkflowStep:
     step_id: str
     name: str
     description: str
-    
+
     # Execution
     action: str
     parameters: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Dependencies
     depends_on: List[str] = field(default_factory=list)
     required_inputs: List[str] = field(default_factory=list)
     outputs: List[str] = field(default_factory=list)
-    
+
     # Configuration
     timeout_seconds: float = 300.0
     retries: int = 3
     can_parallelize: bool = True
-    
+
     # Metrics
     avg_execution_time_ms: float = 0.0
     success_rate: float = 1.0
-    
+
     # Sacred geometry weight
     golden_weight: float = 1.0
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.step_id,
@@ -113,18 +113,18 @@ class MicroAgent:
     agent_id: str
     name: str
     role: AgentRole
-    
+
     # Capabilities
     skills: List[str] = field(default_factory=list)
-    
+
     # State
     status: str = "idle"
     current_task: Optional[str] = None
-    
+
     # Metrics
     tasks_completed: int = 0
     success_rate: float = 1.0
-    
+
     # Psychological profile for optimization
     creativity: float = 0.5
     precision: float = 0.5
@@ -139,44 +139,44 @@ class Workflow:
     name: str
     description: str
     workflow_type: WorkflowType
-    
+
     # Structure
     steps: List[WorkflowStep] = field(default_factory=list)
     agents: List[MicroAgent] = field(default_factory=list)
-    
+
     # Configuration
     parameters: Dict[str, Any] = field(default_factory=dict)
     constraints: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Evolution
     version: str = "1.0.0"
     parent_workflows: List[str] = field(default_factory=list)
     evolution_history: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     # Metrics
     executions: int = 0
     successes: int = 0
     avg_duration_ms: float = 0.0
-    
+
     # Metadata
     created_at: datetime = field(default_factory=datetime.utcnow)
     tags: List[str] = field(default_factory=list)
-    
+
     @property
     def success_rate(self) -> float:
         if self.executions == 0:
             return 0.0
         return self.successes / self.executions
-    
+
     def get_fitness_score(self) -> float:
         """Calculate fitness for evolution."""
         success_weight = 1 / PHI
         speed_weight = 1 / (PHI ** 2)
         complexity_weight = 1 / (PHI ** 3)
-        
+
         speed_score = 1.0 / (1.0 + self.avg_duration_ms / 10000)
         complexity_score = 1.0 / (1.0 + len(self.steps) / 10)
-        
+
         return (
             self.success_rate * success_weight +
             speed_score * speed_weight +
@@ -189,16 +189,16 @@ class WorkflowExecutionResult:
     """Result of workflow execution."""
     workflow_id: str
     success: bool
-    
+
     # Outputs
     outputs: Dict[str, Any] = field(default_factory=dict)
     step_results: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Metrics
     duration_ms: float = 0.0
     steps_executed: int = 0
     steps_failed: int = 0
-    
+
     # Insights
     bottlenecks: List[str] = field(default_factory=list)
     optimization_opportunities: List[str] = field(default_factory=list)
@@ -208,7 +208,7 @@ class WorkflowExecutionResult:
 class AutomatedWorkflowGenesis:
     """
     Automated Workflow Genesis - Creates and evolves workflows.
-    
+
     Revolutionary capabilities:
     1. Natural Language Workflow Creation
     2. GitHub Repository Workflow Extraction
@@ -218,7 +218,7 @@ class AutomatedWorkflowGenesis:
     6. Competitive Workflow Analysis
     7. Meta-Workflow Orchestration
     """
-    
+
     def __init__(
         self,
         llm_provider: Optional[Callable] = None,
@@ -226,19 +226,19 @@ class AutomatedWorkflowGenesis:
     ):
         self.llm_provider = llm_provider
         self.auto_evolution = enable_auto_evolution
-        
+
         # Workflow registry
         self._workflows: Dict[str, Workflow] = {}
-        
+
         # Agent pool
         self._agents: Dict[str, MicroAgent] = {}
-        
+
         # Templates
         self._workflow_templates = self._create_templates()
-        
+
         # Evolution
         self._evolution_pool: List[Workflow] = []
-        
+
         # Statistics
         self._stats = {
             "workflows_created": 0,
@@ -246,9 +246,9 @@ class AutomatedWorkflowGenesis:
             "workflows_evolved": 0,
             "agents_spawned": 0
         }
-        
+
         logger.info("AutomatedWorkflowGenesis initialized")
-    
+
     def _create_templates(self) -> Dict[str, Dict[str, Any]]:
         """Create workflow templates."""
         return {
@@ -294,7 +294,7 @@ class AutomatedWorkflowGenesis:
                 "type": WorkflowType.ADAPTIVE
             }
         }
-    
+
     async def create_workflow(
         self,
         description: str,
@@ -305,13 +305,13 @@ class AutomatedWorkflowGenesis:
         Create a workflow from natural language description.
         """
         workflow_id = f"workflow_{hashlib.md5(f'{description}{time.time()}'.encode()).hexdigest()[:10]}"
-        
+
         # Infer steps from description
         steps = await self._infer_steps(description, workflow_type)
-        
+
         # Create optimal agent team
         agents = await self._compose_agent_team(steps)
-        
+
         workflow = Workflow(
             workflow_id=workflow_id,
             name=self._generate_workflow_name(description),
@@ -321,16 +321,16 @@ class AutomatedWorkflowGenesis:
             agents=agents,
             parameters=parameters or {}
         )
-        
+
         # Apply golden ratio optimization
         self._apply_golden_optimization(workflow)
-        
+
         self._workflows[workflow_id] = workflow
         self._stats["workflows_created"] += 1
-        
+
         logger.info(f"Created workflow: {workflow.name} with {len(steps)} steps")
         return workflow
-    
+
     async def execute_workflow(
         self,
         workflow_id: str,
@@ -343,14 +343,14 @@ class AutomatedWorkflowGenesis:
                 workflow_id=workflow_id,
                 success=False
             )
-        
+
         workflow = self._workflows[workflow_id]
         start_time = time.time()
-        
+
         step_results = {}
         outputs = {}
         failed_steps = 0
-        
+
         # Execute steps based on workflow type
         if workflow.workflow_type == WorkflowType.LINEAR:
             for step in workflow.steps:
@@ -359,7 +359,7 @@ class AutomatedWorkflowGenesis:
                 if not result.get("success", False):
                     failed_steps += 1
                 outputs.update(result.get("outputs", {}))
-        
+
         elif workflow.workflow_type == WorkflowType.PARALLEL:
             # Execute all steps in parallel
             tasks = [
@@ -374,7 +374,7 @@ class AutomatedWorkflowGenesis:
                 else:
                     step_results[step.step_id] = result
                     outputs.update(result.get("outputs", {}))
-        
+
         else:
             # Adaptive/Emergent execution
             for step in workflow.steps:
@@ -383,34 +383,34 @@ class AutomatedWorkflowGenesis:
                     step_results.get(dep, {}).get("success", False)
                     for dep in step.depends_on
                 )
-                
+
                 if not step.depends_on or deps_met:
                     result = await self._execute_step(step, inputs, context, step_results)
                     step_results[step.step_id] = result
                     if not result.get("success", False):
                         failed_steps += 1
                     outputs.update(result.get("outputs", {}))
-        
+
         duration = (time.time() - start_time) * 1000
         success = failed_steps == 0
-        
+
         # Update workflow metrics
         workflow.executions += 1
         if success:
             workflow.successes += 1
         alpha = 0.1
         workflow.avg_duration_ms = alpha * duration + (1 - alpha) * workflow.avg_duration_ms
-        
+
         self._stats["workflows_executed"] += 1
-        
+
         # Check for evolution trigger
         if self.auto_evolution and workflow.executions % 10 == 0:
             asyncio.create_task(self._consider_evolution(workflow))
-        
+
         # Detect optimization opportunities
         bottlenecks = self._detect_bottlenecks(step_results)
         opportunities = self._find_optimization_opportunities(workflow, step_results)
-        
+
         return WorkflowExecutionResult(
             workflow_id=workflow_id,
             success=success,
@@ -422,7 +422,7 @@ class AutomatedWorkflowGenesis:
             bottlenecks=bottlenecks,
             optimization_opportunities=opportunities
         )
-    
+
     async def evolve_workflow(
         self,
         workflow_id: str,
@@ -431,13 +431,13 @@ class AutomatedWorkflowGenesis:
         """Evolve a workflow."""
         if workflow_id not in self._workflows:
             raise ValueError(f"Workflow not found: {workflow_id}")
-        
+
         original = self._workflows[workflow_id]
         evolved = copy.deepcopy(original)
-        
+
         evolved.workflow_id = f"{workflow_id}_v{len(original.evolution_history) + 2}"
         evolved.parent_workflows = [workflow_id]
-        
+
         if strategy == "optimize":
             evolved = await self._optimize_workflow(evolved)
         elif strategy == "parallelize":
@@ -448,31 +448,31 @@ class AutomatedWorkflowGenesis:
             evolved = await self._expand_workflow(evolved)
         elif strategy == "transcend":
             evolved = await self._transcend_workflow(evolved)
-        
+
         # Update version
         major, minor, patch = map(int, original.version.split('.'))
         if strategy == "transcend":
             evolved.version = f"{major + 1}.0.0"
         else:
             evolved.version = f"{major}.{minor + 1}.0"
-        
+
         evolved.evolution_history.append({
             "from": workflow_id,
             "strategy": strategy,
             "timestamp": datetime.utcnow().isoformat()
         })
-        
+
         # Reset metrics
         evolved.executions = 0
         evolved.successes = 0
         evolved.avg_duration_ms = 0.0
-        
+
         self._workflows[evolved.workflow_id] = evolved
         self._stats["workflows_evolved"] += 1
-        
+
         logger.info(f"Evolved workflow {original.name} via {strategy}")
         return evolved
-    
+
     async def analyze_github_workflow(
         self,
         repo_url: str
@@ -485,30 +485,30 @@ class AutomatedWorkflowGenesis:
             "suggested_improvements": [],
             "competitive_advantages": []
         }
-        
+
         # Simulated analysis
         analysis["detected_workflows"].append({
             "name": "CI/CD Pipeline",
             "steps": ["build", "test", "deploy"],
             "type": "linear"
         })
-        
+
         analysis["suggested_improvements"].append(
             "Add parallel test execution for 2x speedup"
         )
         analysis["suggested_improvements"].append(
             "Implement caching for dependencies"
         )
-        
+
         analysis["competitive_advantages"].append(
             "Add self-healing capabilities"
         )
         analysis["competitive_advantages"].append(
             "Implement predictive scaling"
         )
-        
+
         return analysis
-    
+
     async def create_meta_workflow(
         self,
         child_workflows: List[str],
@@ -516,7 +516,7 @@ class AutomatedWorkflowGenesis:
     ) -> Workflow:
         """Create a meta-workflow that orchestrates other workflows."""
         meta_id = f"meta_workflow_{hashlib.md5('_'.join(child_workflows).encode()).hexdigest()[:8]}"
-        
+
         # Create steps that invoke child workflows
         steps = []
         for i, wf_id in enumerate(child_workflows):
@@ -529,7 +529,7 @@ class AutomatedWorkflowGenesis:
                 golden_weight=FIBONACCI[min(i, len(FIBONACCI)-1)] / FIBONACCI[5]
             )
             steps.append(step)
-        
+
         # Add orchestration steps
         steps.append(WorkflowStep(
             step_id="synthesize_results",
@@ -538,7 +538,7 @@ class AutomatedWorkflowGenesis:
             action="synthesize",
             depends_on=[s.step_id for s in steps]
         ))
-        
+
         meta_workflow = Workflow(
             workflow_id=meta_id,
             name=f"Meta-Orchestrator ({len(child_workflows)} workflows)",
@@ -547,10 +547,10 @@ class AutomatedWorkflowGenesis:
             steps=steps,
             tags=["meta", "orchestrator"]
         )
-        
+
         self._workflows[meta_id] = meta_workflow
         return meta_workflow
-    
+
     async def _infer_steps(
         self,
         description: str,
@@ -558,11 +558,11 @@ class AutomatedWorkflowGenesis:
     ) -> List[WorkflowStep]:
         """Infer workflow steps from description."""
         steps = []
-        
+
         # Match against templates
         desc_lower = description.lower()
         template_match = None
-        
+
         if "research" in desc_lower or "analyze" in desc_lower:
             template_match = self._workflow_templates.get("research")
         elif "develop" in desc_lower or "code" in desc_lower or "build" in desc_lower:
@@ -571,7 +571,7 @@ class AutomatedWorkflowGenesis:
             template_match = self._workflow_templates.get("automation")
         else:
             template_match = self._workflow_templates.get("analysis")
-        
+
         if template_match:
             for i, step_spec in enumerate(template_match["steps"]):
                 step = WorkflowStep(
@@ -584,7 +584,7 @@ class AutomatedWorkflowGenesis:
                     golden_weight=FIBONACCI[min(i, len(FIBONACCI)-1)] / FIBONACCI[5]
                 )
                 steps.append(step)
-        
+
         # If no template match, generate generic steps
         if not steps:
             steps = [
@@ -609,16 +609,16 @@ class AutomatedWorkflowGenesis:
                     depends_on=["step_1"]
                 )
             ]
-        
+
         return steps
-    
+
     async def _compose_agent_team(
         self,
         steps: List[WorkflowStep]
     ) -> List[MicroAgent]:
         """Compose optimal agent team for workflow steps."""
         agents = []
-        
+
         # Always have a coordinator
         coordinator = MicroAgent(
             agent_id=f"agent_coord_{len(self._agents)}",
@@ -628,11 +628,11 @@ class AutomatedWorkflowGenesis:
         )
         agents.append(coordinator)
         self._agents[coordinator.agent_id] = coordinator
-        
+
         # Create specialized agents based on steps
         for step in steps:
             action = step.action.lower()
-            
+
             if "analyze" in action or "validate" in action:
                 agent = MicroAgent(
                     agent_id=f"agent_analyzer_{len(self._agents)}",
@@ -663,25 +663,25 @@ class AutomatedWorkflowGenesis:
                     role=AgentRole.EXECUTOR,
                     skills=["execution", "processing"]
                 )
-            
+
             if agent.agent_id not in self._agents:
                 agents.append(agent)
                 self._agents[agent.agent_id] = agent
-        
+
         self._stats["agents_spawned"] += len(agents)
         return agents
-    
+
     def _apply_golden_optimization(self, workflow: Workflow):
         """Apply golden ratio optimization to workflow."""
         # Optimize step weights using golden ratio
         for i, step in enumerate(workflow.steps):
             step.golden_weight = 1 / (PHI ** i)
-        
+
         # Normalize
         total_weight = sum(s.golden_weight for s in workflow.steps)
         for step in workflow.steps:
             step.golden_weight /= total_weight
-    
+
     async def _execute_step(
         self,
         step: WorkflowStep,
@@ -691,7 +691,7 @@ class AutomatedWorkflowGenesis:
     ) -> Dict[str, Any]:
         """Execute a single workflow step."""
         start_time = time.time()
-        
+
         try:
             # Simulate step execution
             if self.llm_provider:
@@ -700,13 +700,13 @@ class AutomatedWorkflowGenesis:
                 output = {"result": result}
             else:
                 output = {"result": f"Executed: {step.action}"}
-            
+
             duration = (time.time() - start_time) * 1000
-            
+
             # Update step metrics
             alpha = 0.1
             step.avg_execution_time_ms = alpha * duration + (1 - alpha) * step.avg_execution_time_ms
-            
+
             return {
                 "success": True,
                 "outputs": output,
@@ -718,7 +718,7 @@ class AutomatedWorkflowGenesis:
                 "error": str(e),
                 "duration_ms": (time.time() - start_time) * 1000
             }
-    
+
     async def _consider_evolution(self, workflow: Workflow):
         """Consider evolving a workflow based on performance."""
         if workflow.success_rate < 0.7:
@@ -727,36 +727,36 @@ class AutomatedWorkflowGenesis:
             await self.evolve_workflow(workflow.workflow_id, "optimize")
         elif workflow.success_rate > 0.95:
             await self.evolve_workflow(workflow.workflow_id, "expand")
-    
+
     async def _optimize_workflow(self, workflow: Workflow) -> Workflow:
         """Optimize workflow for performance."""
         # Reorder steps by golden weight
         workflow.steps.sort(key=lambda s: s.golden_weight, reverse=True)
-        
+
         # Increase parallelization
         for step in workflow.steps:
             step.can_parallelize = True
-        
+
         workflow.description = f"[Optimized] {workflow.description}"
         return workflow
-    
+
     async def _parallelize_workflow(self, workflow: Workflow) -> Workflow:
         """Convert to parallel workflow."""
         workflow.workflow_type = WorkflowType.PARALLEL
-        
+
         # Remove unnecessary dependencies
         for step in workflow.steps:
             step.depends_on = []
             step.can_parallelize = True
-        
+
         workflow.description = f"[Parallelized] {workflow.description}"
         return workflow
-    
+
     async def _simplify_workflow(self, workflow: Workflow) -> Workflow:
         """Simplify workflow by removing low-value steps."""
         # Keep only high-weight steps
         workflow.steps = [s for s in workflow.steps if s.golden_weight > 0.1]
-        
+
         # Ensure at least some steps remain
         if not workflow.steps:
             workflow.steps = [WorkflowStep(
@@ -765,10 +765,10 @@ class AutomatedWorkflowGenesis:
                 description="Simplified execution",
                 action="execute"
             )]
-        
+
         workflow.description = f"[Simplified] {workflow.description}"
         return workflow
-    
+
     async def _expand_workflow(self, workflow: Workflow) -> Workflow:
         """Expand workflow with additional capabilities."""
         # Add optimization step
@@ -778,7 +778,7 @@ class AutomatedWorkflowGenesis:
             description="Analyze and optimize execution",
             action="self_optimize"
         ))
-        
+
         # Add validation step
         workflow.steps.append(WorkflowStep(
             step_id=f"expand_validate_{len(workflow.steps)}",
@@ -786,14 +786,14 @@ class AutomatedWorkflowGenesis:
             description="Validate all outputs",
             action="validate"
         ))
-        
+
         workflow.description = f"[Expanded] {workflow.description}"
         return workflow
-    
+
     async def _transcend_workflow(self, workflow: Workflow) -> Workflow:
         """Transcend workflow to meta-level."""
         workflow.workflow_type = WorkflowType.TRANSCENDENT
-        
+
         # Add meta-capabilities
         workflow.steps.append(WorkflowStep(
             step_id="transcend_evolve",
@@ -801,32 +801,32 @@ class AutomatedWorkflowGenesis:
             description="Automatically evolve based on performance",
             action="self_evolve"
         ))
-        
+
         workflow.steps.append(WorkflowStep(
             step_id="transcend_learn",
             name="Learn Patterns",
             description="Extract and apply learned patterns",
             action="pattern_learning"
         ))
-        
+
         workflow.tags.append("transcendent")
         workflow.description = f"[Transcendent] {workflow.description}"
         return workflow
-    
+
     def _detect_bottlenecks(
         self,
         step_results: Dict[str, Any]
     ) -> List[str]:
         """Detect bottlenecks in execution."""
         bottlenecks = []
-        
+
         for step_id, result in step_results.items():
             duration = result.get("duration_ms", 0)
             if duration > 1000:  # > 1 second
                 bottlenecks.append(f"{step_id}: {duration:.0f}ms")
-        
+
         return bottlenecks
-    
+
     def _find_optimization_opportunities(
         self,
         workflow: Workflow,
@@ -834,7 +834,7 @@ class AutomatedWorkflowGenesis:
     ) -> List[str]:
         """Find optimization opportunities."""
         opportunities = []
-        
+
         # Check for parallelization opportunities
         independent_steps = [
             s for s in workflow.steps
@@ -844,7 +844,7 @@ class AutomatedWorkflowGenesis:
             opportunities.append(
                 f"Parallelize {len(independent_steps)} independent steps"
             )
-        
+
         # Check for caching opportunities
         slow_steps = [
             s for s in workflow.steps
@@ -854,14 +854,14 @@ class AutomatedWorkflowGenesis:
             opportunities.append(
                 f"Cache results for {len(slow_steps)} slow steps"
             )
-        
+
         return opportunities
-    
+
     def _generate_workflow_name(self, description: str) -> str:
         """Generate workflow name from description."""
         words = description.split()[:4]
         return " ".join(w.title() for w in words if len(w) > 2)
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get genesis statistics."""
         return {
@@ -886,9 +886,9 @@ def get_workflow_genesis() -> AutomatedWorkflowGenesis:
 async def demo():
     """Demonstrate Automated Workflow Genesis."""
     genesis = get_workflow_genesis()
-    
+
     print("=== AUTOMATED WORKFLOW GENESIS DEMO ===\n")
-    
+
     # Create a workflow
     print("--- Creating Workflow ---")
     workflow = await genesis.create_workflow(
@@ -899,7 +899,7 @@ async def demo():
     print(f"  Type: {workflow.workflow_type.name}")
     print(f"  Steps: {len(workflow.steps)}")
     print(f"  Agents: {len(workflow.agents)}")
-    
+
     # Execute workflow
     print("\n--- Executing Workflow ---")
     result = await genesis.execute_workflow(
@@ -910,12 +910,12 @@ async def demo():
     print(f"Success: {result.success}")
     print(f"Duration: {result.duration_ms:.2f}ms")
     print(f"Steps executed: {result.steps_executed}")
-    
+
     if result.bottlenecks:
         print(f"Bottlenecks: {result.bottlenecks}")
     if result.optimization_opportunities:
         print(f"Opportunities: {result.optimization_opportunities}")
-    
+
     # Evolve workflow
     print("\n--- Evolving Workflow ---")
     evolved = await genesis.evolve_workflow(
@@ -923,7 +923,7 @@ async def demo():
         strategy="optimize"
     )
     print(f"Evolved to: {evolved.version}")
-    
+
     # Show stats
     print("\n--- Statistics ---")
     for key, value in genesis.get_stats().items():

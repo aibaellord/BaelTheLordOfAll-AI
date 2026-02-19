@@ -118,7 +118,7 @@ class Weakness:
     evidence: List[str]
     opportunities: List[str]
     recommended_actions: List[str]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -140,7 +140,7 @@ class Strength:
     defensibility: float  # 0-1, how hard to compete
     evidence: List[str]
     counter_strategies: List[str]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -162,7 +162,7 @@ class MarketGap:
     competitors_addressing: List[str]
     our_capability_score: float  # 0-1
     recommendation: str
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -184,7 +184,7 @@ class PricingIntel:
     discounting_observed: float  # 0-1, how much they discount
     price_changes: List[Dict[str, Any]]  # History
     vs_our_price: float  # -1 to 1, negative = cheaper, positive = more expensive
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "competitor": self.competitor_name,
@@ -209,7 +209,7 @@ class TechStackAnalysis:
     technical_debt_indicators: List[str]
     strengths: List[str]
     weaknesses: List[str]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "competitor": self.competitor_name,
@@ -232,7 +232,7 @@ class TalentIntel:
     glassdoor_rating: Optional[float]
     culture_indicators: List[str]
     leadership_changes: List[Dict[str, str]]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "competitor": self.competitor_name,
@@ -266,7 +266,7 @@ class CompetitorProfile:
     recent_news: List[Dict[str, Any]]
     last_updated: datetime
     confidence_score: float  # 0-1, confidence in data
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -294,7 +294,7 @@ class BattleCard:
     landmines: List[str]  # Topics to avoid
     win_strategy: str
     loss_patterns: List[str]  # Why we lose to them
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "competitor": self.competitor_name,
@@ -319,7 +319,7 @@ class StrategicRecommendation:
     risk_level: float
     expected_impact: str
     kpis: List[str]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -338,7 +338,7 @@ class StrategicRecommendation:
 class CompetitorAnalysisEngine:
     """
     Ruthless competitor analysis for market domination.
-    
+
     Provides:
     - Deep competitor profiling
     - Weakness exploitation mapping
@@ -346,14 +346,14 @@ class CompetitorAnalysisEngine:
     - Battle cards for sales
     - Market gap identification
     """
-    
+
     def __init__(self):
         self.competitors: Dict[str, CompetitorProfile] = {}
         self.market_gaps: List[MarketGap] = []
         self.battle_cards: Dict[str, BattleCard] = {}
         self.recommendations: List[StrategicRecommendation] = []
         self.intel_sources: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-        
+
         # Analysis weights
         self.threat_weights = {
             "market_share": 0.25,
@@ -362,13 +362,13 @@ class CompetitorAnalysisEngine:
             "customer_overlap": 0.20,
             "resources": 0.15
         }
-        
+
         logger.info("CompetitorAnalysisEngine initialized")
-    
+
     # -------------------------------------------------------------------------
     # COMPETITOR PROFILING
     # -------------------------------------------------------------------------
-    
+
     def create_competitor_profile(
         self,
         name: str,
@@ -399,10 +399,10 @@ class CompetitorAnalysisEngine:
             last_updated=datetime.now(),
             confidence_score=0.3
         )
-        
+
         self.competitors[profile.id] = profile
         return profile
-    
+
     def add_intel(
         self,
         competitor_id: str,
@@ -412,16 +412,16 @@ class CompetitorAnalysisEngine:
         """Add intelligence data for a competitor."""
         if competitor_id not in self.competitors:
             return
-        
+
         self.intel_sources[competitor_id].append({
             "source": source.value,
             "data": data,
             "timestamp": datetime.now().isoformat()
         })
-        
+
         # Update profile based on intel
         self._process_intel(competitor_id, source, data)
-    
+
     def _process_intel(
         self,
         competitor_id: str,
@@ -430,13 +430,13 @@ class CompetitorAnalysisEngine:
     ) -> None:
         """Process incoming intelligence."""
         profile = self.competitors[competitor_id]
-        
+
         if source == DataSource.PUBLIC_FILINGS:
             if "revenue" in data:
                 profile.estimated_revenue = data["revenue"]
             if "employees" in data:
                 profile.estimated_employees = data["employees"]
-        
+
         elif source == DataSource.PRODUCT_ANALYSIS:
             if "products" in data:
                 profile.products.extend(data["products"])
@@ -444,7 +444,7 @@ class CompetitorAnalysisEngine:
             if "weaknesses" in data:
                 for w in data["weaknesses"]:
                     self._add_weakness(competitor_id, w)
-        
+
         elif source == DataSource.CUSTOMER_REVIEWS:
             if "sentiment" in data and data["sentiment"] < 0.3:
                 self._add_weakness(competitor_id, {
@@ -453,19 +453,19 @@ class CompetitorAnalysisEngine:
                     "severity": 0.7,
                     "evidence": [f"Average sentiment: {data['sentiment']:.2f}"]
                 })
-        
+
         elif source == DataSource.JOB_POSTINGS:
             if "roles" in data:
                 # Infer focus areas from hiring
                 focus_areas = list(set(data["roles"]))
                 if profile.talent:
                     profile.talent.hiring_focus_areas = focus_areas
-        
+
         # Update confidence based on intel volume
         intel_count = len(self.intel_sources[competitor_id])
         profile.confidence_score = min(0.9, 0.3 + intel_count * 0.1)
         profile.last_updated = datetime.now()
-    
+
     def _add_weakness(
         self,
         competitor_id: str,
@@ -473,7 +473,7 @@ class CompetitorAnalysisEngine:
     ) -> None:
         """Add a weakness to competitor profile."""
         profile = self.competitors[competitor_id]
-        
+
         weakness = Weakness(
             id=hashlib.md5(f"{competitor_id}{weakness_data['description']}".encode()).hexdigest()[:8],
             category=weakness_data.get("category", WeaknessCategory.PRODUCT),
@@ -484,13 +484,13 @@ class CompetitorAnalysisEngine:
             opportunities=weakness_data.get("opportunities", []),
             recommended_actions=weakness_data.get("actions", [])
         )
-        
+
         profile.weaknesses.append(weakness)
-    
+
     # -------------------------------------------------------------------------
     # THREAT ASSESSMENT
     # -------------------------------------------------------------------------
-    
+
     def assess_threat(
         self,
         competitor_id: str,
@@ -499,9 +499,9 @@ class CompetitorAnalysisEngine:
         """Assess threat level of a competitor."""
         if competitor_id not in self.competitors:
             return {"error": "Competitor not found"}
-        
+
         profile = self.competitors[competitor_id]
-        
+
         # Scoring factors
         scores = {
             "market_overlap": 0.0,
@@ -510,13 +510,13 @@ class CompetitorAnalysisEngine:
             "resource_advantage": 0.0,
             "execution_capability": 0.0
         }
-        
+
         # Product similarity based on overlap
         our_products = our_metrics.get("products", []) if our_metrics else []
         if our_products and profile.products:
             overlap = len(set(our_products) & set(profile.products))
             scores["product_similarity"] = overlap / max(len(our_products), len(profile.products))
-        
+
         # Position-based threat
         position_threat = {
             MarketPosition.LEADER: 0.9,
@@ -526,7 +526,7 @@ class CompetitorAnalysisEngine:
             MarketPosition.NEWCOMER: 0.5  # Unknown = moderate threat
         }
         scores["market_overlap"] = position_threat.get(profile.market_position, 0.5)
-        
+
         # Type-based threat
         type_threat = {
             CompetitorType.DIRECT: 1.0,
@@ -536,10 +536,10 @@ class CompetitorAnalysisEngine:
             CompetitorType.INTERNAL: 0.2
         }
         type_factor = type_threat.get(profile.competitor_type, 0.5)
-        
+
         # Calculate overall threat score
         total_score = sum(scores.values()) / len(scores) * type_factor
-        
+
         # Determine threat level
         if total_score >= 0.8:
             threat_level = ThreatLevel.CRITICAL
@@ -551,10 +551,10 @@ class CompetitorAnalysisEngine:
             threat_level = ThreatLevel.LOW
         else:
             threat_level = ThreatLevel.NEGLIGIBLE
-        
+
         # Update profile
         profile.threat_level = threat_level
-        
+
         return {
             "competitor": profile.name,
             "threat_level": threat_level.value,
@@ -563,7 +563,7 @@ class CompetitorAnalysisEngine:
             "weaknesses_to_exploit": len(profile.weaknesses),
             "recommended_strategy": self._recommend_strategy_type(threat_level)
         }
-    
+
     def _recommend_strategy_type(self, threat_level: ThreatLevel) -> StrategyType:
         """Recommend strategy type based on threat level."""
         strategy_map = {
@@ -574,11 +574,11 @@ class CompetitorAnalysisEngine:
             ThreatLevel.NEGLIGIBLE: StrategyType.BYPASS
         }
         return strategy_map.get(threat_level, StrategyType.DEFEND)
-    
+
     # -------------------------------------------------------------------------
     # WEAKNESS EXPLOITATION
     # -------------------------------------------------------------------------
-    
+
     def find_exploitable_weaknesses(
         self,
         competitor_id: str = None,
@@ -587,9 +587,9 @@ class CompetitorAnalysisEngine:
     ) -> List[Dict[str, Any]]:
         """Find exploitable weaknesses across competitors."""
         exploitable = []
-        
+
         competitors = [self.competitors[competitor_id]] if competitor_id else list(self.competitors.values())
-        
+
         for profile in competitors:
             for weakness in profile.weaknesses:
                 if weakness.severity >= min_severity and weakness.exploitability >= min_exploitability:
@@ -599,12 +599,12 @@ class CompetitorAnalysisEngine:
                         "exploitation_score": weakness.severity * weakness.exploitability,
                         "action_items": weakness.recommended_actions
                     })
-        
+
         # Sort by exploitation potential
         exploitable.sort(key=lambda x: x["exploitation_score"], reverse=True)
-        
+
         return exploitable
-    
+
     def generate_exploitation_plan(
         self,
         competitor_id: str,
@@ -614,11 +614,11 @@ class CompetitorAnalysisEngine:
         profile = self.competitors.get(competitor_id)
         if not profile:
             return {"error": "Competitor not found"}
-        
+
         weakness = next((w for w in profile.weaknesses if w.id == weakness_id), None)
         if not weakness:
             return {"error": "Weakness not found"}
-        
+
         plan = {
             "target": profile.name,
             "weakness": weakness.description,
@@ -676,13 +676,13 @@ class CompetitorAnalysisEngine:
                 "Market conditions may change"
             ]
         }
-        
+
         return plan
-    
+
     # -------------------------------------------------------------------------
     # MARKET GAP ANALYSIS
     # -------------------------------------------------------------------------
-    
+
     def identify_market_gaps(
         self,
         market_needs: List[str],
@@ -690,7 +690,7 @@ class CompetitorAnalysisEngine:
     ) -> List[MarketGap]:
         """Identify gaps in the market that we can fill."""
         gaps = []
-        
+
         for need in market_needs:
             # Check which competitors address this need
             addressing = []
@@ -699,14 +699,14 @@ class CompetitorAnalysisEngine:
                     if need.lower() in product.lower():
                         addressing.append(profile.name)
                         break
-            
+
             # Calculate our capability
             our_score = our_capabilities.get(need, 0.0)
-            
+
             # Gap opportunity = high need + low competition + good capability
             competition_factor = 1.0 - (len(addressing) / max(len(self.competitors), 1))
             opportunity_score = competition_factor * 0.5 + our_score * 0.5
-            
+
             if opportunity_score > 0.3:  # Threshold for interesting gaps
                 gap = MarketGap(
                     id=hashlib.md5(need.encode()).hexdigest()[:8],
@@ -719,13 +719,13 @@ class CompetitorAnalysisEngine:
                     recommendation=self._gap_recommendation(opportunity_score, our_score)
                 )
                 gaps.append(gap)
-        
+
         # Sort by opportunity
         gaps.sort(key=lambda g: g.our_capability_score * (1 - g.difficulty), reverse=True)
-        
+
         self.market_gaps = gaps
         return gaps
-    
+
     def _estimate_time_to_market(self, capability_score: float) -> str:
         """Estimate time to market based on capability."""
         if capability_score > 0.8:
@@ -738,7 +738,7 @@ class CompetitorAnalysisEngine:
             return "6-12 months"
         else:
             return "12+ months"
-    
+
     def _gap_recommendation(self, opportunity: float, capability: float) -> str:
         """Generate recommendation for a gap."""
         if opportunity > 0.7 and capability > 0.7:
@@ -751,11 +751,11 @@ class CompetitorAnalysisEngine:
             return "Strategic: Requires investment but high potential"
         else:
             return "Low priority: Monitor for changes"
-    
+
     # -------------------------------------------------------------------------
     # FEATURE COMPARISON
     # -------------------------------------------------------------------------
-    
+
     def compare_features(
         self,
         our_features: Dict[str, float],
@@ -769,9 +769,9 @@ class CompetitorAnalysisEngine:
             "disadvantages": [],
             "parity": []
         }
-        
+
         competitors = [self.competitors[competitor_id]] if competitor_id else list(self.competitors.values())
-        
+
         # Build competitor feature estimates
         for profile in competitors:
             # Would normally come from product analysis
@@ -786,9 +786,9 @@ class CompetitorAnalysisEngine:
                     if feature.lower() in s.description.lower():
                         score = min(1.0, score + 0.2)
                 competitor_features[feature] = score
-            
+
             comparison["competitors"][profile.name] = competitor_features
-        
+
         # Analyze advantages/disadvantages
         for feature, our_score in our_features.items():
             competitor_scores = [
@@ -796,7 +796,7 @@ class CompetitorAnalysisEngine:
                 for comp_features in comparison["competitors"].values()
             ]
             avg_competitor = sum(competitor_scores) / len(competitor_scores) if competitor_scores else 0.5
-            
+
             diff = our_score - avg_competitor
             if diff > 0.2:
                 comparison["advantages"].append({
@@ -817,13 +817,13 @@ class CompetitorAnalysisEngine:
                     "feature": feature,
                     "score": our_score
                 })
-        
+
         return comparison
-    
+
     # -------------------------------------------------------------------------
     # BATTLE CARDS
     # -------------------------------------------------------------------------
-    
+
     def generate_battle_card(
         self,
         competitor_id: str
@@ -832,7 +832,7 @@ class CompetitorAnalysisEngine:
         profile = self.competitors.get(competitor_id)
         if not profile:
             return None
-        
+
         # Build battle card from profile
         card = BattleCard(
             competitor_name=profile.name,
@@ -868,25 +868,25 @@ class CompetitorAnalysisEngine:
                 "Price sensitivity"
             ]
         )
-        
+
         self.battle_cards[competitor_id] = card
         return card
-    
+
     def _generate_win_strategy(self, profile: CompetitorProfile) -> str:
         """Generate win strategy based on profile."""
         if profile.weaknesses:
             top_weakness = max(profile.weaknesses, key=lambda w: w.severity * w.exploitability)
             return f"Focus on their {top_weakness.category.value} weakness: {top_weakness.description}. Position our solution as the answer to this gap."
-        
+
         if profile.market_position == MarketPosition.LEADER:
             return "Avoid direct feature comparison. Focus on innovation, agility, and personalized service."
-        
+
         return "Emphasize our unique value proposition and customer success stories."
-    
+
     # -------------------------------------------------------------------------
     # STRATEGIC RECOMMENDATIONS
     # -------------------------------------------------------------------------
-    
+
     def generate_recommendations(
         self,
         competitor_id: str = None,
@@ -894,13 +894,13 @@ class CompetitorAnalysisEngine:
     ) -> List[StrategicRecommendation]:
         """Generate strategic recommendations."""
         recommendations = []
-        
+
         competitors = [self.competitors[competitor_id]] if competitor_id else list(self.competitors.values())
-        
+
         for profile in competitors:
             threat = profile.threat_level
             strategy = self._recommend_strategy_type(threat)
-            
+
             rec = StrategicRecommendation(
                 id=hashlib.md5(f"rec_{profile.id}".encode()).hexdigest()[:8],
                 strategy_type=strategy,
@@ -916,13 +916,13 @@ class CompetitorAnalysisEngine:
                 kpis=self._generate_kpis(strategy)
             )
             recommendations.append(rec)
-        
+
         # Sort by success probability
         recommendations.sort(key=lambda r: r.success_probability, reverse=True)
-        
+
         self.recommendations = recommendations
         return recommendations
-    
+
     def _strategy_description(self, strategy: StrategyType, profile: CompetitorProfile) -> str:
         """Generate strategy description."""
         descriptions = {
@@ -934,7 +934,7 @@ class CompetitorAnalysisEngine:
             StrategyType.ENCIRCLEMENT: f"Surround {profile.name} by addressing all market needs they currently miss."
         }
         return descriptions.get(strategy, "Develop strategic response plan.")
-    
+
     def _estimate_resources(self, strategy: StrategyType) -> List[str]:
         """Estimate required resources."""
         resources = {
@@ -946,7 +946,7 @@ class CompetitorAnalysisEngine:
             StrategyType.ENCIRCLEMENT: ["Broad product portfolio", "Multi-channel presence", "Comprehensive solutions"]
         }
         return resources.get(strategy, ["General competitive investment"])
-    
+
     def _estimate_timeline(self, strategy: StrategyType) -> str:
         """Estimate timeline for strategy."""
         timelines = {
@@ -958,7 +958,7 @@ class CompetitorAnalysisEngine:
             StrategyType.ENCIRCLEMENT: "12-24 months"
         }
         return timelines.get(strategy, "6-12 months")
-    
+
     def _estimate_success(self, strategy: StrategyType, profile: CompetitorProfile) -> float:
         """Estimate success probability."""
         base = {
@@ -969,13 +969,13 @@ class CompetitorAnalysisEngine:
             StrategyType.GUERRILLA: 0.55,
             StrategyType.ENCIRCLEMENT: 0.4
         }
-        
+
         score = base.get(strategy, 0.5)
-        
+
         # Adjust based on competitor weaknesses
         if profile.weaknesses:
             score += len(profile.weaknesses) * 0.02
-        
+
         # Adjust based on threat level
         threat_modifier = {
             ThreatLevel.CRITICAL: -0.1,
@@ -985,9 +985,9 @@ class CompetitorAnalysisEngine:
             ThreatLevel.NEGLIGIBLE: 0.15
         }
         score += threat_modifier.get(profile.threat_level, 0)
-        
+
         return min(0.9, max(0.2, score))
-    
+
     def _estimate_risk(self, strategy: StrategyType) -> float:
         """Estimate risk level."""
         risks = {
@@ -999,7 +999,7 @@ class CompetitorAnalysisEngine:
             StrategyType.ENCIRCLEMENT: 0.6
         }
         return risks.get(strategy, 0.5)
-    
+
     def _estimate_impact(self, strategy: StrategyType, profile: CompetitorProfile) -> str:
         """Estimate expected impact."""
         if strategy == StrategyType.ATTACK:
@@ -1014,7 +1014,7 @@ class CompetitorAnalysisEngine:
             return "Incremental gains of 2-5% market share"
         else:
             return "Comprehensive market position improvement"
-    
+
     def _generate_kpis(self, strategy: StrategyType) -> List[str]:
         """Generate KPIs for strategy."""
         kpis = {
@@ -1026,11 +1026,11 @@ class CompetitorAnalysisEngine:
             StrategyType.ENCIRCLEMENT: ["Product portfolio coverage", "Cross-sell rate", "Solution deals"]
         }
         return kpis.get(strategy, ["Competitive metrics", "Market position", "Revenue impact"])
-    
+
     # -------------------------------------------------------------------------
     # PREDICTION
     # -------------------------------------------------------------------------
-    
+
     def predict_competitor_moves(
         self,
         competitor_id: str
@@ -1039,9 +1039,9 @@ class CompetitorAnalysisEngine:
         profile = self.competitors.get(competitor_id)
         if not profile:
             return {"error": "Competitor not found"}
-        
+
         predictions = []
-        
+
         # Based on hiring patterns
         if profile.talent and profile.talent.hiring_focus_areas:
             for area in profile.talent.hiring_focus_areas[:3]:
@@ -1051,7 +1051,7 @@ class CompetitorAnalysisEngine:
                     "timeframe": "6-12 months",
                     "signal": "Hiring patterns"
                 })
-        
+
         # Based on market position
         if profile.market_position == MarketPosition.CHALLENGER:
             predictions.append({
@@ -1060,7 +1060,7 @@ class CompetitorAnalysisEngine:
                 "timeframe": "3-6 months",
                 "signal": "Challenger positioning"
             })
-        
+
         # Based on weaknesses
         if profile.weaknesses:
             for w in profile.weaknesses[:2]:
@@ -1070,18 +1070,18 @@ class CompetitorAnalysisEngine:
                     "timeframe": "6-12 months",
                     "signal": "Weakness awareness"
                 })
-        
+
         return {
             "competitor": profile.name,
             "predictions": predictions,
             "confidence": profile.confidence_score,
             "last_intel_update": profile.last_updated.isoformat()
         }
-    
+
     # -------------------------------------------------------------------------
     # REPORTING
     # -------------------------------------------------------------------------
-    
+
     def generate_competitive_report(self) -> Dict[str, Any]:
         """Generate comprehensive competitive landscape report."""
         report = {
@@ -1104,7 +1104,7 @@ class CompetitorAnalysisEngine:
             "top_opportunities": [g.to_dict() for g in self.market_gaps[:5]],
             "recommendations": [r.to_dict() for r in self.recommendations[:5]]
         }
-        
+
         return report
 
 
@@ -1132,12 +1132,12 @@ async def demo():
     print("=" * 60)
     print("RUTHLESS COMPETITOR ANALYSIS ENGINE")
     print("=" * 60)
-    
+
     engine = get_competitor_engine()
-    
+
     # Create competitor profiles
     print("\n--- Creating Competitor Profiles ---")
-    
+
     comp1 = engine.create_competitor_profile(
         name="MegaCorp AI",
         competitor_type=CompetitorType.DIRECT,
@@ -1145,7 +1145,7 @@ async def demo():
         products=["AI Assistant", "ML Platform", "Analytics Suite"]
     )
     print(f"Created: {comp1.name}")
-    
+
     comp2 = engine.create_competitor_profile(
         name="StartupX",
         competitor_type=CompetitorType.DIRECT,
@@ -1153,7 +1153,7 @@ async def demo():
         products=["AI Chatbot", "Automation Platform"]
     )
     print(f"Created: {comp2.name}")
-    
+
     # Add intel
     print("\n--- Adding Intelligence ---")
     engine.add_intel(comp1.id, DataSource.PRODUCT_ANALYSIS, {
@@ -1171,18 +1171,18 @@ async def demo():
         "common_complaints": ["Poor support", "Complex setup"]
     })
     print(f"Added intel for {comp1.name}")
-    
+
     # Threat assessment
     print("\n--- Threat Assessment ---")
     threat = engine.assess_threat(comp1.id)
     print(json.dumps(threat, indent=2))
-    
+
     # Find exploitable weaknesses
     print("\n--- Exploitable Weaknesses ---")
     weaknesses = engine.find_exploitable_weaknesses()
     for w in weaknesses:
         print(f"  {w['competitor']}: {w['weakness']['description']} (score: {w['exploitation_score']:.2f})")
-    
+
     # Market gaps
     print("\n--- Market Gap Analysis ---")
     gaps = engine.identify_market_gaps(
@@ -1191,29 +1191,29 @@ async def demo():
     )
     for gap in gaps:
         print(f"  {gap.description}: {gap.recommendation}")
-    
+
     # Battle card
     print("\n--- Battle Card ---")
     card = engine.generate_battle_card(comp1.id)
     if card:
         print(json.dumps(card.to_dict(), indent=2))
-    
+
     # Strategic recommendations
     print("\n--- Strategic Recommendations ---")
     recommendations = engine.generate_recommendations()
     for rec in recommendations:
         print(json.dumps(rec.to_dict(), indent=2))
-    
+
     # Predict moves
     print("\n--- Competitor Move Predictions ---")
     predictions = engine.predict_competitor_moves(comp1.id)
     print(json.dumps(predictions, indent=2, default=str))
-    
+
     # Full report
     print("\n--- Competitive Landscape Report ---")
     report = engine.generate_competitive_report()
     print(json.dumps(report["summary"], indent=2))
-    
+
     print("\n" + "=" * 60)
     print("COMPETITOR ANALYSIS COMPLETE")
 

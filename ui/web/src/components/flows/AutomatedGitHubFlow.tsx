@@ -1,6 +1,6 @@
 /**
  * BAEL - Automated GitHub Flow Component
- * 
+ *
  * This React component provides an automated flow when a user provides a GitHub link:
  * 1. Analyzes the repository automatically
  * 2. Shows quality assessment
@@ -8,7 +8,7 @@
  * 4. Offers one-click integration options
  * 5. Can auto-generate MCP tools
  * 6. Shows improvement suggestions
- * 
+ *
  * This is the ultimate comfort feature for discovering and integrating tools.
  */
 
@@ -75,10 +75,10 @@ const analyzeGitHubRepo = async (url: string): Promise<{
 }> => {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1500));
-  
+
   const repoName = url.split('/').pop()?.replace('.git', '') || 'unknown';
   const owner = url.split('/').slice(-2, -1)[0] || 'unknown';
-  
+
   // Mock analysis
   const analysis: RepoAnalysis = {
     url,
@@ -95,7 +95,7 @@ const analyzeGitHubRepo = async (url: string): Promise<{
     mcpPossible: true,
     autoSetupPossible: true
   };
-  
+
   // Mock alternatives
   const alternatives: AlternativeRepo[] = [
     {
@@ -113,7 +113,7 @@ const analyzeGitHubRepo = async (url: string): Promise<{
       improvement: '+10 quality score'
     }
   ];
-  
+
   // Mock improvements
   const improvements: ImprovementSuggestion[] = [
     {
@@ -145,7 +145,7 @@ const analyzeGitHubRepo = async (url: string): Promise<{
       automated: true
     }
   ];
-  
+
   // Mock setup actions
   const setupActions: SetupAction[] = [
     {
@@ -177,7 +177,7 @@ const analyzeGitHubRepo = async (url: string): Promise<{
       priority: 7
     }
   ];
-  
+
   return { analysis, alternatives, improvements, setupActions };
 };
 
@@ -200,14 +200,14 @@ const QualityBadge: React.FC<{ score: number }> = ({ score }) => {
     if (score >= 50) return 'bg-orange-500';
     return 'bg-red-500';
   };
-  
+
   const getLabel = () => {
     if (score >= 85) return 'Excellent';
     if (score >= 70) return 'Good';
     if (score >= 50) return 'Average';
     return 'Needs Improvement';
   };
-  
+
   return (
     <span className={`px-2 py-1 rounded-full text-white text-sm ${getColor()}`}>
       {score.toFixed(0)} - {getLabel()}
@@ -221,7 +221,7 @@ const ImpactBadge: React.FC<{ impact: 'low' | 'medium' | 'high' }> = ({ impact }
     medium: 'bg-blue-200 text-blue-700',
     high: 'bg-purple-200 text-purple-700'
   };
-  
+
   return (
     <span className={`px-2 py-1 rounded text-xs ${colors[impact]}`}>
       {impact.toUpperCase()} IMPACT
@@ -236,14 +236,14 @@ const StatusBadge: React.FC<{ status: SetupAction['status'] }> = ({ status }) =>
     completed: 'bg-green-200 text-green-600',
     failed: 'bg-red-200 text-red-600'
   };
-  
+
   const icons = {
     pending: '○',
     running: '◐',
     completed: '✓',
     failed: '✗'
   };
-  
+
   return (
     <span className={`px-2 py-1 rounded text-sm flex items-center gap-1 ${styles[status]}`}>
       <span>{icons[status]}</span>
@@ -264,26 +264,26 @@ export const AutomatedGitHubFlow: React.FC = () => {
     isSettingUp: false,
     error: null
   });
-  
+
   // Detect GitHub URL in input
   const isValidGitHubUrl = (url: string): boolean => {
     return /^https?:\/\/(www\.)?github\.com\/[\w-]+\/[\w-]+/.test(url);
   };
-  
+
   // Handle URL input
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setState(prev => ({ ...prev, inputUrl: e.target.value, error: null }));
   };
-  
+
   // Trigger analysis
   const handleAnalyze = async () => {
     if (!isValidGitHubUrl(state.inputUrl)) {
       setState(prev => ({ ...prev, error: 'Please enter a valid GitHub repository URL' }));
       return;
     }
-    
+
     setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
-    
+
     try {
       const result = await analyzeGitHubRepo(state.inputUrl);
       setState(prev => ({
@@ -302,11 +302,11 @@ export const AutomatedGitHubFlow: React.FC = () => {
       }));
     }
   };
-  
+
   // One-click setup
   const handleOneClickSetup = async () => {
     setState(prev => ({ ...prev, isSettingUp: true }));
-    
+
     const updateStatus = (actionId: string, status: SetupAction['status']) => {
       setState(prev => ({
         ...prev,
@@ -315,11 +315,11 @@ export const AutomatedGitHubFlow: React.FC = () => {
         )
       }));
     };
-    
+
     await executeSetup(state.setupActions, updateStatus);
     setState(prev => ({ ...prev, isSettingUp: false }));
   };
-  
+
   // Auto-analyze on valid URL paste
   useEffect(() => {
     if (isValidGitHubUrl(state.inputUrl) && !state.analysis && !state.isAnalyzing) {
@@ -327,7 +327,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [state.inputUrl]);
-  
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Header */}
@@ -339,7 +339,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
           Paste any GitHub link - we'll analyze it, find better alternatives, and set it up for you
         </p>
       </div>
-      
+
       {/* Input Section */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex gap-4">
@@ -358,12 +358,12 @@ export const AutomatedGitHubFlow: React.FC = () => {
             {state.isAnalyzing ? 'Analyzing...' : 'Analyze'}
           </button>
         </div>
-        
+
         {state.error && (
           <p className="mt-2 text-red-500 text-sm">{state.error}</p>
         )}
       </div>
-      
+
       {/* Loading State */}
       {state.isAnalyzing && (
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
@@ -373,7 +373,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
           </p>
         </div>
       )}
-      
+
       {/* Analysis Results */}
       {state.analysis && !state.isAnalyzing && (
         <>
@@ -388,7 +388,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
               </div>
               <QualityBadge score={state.analysis.qualityScore} />
             </div>
-            
+
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="text-center p-3 bg-gray-50 rounded">
                 <div className="text-2xl font-bold text-gray-900">
@@ -409,7 +409,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
                 <div className="text-gray-500 text-sm">MCP Ready</div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 mb-4">
               {state.analysis.languages.map(lang => (
                 <span key={lang} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm">
@@ -422,7 +422,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
                 </span>
               ))}
             </div>
-            
+
             <div className="flex flex-wrap gap-2">
               {state.analysis.capabilities.map(cap => (
                 <span key={cap} className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm">
@@ -431,7 +431,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
               ))}
             </div>
           </div>
-          
+
           {/* Better Alternatives */}
           {state.alternatives.length > 0 && (
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg shadow-lg p-6">
@@ -461,7 +461,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           {/* Improvement Suggestions */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">
@@ -489,7 +489,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
               ))}
             </div>
           </div>
-          
+
           {/* One-Click Setup */}
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
             <div className="flex justify-between items-center mb-4">
@@ -507,7 +507,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
                 {state.isSettingUp ? 'Setting Up...' : 'Set Up Now'}
               </button>
             </div>
-            
+
             <div className="space-y-2">
               {state.setupActions.map(action => (
                 <div key={action.id} className="flex justify-between items-center p-2 bg-white/10 rounded">
@@ -519,7 +519,7 @@ export const AutomatedGitHubFlow: React.FC = () => {
           </div>
         </>
       )}
-      
+
       {/* Empty State */}
       {!state.analysis && !state.isAnalyzing && !state.inputUrl && (
         <div className="bg-gray-50 rounded-lg p-12 text-center">

@@ -46,7 +46,7 @@ class KnowledgeDomain(Enum):
     BIOLOGY = "biology"
     ASTRONOMY = "astronomy"
     GEOLOGY = "geology"
-    
+
     # Engineering
     ELECTRONICS = "electronics"
     MAGNETISM = "magnetism"
@@ -54,43 +54,43 @@ class KnowledgeDomain(Enum):
     MATERIALS = "materials"
     NUCLEAR = "nuclear"
     QUANTUM = "quantum"
-    
+
     # Life Sciences
     NEUROSCIENCE = "neuroscience"
     GENETICS = "genetics"
     EVOLUTION = "evolution"
     ECOLOGY = "ecology"
     MEDICINE = "medicine"
-    
+
     # Social Sciences
     PSYCHOLOGY = "psychology"
     SOCIOLOGY = "sociology"
     ECONOMICS = "economics"
     POLITICS = "politics"
     ANTHROPOLOGY = "anthropology"
-    
+
     # Applied
     COMPUTER_SCIENCE = "computer_science"
     ARTIFICIAL_INTELLIGENCE = "artificial_intelligence"
     CRYPTOGRAPHY = "cryptography"
     CYBERSECURITY = "cybersecurity"
-    
+
     # Abstract
     PHILOSOPHY = "philosophy"
     LOGIC = "logic"
     MATHEMATICS_PURE = "pure_mathematics"
-    
+
     # Historical
     HISTORY = "history"
     ARCHAEOLOGY = "archaeology"
     MYTHOLOGY = "mythology"
-    
+
     # Esoteric
     OCCULT = "occult"
     ALCHEMY = "alchemy"
     SACRED_GEOMETRY = "sacred_geometry"
     SYMBOLISM = "symbolism"
-    
+
     # Practical
     STRATEGY = "strategy"
     WARFARE = "warfare"
@@ -131,7 +131,7 @@ class UniversalPrinciple:
     applications: List[str]
     related_principles: List[str]
     power_level: int  # 1-10
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "name": self.name,
@@ -165,7 +165,7 @@ class Formula:
     variables: Dict[str, str]
     applications: List[str]
     derived_from: List[str]
-    
+
     def evaluate(self, values: Dict[str, float]) -> Optional[float]:
         """Evaluate formula with given values."""
         try:
@@ -191,7 +191,7 @@ class DomainKnowledge:
 class UniversalKnowledgeEngine:
     """
     The Universal Knowledge Engine - ALL knowledge unified.
-    
+
     Provides:
     - Complete domain knowledge bases
     - Cross-domain connections
@@ -200,14 +200,14 @@ class UniversalKnowledgeEngine:
     - Application generation
     - Knowledge synthesis
     """
-    
+
     def __init__(self):
         self.principles: Dict[str, UniversalPrinciple] = {}
         self.formulas: Dict[str, Formula] = {}
         self.concepts: Dict[str, KnowledgeNode] = {}
         self.domain_knowledge: Dict[KnowledgeDomain, DomainKnowledge] = {}
         self.knowledge_graph: Dict[str, List[str]] = defaultdict(list)
-        
+
         # Initialize all domain knowledge
         self._init_mathematics()
         self._init_physics()
@@ -218,9 +218,9 @@ class UniversalKnowledgeEngine:
         self._init_psychology()
         self._init_economics()
         self._init_esoterics()
-        
+
         logger.info("UniversalKnowledgeEngine initialized - all knowledge accessible")
-    
+
     def _init_mathematics(self):
         """Initialize mathematical knowledge."""
         principles = [
@@ -233,14 +233,14 @@ class UniversalKnowledgeEngine:
             ("Law of Large Numbers", "Sample mean → population mean", "Foundation of statistics"),
             ("Bayes' Theorem", "P(A|B) = P(B|A)P(A)/P(B)", "Foundation of probabilistic reasoning"),
         ]
-        
+
         formulas = [
             ("quadratic", "(-b + math.sqrt(b**2 - 4*a*c))/(2*a)", {"a": "coefficient", "b": "coefficient", "c": "constant"}),
             ("compound_interest", "P * (1 + r/n)**(n*t)", {"P": "principal", "r": "rate", "n": "compounds", "t": "time"}),
             ("exponential_growth", "P0 * math.e**(k*t)", {"P0": "initial", "k": "rate", "t": "time"}),
             ("standard_deviation", "math.sqrt(sum((x - mean)**2 for x in data)/len(data))", {"data": "values"}),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.MATHEMATICS,
             principles,
@@ -248,7 +248,7 @@ class UniversalKnowledgeEngine:
             ["Calculus", "Linear Algebra", "Number Theory", "Topology", "Statistics"],
             ["Pattern recognition", "Cryptography", "Optimization", "Prediction"]
         )
-    
+
     def _init_physics(self):
         """Initialize physics knowledge."""
         principles = [
@@ -263,14 +263,14 @@ class UniversalKnowledgeEngine:
             ("Wave-Particle Duality", "λ = h/p", "All matter exhibits wave properties"),
             ("Quantum Entanglement", "Correlated states", "Instant correlation across distance"),
         ]
-        
+
         formulas = [
             ("kinetic_energy", "0.5 * m * v**2", {"m": "mass", "v": "velocity"}),
             ("gravitational_force", "G * m1 * m2 / r**2", {"G": "6.674e-11", "m1": "mass1", "m2": "mass2", "r": "distance"}),
             ("wave_frequency", "c / wavelength", {"c": "299792458", "wavelength": "meters"}),
             ("relativistic_energy", "m * c**2 / math.sqrt(1 - v**2/c**2)", {"m": "mass", "v": "velocity", "c": "299792458"}),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.PHYSICS,
             principles,
@@ -278,7 +278,7 @@ class UniversalKnowledgeEngine:
             ["Quantum Mechanics", "Relativity", "Thermodynamics", "Electromagnetism"],
             ["Energy generation", "Propulsion", "Communication", "Computation"]
         )
-    
+
     def _init_electronics(self):
         """Initialize electronics knowledge."""
         principles = [
@@ -291,14 +291,14 @@ class UniversalKnowledgeEngine:
             ("Transistor Operation", "Current amplification", "Building block of digital"),
             ("Digital Logic", "Boolean algebra", "Foundation of computing"),
         ]
-        
+
         formulas = [
             ("power_electrical", "V * I", {"V": "voltage", "I": "current"}),
             ("resistance_parallel", "1/(1/R1 + 1/R2)", {"R1": "resistance1", "R2": "resistance2"}),
             ("capacitor_energy", "0.5 * C * V**2", {"C": "capacitance", "V": "voltage"}),
             ("resonant_frequency", "1/(2*math.pi*math.sqrt(L*C))", {"L": "inductance", "C": "capacitance"}),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.ELECTRONICS,
             principles,
@@ -306,7 +306,7 @@ class UniversalKnowledgeEngine:
             ["Circuit Design", "Digital Electronics", "Analog Electronics", "Signal Processing"],
             ["Communication systems", "Computing", "Sensors", "Control systems"]
         )
-    
+
     def _init_magnetism(self):
         """Initialize magnetism and EM knowledge."""
         principles = [
@@ -319,14 +319,14 @@ class UniversalKnowledgeEngine:
             ("Electromagnetic Waves", "c = 1/√(ε₀μ₀)", "Light is EM wave"),
             ("Resonance", "f₀ = 1/(2π√LC)", "Natural frequency of system"),
         ]
-        
+
         formulas = [
             ("magnetic_force", "q * v * B * math.sin(theta)", {"q": "charge", "v": "velocity", "B": "field", "theta": "angle"}),
             ("magnetic_field_wire", "mu0 * I / (2 * math.pi * r)", {"mu0": "1.257e-6", "I": "current", "r": "distance"}),
             ("induced_emf", "-N * dPhi / dt", {"N": "turns", "dPhi": "flux_change", "dt": "time"}),
             ("em_wave_energy", "epsilon0 * E**2 / 2", {"epsilon0": "8.854e-12", "E": "electric_field"}),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.MAGNETISM,
             principles,
@@ -334,7 +334,7 @@ class UniversalKnowledgeEngine:
             ["Electromagnetism", "Field Theory", "EM Waves", "Induction"],
             ["Motors", "Generators", "Wireless power", "Communication", "Levitation"]
         )
-    
+
     def _init_chemistry(self):
         """Initialize chemistry knowledge."""
         principles = [
@@ -347,14 +347,14 @@ class UniversalKnowledgeEngine:
             ("Rate Law", "Rate = k[A]^n[B]^m", "Reaction kinetics"),
             ("Electronegativity", "Attraction for electrons", "Bond polarity"),
         ]
-        
+
         formulas = [
             ("ideal_gas", "n * R * T / V", {"n": "moles", "R": "8.314", "T": "temperature", "V": "volume"}),
             ("molarity", "moles / liters", {"moles": "amount", "liters": "volume"}),
             ("ph", "-math.log10(H_concentration)", {"H_concentration": "hydrogen_ion"}),
             ("gibbs_free_energy", "H - T * S", {"H": "enthalpy", "T": "temperature", "S": "entropy"}),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.CHEMISTRY,
             principles,
@@ -362,7 +362,7 @@ class UniversalKnowledgeEngine:
             ["Organic Chemistry", "Inorganic", "Biochemistry", "Electrochemistry"],
             ["Materials synthesis", "Drug design", "Energy storage", "Molecular machines"]
         )
-    
+
     def _init_biology(self):
         """Initialize biology knowledge."""
         principles = [
@@ -375,13 +375,13 @@ class UniversalKnowledgeEngine:
             ("Adaptation", "Fit to environment", "Response to selection"),
             ("Symbiosis", "Mutual benefit/harm", "Inter-species relationships"),
         ]
-        
+
         formulas = [
             ("population_growth", "P0 * math.e**(r * t)", {"P0": "initial", "r": "rate", "t": "time"}),
             ("hardy_weinberg", "p**2 + 2*p*q + q**2", {"p": "allele1_freq", "q": "allele2_freq"}),
             ("michaelis_menten", "Vmax * S / (Km + S)", {"Vmax": "max_velocity", "Km": "constant", "S": "substrate"}),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.BIOLOGY,
             principles,
@@ -389,7 +389,7 @@ class UniversalKnowledgeEngine:
             ["Genetics", "Evolution", "Neuroscience", "Ecology"],
             ["Medicine", "Bioengineering", "Agriculture", "Behavior control"]
         )
-    
+
     def _init_psychology(self):
         """Initialize psychology knowledge."""
         principles = [
@@ -404,7 +404,7 @@ class UniversalKnowledgeEngine:
             ("Authority Principle", "Obey experts", "Influence mechanism"),
             ("Scarcity Effect", "Rare = valuable", "Value perception"),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.PSYCHOLOGY,
             principles,
@@ -412,7 +412,7 @@ class UniversalKnowledgeEngine:
             ["Cognitive Psychology", "Social Psychology", "Behavioral", "Developmental"],
             ["Persuasion", "Marketing", "Therapy", "Control"]
         )
-    
+
     def _init_economics(self):
         """Initialize economics knowledge."""
         principles = [
@@ -425,13 +425,13 @@ class UniversalKnowledgeEngine:
             ("Network Effects", "Value increases with users", "Platform economics"),
             ("Compound Interest", "Exponential growth", "Wealth accumulation"),
         ]
-        
+
         formulas = [
             ("present_value", "FV / (1 + r)**n", {"FV": "future_value", "r": "rate", "n": "periods"}),
             ("roi", "(gain - cost) / cost * 100", {"gain": "total_return", "cost": "investment"}),
             ("leverage_ratio", "total_assets / equity", {"total_assets": "assets", "equity": "net_worth"}),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.ECONOMICS,
             principles,
@@ -439,7 +439,7 @@ class UniversalKnowledgeEngine:
             ["Microeconomics", "Macroeconomics", "Game Theory", "Behavioral Economics"],
             ["Investment", "Business strategy", "Market manipulation", "Wealth creation"]
         )
-    
+
     def _init_esoterics(self):
         """Initialize esoteric knowledge."""
         principles = [
@@ -454,7 +454,7 @@ class UniversalKnowledgeEngine:
             ("Hermetic Principles", "Mind is all", "Consciousness as fundamental"),
             ("Alchemical Transmutation", "Lead to gold", "Transformation principle"),
         ]
-        
+
         self._add_domain_knowledge(
             KnowledgeDomain.OCCULT,
             principles,
@@ -462,7 +462,7 @@ class UniversalKnowledgeEngine:
             ["Hermeticism", "Alchemy", "Kabbalah", "Sacred Geometry"],
             ["Manifestation", "Transformation", "Hidden influence", "Pattern recognition"]
         )
-    
+
     def _add_domain_knowledge(
         self,
         domain: KnowledgeDomain,
@@ -488,7 +488,7 @@ class UniversalKnowledgeEngine:
             )
             self.principles[principle.id] = principle
             domain_principles.append(principle)
-        
+
         # Create formulas
         domain_formulas = []
         for name, expr, vars in formulas:
@@ -503,7 +503,7 @@ class UniversalKnowledgeEngine:
             )
             self.formulas[formula.id] = formula
             domain_formulas.append(formula)
-        
+
         # Create concepts
         domain_concepts = []
         for concept_name in concepts:
@@ -519,7 +519,7 @@ class UniversalKnowledgeEngine:
             )
             self.concepts[concept.id] = concept
             domain_concepts.append(concept)
-        
+
         # Create domain knowledge
         self.domain_knowledge[domain] = DomainKnowledge(
             domain=domain,
@@ -530,18 +530,18 @@ class UniversalKnowledgeEngine:
             applications=applications,
             mastery_level=KnowledgeLevel.MASTER
         )
-    
+
     # -------------------------------------------------------------------------
     # KNOWLEDGE ACCESS
     # -------------------------------------------------------------------------
-    
+
     async def query_domain(
         self,
         domain: KnowledgeDomain
     ) -> DomainKnowledge:
         """Get complete knowledge for a domain."""
         return self.domain_knowledge.get(domain)
-    
+
     async def find_principle(
         self,
         query: str
@@ -549,13 +549,13 @@ class UniversalKnowledgeEngine:
         """Find principles matching query."""
         query_lower = query.lower()
         matches = []
-        
+
         for principle in self.principles.values():
             if query_lower in principle.name.lower() or query_lower in principle.description.lower():
                 matches.append(principle)
-        
+
         return sorted(matches, key=lambda p: p.power_level, reverse=True)
-    
+
     async def get_formula(
         self,
         name: str
@@ -565,7 +565,7 @@ class UniversalKnowledgeEngine:
             if name.lower() in formula.name.lower():
                 return formula
         return None
-    
+
     async def cross_domain_connections(
         self,
         domain1: KnowledgeDomain,
@@ -573,10 +573,10 @@ class UniversalKnowledgeEngine:
     ) -> List[Dict[str, Any]]:
         """Find connections between two domains."""
         connections = []
-        
+
         d1 = self.domain_knowledge.get(domain1)
         d2 = self.domain_knowledge.get(domain2)
-        
+
         if d1 and d2:
             # Find overlapping applications
             common_apps = set(d1.applications) & set(d2.applications)
@@ -586,7 +586,7 @@ class UniversalKnowledgeEngine:
                     "application": app,
                     "domains": [domain1.value, domain2.value]
                 })
-            
+
             # Find principle connections (simplified)
             for p1 in d1.principles:
                 for p2 in d2.principles:
@@ -596,9 +596,9 @@ class UniversalKnowledgeEngine:
                             "from": p1.name,
                             "to": p2.name
                         })
-        
+
         return connections
-    
+
     async def synthesize_knowledge(
         self,
         domains: List[KnowledgeDomain],
@@ -613,7 +613,7 @@ class UniversalKnowledgeEngine:
             "applications": [],
             "synthesis_power": 0
         }
-        
+
         for domain in domains:
             dk = self.domain_knowledge.get(domain)
             if dk:
@@ -621,15 +621,15 @@ class UniversalKnowledgeEngine:
                 synthesis["formulas_available"].extend([f.name for f in dk.formulas[:2]])
                 synthesis["applications"].extend(dk.applications)
                 synthesis["synthesis_power"] += sum(p.power_level for p in dk.principles) / max(1, len(dk.principles))
-        
+
         synthesis["synthesis_power"] = synthesis["synthesis_power"] / max(1, len(domains))
-        
+
         return synthesis
-    
+
     # -------------------------------------------------------------------------
     # STATS
     # -------------------------------------------------------------------------
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get knowledge engine statistics."""
         return {
@@ -646,7 +646,7 @@ class UniversalKnowledgeEngine:
                 )[:5]
             ]
         }
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
@@ -676,16 +676,16 @@ async def demo():
     print("=" * 60)
     print("📚 UNIVERSAL KNOWLEDGE ENGINE 📚")
     print("=" * 60)
-    
+
     engine = get_knowledge_engine()
-    
+
     # Stats
     print("\n--- Knowledge Statistics ---")
     stats = engine.get_stats()
     print(f"Total domains: {stats['total_domains']}")
     print(f"Total principles: {stats['total_principles']}")
     print(f"Total formulas: {stats['total_formulas']}")
-    
+
     # Query domain
     print("\n--- Physics Knowledge ---")
     physics = await engine.query_domain(KnowledgeDomain.PHYSICS)
@@ -693,13 +693,13 @@ async def demo():
         print(f"Principles: {len(physics.principles)}")
         for p in physics.principles[:3]:
             print(f"  - {p.name}: {p.formula}")
-    
+
     # Find principles
     print("\n--- Finding Principles ---")
     energy_principles = await engine.find_principle("energy")
     for p in energy_principles[:3]:
         print(f"  - {p.name} ({p.domain.value})")
-    
+
     # Cross-domain connections
     print("\n--- Cross-Domain Connections ---")
     connections = await engine.cross_domain_connections(
@@ -707,7 +707,7 @@ async def demo():
         KnowledgeDomain.ELECTRONICS
     )
     print(f"Found {len(connections)} connections")
-    
+
     # Synthesize knowledge
     print("\n--- Knowledge Synthesis ---")
     synthesis = await engine.synthesize_knowledge(
@@ -717,7 +717,7 @@ async def demo():
     print(f"Goal: {synthesis['goal']}")
     print(f"Synthesis power: {synthesis['synthesis_power']:.1f}")
     print(f"Principles: {len(synthesis['principles_applied'])}")
-    
+
     print("\n" + "=" * 60)
     print("📚 ALL KNOWLEDGE UNIFIED 📚")
 

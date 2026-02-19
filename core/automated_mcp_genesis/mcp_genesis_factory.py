@@ -64,7 +64,7 @@ class ToolDefinition:
     dependencies: List[str] = field(default_factory=list)
     examples: List[Dict[str, Any]] = field(default_factory=list)
     performance_score: float = 0.0
-    
+
     def to_mcp_format(self) -> Dict[str, Any]:
         return {
             "name": self.name,
@@ -107,18 +107,18 @@ class GitHubRepoAnalysis:
 
 class GitHubIntelligence:
     """Analyze GitHub repositories for tool opportunities"""
-    
+
     def __init__(self):
         self.analyzed_repos: Dict[str, GitHubRepoAnalysis] = {}
         self.alternatives_cache: Dict[str, List[str]] = {}
-    
+
     async def analyze_repo(self, url: str) -> GitHubRepoAnalysis:
         """Analyze a GitHub repository"""
         # Extract repo info from URL
         parts = url.rstrip('/').split('/')
         owner = parts[-2] if len(parts) >= 2 else "unknown"
         repo = parts[-1] if len(parts) >= 1 else "unknown"
-        
+
         # Simulated analysis (would use GitHub API in production)
         analysis = GitHubRepoAnalysis(
             url=url,
@@ -138,26 +138,26 @@ class GitHubIntelligence:
                 "Create comprehensive tests"
             ]
         )
-        
+
         self.analyzed_repos[url] = analysis
         return analysis
-    
+
     async def find_alternatives(
-        self, 
+        self,
         functionality: str
     ) -> List[GitHubRepoAnalysis]:
         """Find alternative implementations for a functionality"""
         # Simulated alternative finding
         alternatives = []
-        
+
         # Would search GitHub for similar repos
         search_terms = functionality.lower().split()
-        
+
         # Return cached or generate placeholder
         return alternatives
-    
+
     async def compare_repos(
-        self, 
+        self,
         repos: List[str]
     ) -> Dict[str, Any]:
         """Compare multiple repositories"""
@@ -165,13 +165,13 @@ class GitHubIntelligence:
         for url in repos:
             analysis = await self.analyze_repo(url)
             analyses.append(analysis)
-        
+
         if not analyses:
             return {"winner": None, "comparison": {}}
-        
+
         # Find best by quality score
         best = max(analyses, key=lambda a: a.quality_score)
-        
+
         return {
             "winner": best.url,
             "comparison": {
@@ -187,15 +187,15 @@ class GitHubIntelligence:
 
 class ToolCodeGenerator:
     """Generates code for MCP tools"""
-    
+
     def generate_tool_handler(self, tool: ToolDefinition) -> str:
         """Generate handler code for a tool"""
         params = []
         for prop, details in tool.input_schema.get("properties", {}).items():
             params.append(f'{prop}: {self._json_type_to_python(details.get("type", "any"))}')
-        
+
         param_str = ", ".join(params) if params else ""
-        
+
         return f'''
 async def handle_{tool.name.replace("-", "_")}({param_str}) -> Dict[str, Any]:
     """
@@ -211,7 +211,7 @@ async def handle_{tool.name.replace("-", "_")}({param_str}) -> Dict[str, Any]:
         result["error"] = str(e)
     return result
 '''
-    
+
     def _json_type_to_python(self, json_type: str) -> str:
         mapping = {
             "string": "str",
@@ -222,7 +222,7 @@ async def handle_{tool.name.replace("-", "_")}({param_str}) -> Dict[str, Any]:
             "object": "Dict[str, Any]"
         }
         return mapping.get(json_type, "Any")
-    
+
     def _indent(self, code: str, spaces: int) -> str:
         indent = " " * spaces
         return "\n".join(indent + line for line in code.split("\n"))
@@ -230,13 +230,13 @@ async def handle_{tool.name.replace("-", "_")}({param_str}) -> Dict[str, Any]:
 
 class MCPServerGenerator:
     """Generates complete MCP servers"""
-    
+
     def __init__(self):
         self.tool_generator = ToolCodeGenerator()
         self.generated_servers: List[MCPServerDefinition] = []
-    
+
     def generate_server(
-        self, 
+        self,
         definition: MCPServerDefinition
     ) -> str:
         """Generate complete MCP server code"""
@@ -244,14 +244,14 @@ class MCPServerGenerator:
             self.tool_generator.generate_tool_handler(tool)
             for tool in definition.tools
         )
-        
+
         tool_decorators = "\n".join(
             f'@server.tool("{tool.name}")\n'
             f'async def {tool.name.replace("-", "_")}_handler(arguments: dict):\n'
             f'    return await handle_{tool.name.replace("-", "_")}(**arguments)\n'
             for tool in definition.tools
         )
-        
+
         code = f'''#!/usr/bin/env python3
 """
 {definition.name}
@@ -293,11 +293,11 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 '''
-        
+
         definition.code = code
         self.generated_servers.append(definition)
         return code
-    
+
     def generate_config(self, definition: MCPServerDefinition) -> Dict[str, Any]:
         """Generate MCP server configuration"""
         return {
@@ -313,16 +313,16 @@ if __name__ == "__main__":
 
 class IntentToMCPCompiler:
     """Compiles natural language intent into MCP definitions"""
-    
+
     def __init__(self):
         self.compilations: List[Dict[str, Any]] = []
-    
+
     async def compile(self, intent: str) -> MCPServerDefinition:
         """Compile intent into MCP server definition"""
         # Analyze intent
         tools = self._extract_tools(intent)
         name = self._extract_name(intent)
-        
+
         definition = MCPServerDefinition(
             id=str(uuid.uuid4()),
             name=name,
@@ -330,25 +330,25 @@ class IntentToMCPCompiler:
             server_type=MCPServerType.STDIO,
             tools=tools
         )
-        
+
         self.compilations.append({
             "intent": intent,
             "server_id": definition.id,
             "timestamp": datetime.now().isoformat()
         })
-        
+
         return definition
-    
+
     def _extract_name(self, intent: str) -> str:
         """Extract server name from intent"""
         words = intent.split()[:3]
         return "_".join(w.lower() for w in words if w.isalnum())
-    
+
     def _extract_tools(self, intent: str) -> List[ToolDefinition]:
         """Extract tool definitions from intent"""
         intent_lower = intent.lower()
         tools = []
-        
+
         # Common tool patterns
         tool_patterns = {
             "search": {
@@ -404,7 +404,7 @@ class IntentToMCPCompiler:
                 "implementation": "output = {'transformed': data}"
             }
         }
-        
+
         for keyword, tool_def in tool_patterns.items():
             if keyword in intent_lower:
                 tools.append(ToolDefinition(
@@ -414,7 +414,7 @@ class IntentToMCPCompiler:
                     category=tool_def["category"],
                     implementation=tool_def["implementation"]
                 ))
-        
+
         # Add default tool if no patterns matched
         if not tools:
             tools.append(ToolDefinition(
@@ -430,18 +430,18 @@ class IntentToMCPCompiler:
                 category=ToolCategory.CUSTOM,
                 implementation="output = f'Executed with: {input}'"
             ))
-        
+
         return tools
 
 
 class ToolEnhancer:
     """Enhance existing tools with new capabilities"""
-    
+
     def __init__(self):
         self.enhancements: List[Dict[str, Any]] = []
-    
+
     async def enhance(
-        self, 
+        self,
         tool: ToolDefinition,
         enhancement_type: str
     ) -> ToolDefinition:
@@ -456,7 +456,7 @@ class ToolEnhancer:
             examples=tool.examples.copy(),
             performance_score=tool.performance_score + 0.1
         )
-        
+
         enhancements = {
             "caching": '''
 # Caching enhancement
@@ -492,51 +492,51 @@ if not all(v is not None for v in locals().values()):
 {original}
 '''
         }
-        
+
         if enhancement_type in enhancements:
             template = enhancements[enhancement_type]
             enhanced.implementation = template.replace("{original}", tool.implementation)
-        
+
         self.enhancements.append({
             "original_tool": tool.name,
             "enhanced_tool": enhanced.name,
             "enhancement_type": enhancement_type,
             "timestamp": datetime.now().isoformat()
         })
-        
+
         return enhanced
 
 
 class EcosystemGenerator:
     """Generate entire MCP ecosystems"""
-    
+
     def __init__(self):
         self.compiler = IntentToMCPCompiler()
         self.server_generator = MCPServerGenerator()
         self.enhancer = ToolEnhancer()
         self.github_intel = GitHubIntelligence()
         self.ecosystems: List[Dict[str, Any]] = []
-    
+
     async def generate_ecosystem(
-        self, 
+        self,
         domain: str,
         capabilities: List[str]
     ) -> Dict[str, Any]:
         """Generate a complete MCP ecosystem for a domain"""
         servers = []
-        
+
         for capability in capabilities:
             intent = f"{domain}: {capability}"
             definition = await self.compiler.compile(intent)
             code = self.server_generator.generate_server(definition)
             config = self.server_generator.generate_config(definition)
-            
+
             servers.append({
                 "definition": definition,
                 "code": code,
                 "config": config
             })
-        
+
         ecosystem = {
             "id": str(uuid.uuid4()),
             "domain": domain,
@@ -545,7 +545,7 @@ class EcosystemGenerator:
             "total_tools": sum(len(s["definition"].tools) for s in servers),
             "created_at": datetime.now().isoformat()
         }
-        
+
         self.ecosystems.append(ecosystem)
         return ecosystem
 
@@ -553,11 +553,11 @@ class EcosystemGenerator:
 class AutomatedMCPGenesisFactory:
     """
     THE ULTIMATE MCP GENESIS FACTORY
-    
+
     Automatically creates MCP servers, tools, and ecosystems.
     Analyzes GitHub for best alternatives.
     Self-improving tool generation.
-    
+
     Features:
     - Intent-to-MCP compilation
     - GitHub repository intelligence
@@ -565,7 +565,7 @@ class AutomatedMCPGenesisFactory:
     - Ecosystem generation
     - Cross-tool synthesis
     """
-    
+
     def __init__(self):
         self.compiler = IntentToMCPCompiler()
         self.server_generator = MCPServerGenerator()
@@ -573,25 +573,25 @@ class AutomatedMCPGenesisFactory:
         self.enhancer = ToolEnhancer()
         self.github_intel = GitHubIntelligence()
         self.ecosystem_generator = EcosystemGenerator()
-        
+
         self.created_tools: Dict[str, ToolDefinition] = {}
         self.created_servers: Dict[str, MCPServerDefinition] = {}
-    
+
     async def create_from_intent(self, intent: str) -> MCPServerDefinition:
         """Create an MCP server from natural language intent"""
         definition = await self.compiler.compile(intent)
         self.server_generator.generate_server(definition)
-        
+
         self.created_servers[definition.id] = definition
         for tool in definition.tools:
             self.created_tools[tool.name] = tool
-        
+
         return definition
-    
+
     async def analyze_and_improve(self, github_url: str) -> Dict[str, Any]:
         """Analyze a GitHub repo and suggest improvements"""
         analysis = await self.github_intel.analyze_repo(github_url)
-        
+
         # Generate enhanced version
         tools = []
         for opportunity in analysis.enhancement_opportunities:
@@ -603,7 +603,7 @@ class AutomatedMCPGenesisFactory:
                 implementation="output = 'Enhanced functionality'"
             )
             tools.append(tool)
-        
+
         enhanced_server = MCPServerDefinition(
             id=str(uuid.uuid4()),
             name=f"{analysis.name}_enhanced",
@@ -611,23 +611,23 @@ class AutomatedMCPGenesisFactory:
             server_type=MCPServerType.STDIO,
             tools=tools
         )
-        
+
         code = self.server_generator.generate_server(enhanced_server)
-        
+
         return {
             "analysis": analysis,
             "enhanced_server": enhanced_server,
             "code": code,
             "improvements": analysis.enhancement_opportunities
         }
-    
+
     async def find_best_alternative(
-        self, 
+        self,
         functionality: str
     ) -> Dict[str, Any]:
         """Find the best alternative for a functionality"""
         alternatives = await self.github_intel.find_alternatives(functionality)
-        
+
         if not alternatives:
             # Create our own
             server = await self.create_from_intent(functionality)
@@ -636,7 +636,7 @@ class AutomatedMCPGenesisFactory:
                 "server": server,
                 "message": "No alternatives found - created custom implementation"
             }
-        
+
         # Return best alternative
         best = max(alternatives, key=lambda a: a.quality_score)
         return {
@@ -644,17 +644,17 @@ class AutomatedMCPGenesisFactory:
             "repo": best,
             "message": f"Found best alternative: {best.name}"
         }
-    
+
     async def create_ecosystem(
-        self, 
+        self,
         domain: str,
         capabilities: List[str]
     ) -> Dict[str, Any]:
         """Create a complete MCP ecosystem"""
         return await self.ecosystem_generator.generate_ecosystem(domain, capabilities)
-    
+
     async def enhance_tool(
-        self, 
+        self,
         tool_name: str,
         enhancement: str
     ) -> Optional[ToolDefinition]:
@@ -662,34 +662,34 @@ class AutomatedMCPGenesisFactory:
         tool = self.created_tools.get(tool_name)
         if not tool:
             return None
-        
+
         return await self.enhancer.enhance(tool, enhancement)
-    
+
     async def synthesize_tools(
-        self, 
+        self,
         tool_names: List[str]
     ) -> ToolDefinition:
         """Synthesize multiple tools into one"""
         tools = [self.created_tools[name] for name in tool_names if name in self.created_tools]
-        
+
         if not tools:
             raise ValueError("No valid tools found")
-        
+
         # Combine schemas
         combined_schema = {
             "type": "object",
             "properties": {},
             "required": []
         }
-        
+
         for tool in tools:
             props = tool.input_schema.get("properties", {})
             combined_schema["properties"].update(props)
             combined_schema["required"].extend(tool.input_schema.get("required", []))
-        
+
         # Combine implementations
         combined_impl = "\n".join(f"# From {t.name}:\n{t.implementation}" for t in tools)
-        
+
         synthesized = ToolDefinition(
             name=f"synthesized_{'_'.join(tool_names)}",
             description=f"Synthesized tool combining: {', '.join(tool_names)}",
@@ -698,10 +698,10 @@ class AutomatedMCPGenesisFactory:
             implementation=combined_impl,
             dependencies=[d for t in tools for d in t.dependencies]
         )
-        
+
         self.created_tools[synthesized.name] = synthesized
         return synthesized
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get factory statistics"""
         return {

@@ -117,7 +117,7 @@ class AutomatedFlow:
 
 class LinkAnalyzer:
     """Analyzes links to determine type and extract information"""
-    
+
     def __init__(self):
         self.patterns = {
             LinkType.GITHUB_REPO: [
@@ -140,11 +140,11 @@ class LinkAnalyzer:
                 r"docker:([^:\s]+)",
             ],
         }
-    
+
     def analyze_link(self, link: str) -> Dict[str, Any]:
         """Analyze a link and extract information"""
         link = link.strip()
-        
+
         for link_type, patterns in self.patterns.items():
             for pattern in patterns:
                 match = re.search(pattern, link)
@@ -157,7 +157,7 @@ class LinkAnalyzer:
                         "name": match.group(2) if match.lastindex >= 2 else match.group(1),
                         "full_url": self._construct_full_url(link_type, match),
                     }
-        
+
         return {
             "type": LinkType.UNKNOWN,
             "original": link,
@@ -166,7 +166,7 @@ class LinkAnalyzer:
             "name": None,
             "full_url": link,
         }
-    
+
     def _construct_full_url(self, link_type: LinkType, match: re.Match) -> str:
         """Construct full URL from match"""
         if link_type == LinkType.GITHUB_REPO:
@@ -184,11 +184,11 @@ class LinkAnalyzer:
 
 class FlowTemplateEngine:
     """Creates flow templates for common operations"""
-    
+
     def __init__(self):
         self.templates: Dict[str, Dict] = {}
         self._initialize_templates()
-    
+
     def _initialize_templates(self):
         """Initialize common flow templates"""
         self.templates = {
@@ -273,23 +273,23 @@ class FlowTemplateEngine:
                 ],
             },
         }
-    
+
     def get_template(self, template_name: str) -> Optional[Dict]:
         """Get a flow template by name"""
         return self.templates.get(template_name)
-    
+
     def list_templates(self) -> List[str]:
         """List available templates"""
         return list(self.templates.keys())
-    
-    def create_flow_from_template(self, 
+
+    def create_flow_from_template(self,
                                   template_name: str,
                                   custom_config: Dict[str, Any] = None) -> AutomatedFlow:
         """Create a flow from a template"""
         template = self.get_template(template_name)
         if not template:
             raise ValueError(f"Unknown template: {template_name}")
-        
+
         # Create nodes
         nodes = []
         for i, node_def in enumerate(template["nodes"]):
@@ -299,7 +299,7 @@ class FlowTemplateEngine:
                 position=self._calculate_position(i, len(template["nodes"])),
             )
             nodes.append(node)
-        
+
         # Create connections
         connections = []
         for source_idx, target_idx in template["connections"]:
@@ -308,7 +308,7 @@ class FlowTemplateEngine:
                 target_node=nodes[target_idx].id,
             )
             connections.append(connection)
-        
+
         # Create flow
         flow = AutomatedFlow(
             name=template["name"],
@@ -316,9 +316,9 @@ class FlowTemplateEngine:
             nodes=nodes,
             connections=connections,
         )
-        
+
         return flow
-    
+
     def _calculate_position(self, index: int, total: int) -> Dict[str, float]:
         """Calculate node position for visualization"""
         # Use golden ratio for harmonious spacing
@@ -329,13 +329,13 @@ class FlowTemplateEngine:
 
 class FlowExecutor:
     """Executes automated flows"""
-    
+
     def __init__(self):
         self.active_flows: Dict[str, AutomatedFlow] = {}
         self.execution_history: List[Dict] = []
         self.node_handlers: Dict[FlowNodeType, Callable] = {}
         self._register_handlers()
-    
+
     def _register_handlers(self):
         """Register node execution handlers"""
         self.node_handlers = {
@@ -353,55 +353,55 @@ class FlowExecutor:
             FlowNodeType.VALIDATION: self._handle_validation,
             FlowNodeType.ENHANCEMENT: self._handle_enhancement,
         }
-    
-    async def execute_flow(self, 
+
+    async def execute_flow(self,
                           flow: AutomatedFlow,
                           initial_input: Any = None) -> Dict[str, Any]:
         """Execute a complete flow"""
         flow.status = FlowStatus.RUNNING
         self.active_flows[flow.id] = flow
-        
+
         start_time = time.time()
         results = {}
-        
+
         try:
             # Build execution order
             execution_order = self._build_execution_order(flow)
-            
+
             # Execute nodes in order
             current_data = initial_input
             for node_id in execution_order:
                 node = next(n for n in flow.nodes if n.id == node_id)
-                
+
                 node.status = "running"
                 node_start = time.time()
-                
+
                 # Execute node
                 handler = self.node_handlers.get(node.type, self._handle_default)
                 node.result = await handler(node, current_data, flow)
-                
+
                 node.execution_time = time.time() - node_start
                 node.status = "completed"
-                
+
                 results[node.id] = node.result
                 current_data = node.result
-            
+
             flow.status = FlowStatus.COMPLETED
             flow.completed_at = time.time()
-            
+
         except Exception as e:
             flow.status = FlowStatus.FAILED
             results["error"] = str(e)
-        
+
         # Calculate metrics
         flow.metrics = {
             "total_time": time.time() - start_time,
             "nodes_executed": len([n for n in flow.nodes if n.status == "completed"]),
             "success_rate": len([n for n in flow.nodes if n.status == "completed"]) / len(flow.nodes),
         }
-        
+
         flow.results = results
-        
+
         # Record execution
         self.execution_history.append({
             "flow_id": flow.id,
@@ -410,16 +410,16 @@ class FlowExecutor:
             "metrics": flow.metrics,
             "timestamp": time.time(),
         })
-        
+
         return results
-    
+
     def _build_execution_order(self, flow: AutomatedFlow) -> List[str]:
         """Build topological order for node execution"""
         # Simple linear order for now
         return [node.id for node in flow.nodes]
-    
-    async def _handle_input(self, 
-                           node: FlowNode, 
+
+    async def _handle_input(self,
+                           node: FlowNode,
                            data: Any,
                            flow: AutomatedFlow) -> Dict[str, Any]:
         """Handle input node"""
@@ -428,7 +428,7 @@ class FlowExecutor:
             "data": data,
             "timestamp": time.time(),
         }
-    
+
     async def _handle_analysis(self,
                               node: FlowNode,
                               data: Any,
@@ -442,7 +442,7 @@ class FlowExecutor:
             "findings": ["Pattern A detected", "Quality score: 0.85"],
             "recommendations": ["Consider enhancement X"],
         }
-    
+
     async def _handle_discovery(self,
                                node: FlowNode,
                                data: Any,
@@ -455,7 +455,7 @@ class FlowExecutor:
             "alternatives": [],
             "opportunities": [],
         }
-    
+
     async def _handle_comparison(self,
                                 node: FlowNode,
                                 data: Any,
@@ -467,7 +467,7 @@ class FlowExecutor:
             "matrix": {},
             "insights": [],
         }
-    
+
     async def _handle_decision(self,
                               node: FlowNode,
                               data: Any,
@@ -479,7 +479,7 @@ class FlowExecutor:
             "confidence": 0.9,
             "rationale": "Based on analysis",
         }
-    
+
     async def _handle_transformation(self,
                                     node: FlowNode,
                                     data: Any,
@@ -490,7 +490,7 @@ class FlowExecutor:
             "input": data,
             "output": "transformed_data",
         }
-    
+
     async def _handle_integration(self,
                                  node: FlowNode,
                                  data: Any,
@@ -502,7 +502,7 @@ class FlowExecutor:
             "target": "bael_core",
             "details": {},
         }
-    
+
     async def _handle_output(self,
                             node: FlowNode,
                             data: Any,
@@ -513,7 +513,7 @@ class FlowExecutor:
             "final_result": data,
             "summary": "Flow completed successfully",
         }
-    
+
     async def _handle_parallel(self,
                               node: FlowNode,
                               data: Any,
@@ -530,12 +530,12 @@ class FlowExecutor:
             "results": results,
             "aggregated": "combined_result",
         }
-    
+
     async def _parallel_task(self, index: int) -> Dict[str, Any]:
         """A single parallel task"""
         await asyncio.sleep(0.05)
         return {"task": index, "result": f"result_{index}"}
-    
+
     async def _handle_council(self,
                              node: FlowNode,
                              data: Any,
@@ -547,7 +547,7 @@ class FlowExecutor:
             "votes": {"proceed": 5, "revise": 0},
             "recommendation": "Proceed with implementation",
         }
-    
+
     async def _handle_swarm(self,
                            node: FlowNode,
                            data: Any,
@@ -559,7 +559,7 @@ class FlowExecutor:
             "collective_result": "Swarm analysis complete",
             "insights": [],
         }
-    
+
     async def _handle_validation(self,
                                 node: FlowNode,
                                 data: Any,
@@ -571,7 +571,7 @@ class FlowExecutor:
             "checks_passed": 10,
             "checks_failed": 0,
         }
-    
+
     async def _handle_enhancement(self,
                                  node: FlowNode,
                                  data: Any,
@@ -583,7 +583,7 @@ class FlowExecutor:
             "power_increase": PHI,
             "details": [],
         }
-    
+
     async def _handle_default(self,
                              node: FlowNode,
                              data: Any,
@@ -598,7 +598,7 @@ class FlowExecutor:
 
 class FlowOptimizer:
     """Optimizes flows for better performance"""
-    
+
     def __init__(self):
         self.optimization_strategies: List[Dict] = [
             {
@@ -618,25 +618,25 @@ class FlowOptimizer:
                 "description": "Balance flow according to golden ratio",
             },
         ]
-    
+
     async def optimize_flow(self, flow: AutomatedFlow) -> AutomatedFlow:
         """Optimize a flow"""
         optimized = flow
-        
+
         for strategy in self.optimization_strategies:
             optimized = await self._apply_strategy(optimized, strategy["name"])
-        
+
         # Record optimization
         flow.optimization_history.append({
             "timestamp": time.time(),
             "strategies_applied": [s["name"] for s in self.optimization_strategies],
             "improvement_factor": PHI,
         })
-        
+
         return optimized
-    
-    async def _apply_strategy(self, 
-                             flow: AutomatedFlow, 
+
+    async def _apply_strategy(self,
+                             flow: AutomatedFlow,
                              strategy_name: str) -> AutomatedFlow:
         """Apply a specific optimization strategy"""
         # Placeholder for actual optimization logic
@@ -646,25 +646,25 @@ class FlowOptimizer:
 class AutomatedFlowUIEngine:
     """
     The Ultimate Automated Flow UI Engine
-    
+
     Creates, executes, and optimizes automated flows for the Bael UI.
     Handles everything from GitHub links to complex multi-step operations.
     """
-    
+
     def __init__(self):
         self.link_analyzer = LinkAnalyzer()
         self.template_engine = FlowTemplateEngine()
         self.executor = FlowExecutor()
         self.optimizer = FlowOptimizer()
-        
+
         self.active_flows: Dict[str, AutomatedFlow] = {}
         self.flow_history: List[Dict] = []
-    
+
     async def process_input(self, user_input: str) -> Dict[str, Any]:
         """Process any user input and create appropriate flow"""
         # Analyze the input
         link_info = self.link_analyzer.analyze_link(user_input)
-        
+
         # Determine appropriate flow
         if link_info["type"] == LinkType.GITHUB_REPO:
             flow = await self.create_github_analysis_flow(user_input)
@@ -672,10 +672,10 @@ class AutomatedFlowUIEngine:
             flow = await self.create_package_analysis_flow(user_input, link_info)
         else:
             flow = await self.create_generic_flow(user_input)
-        
+
         # Execute flow
         results = await self.executor.execute_flow(flow, user_input)
-        
+
         return {
             "input": user_input,
             "input_type": link_info["type"].name,
@@ -684,29 +684,29 @@ class AutomatedFlowUIEngine:
             "results": results,
             "metrics": flow.metrics,
         }
-    
+
     async def create_github_analysis_flow(self, url: str) -> AutomatedFlow:
         """Create flow for GitHub repository analysis"""
         flow = self.template_engine.create_flow_from_template("github_analysis")
-        
+
         # Customize for this URL
         flow.name = f"Analysis: {url}"
         flow.nodes[0].config["url"] = url
-        
+
         # Optimize
         flow = await self.optimizer.optimize_flow(flow)
-        
+
         self.active_flows[flow.id] = flow
         return flow
-    
-    async def create_package_analysis_flow(self, 
-                                          url: str, 
+
+    async def create_package_analysis_flow(self,
+                                          url: str,
                                           link_info: Dict) -> AutomatedFlow:
         """Create flow for package analysis"""
         flow = self.template_engine.create_flow_from_template("github_analysis")
         flow.name = f"Package Analysis: {link_info['name']}"
         return flow
-    
+
     async def create_generic_flow(self, input_text: str) -> AutomatedFlow:
         """Create generic analysis flow"""
         # Create minimal flow
@@ -715,53 +715,53 @@ class AutomatedFlowUIEngine:
             FlowNode(type=FlowNodeType.ANALYSIS, name="Analysis"),
             FlowNode(type=FlowNodeType.OUTPUT, name="Output"),
         ]
-        
+
         connections = [
             FlowConnection(source_node=nodes[0].id, target_node=nodes[1].id),
             FlowConnection(source_node=nodes[1].id, target_node=nodes[2].id),
         ]
-        
+
         return AutomatedFlow(
             name="Generic Analysis",
             nodes=nodes,
             connections=connections,
         )
-    
-    async def create_multi_repo_combination_flow(self, 
+
+    async def create_multi_repo_combination_flow(self,
                                                 urls: List[str]) -> AutomatedFlow:
         """Create flow for combining multiple repositories"""
         flow = self.template_engine.create_flow_from_template("multi_repo_combination")
         flow.name = f"Combination: {len(urls)} repos"
         flow.nodes[0].config["urls"] = urls
         return flow
-    
-    async def create_competitive_intelligence_flow(self, 
+
+    async def create_competitive_intelligence_flow(self,
                                                    target: str) -> AutomatedFlow:
         """Create flow for competitive intelligence"""
         flow = self.template_engine.create_flow_from_template("competitive_intelligence")
         flow.name = f"Competitive Intel: {target}"
         return flow
-    
-    async def create_mcp_genesis_flow(self, 
+
+    async def create_mcp_genesis_flow(self,
                                      capability: str) -> AutomatedFlow:
         """Create flow for automated MCP creation"""
         flow = self.template_engine.create_flow_from_template("automated_mcp_creation")
         flow.name = f"MCP Genesis: {capability}"
         return flow
-    
-    async def create_skill_genesis_flow(self, 
+
+    async def create_skill_genesis_flow(self,
                                        skill_description: str) -> AutomatedFlow:
         """Create flow for skill creation"""
         flow = self.template_engine.create_flow_from_template("skill_genesis")
         flow.name = f"Skill Genesis: {skill_description[:30]}"
         return flow
-    
+
     def get_flow_status(self, flow_id: str) -> Optional[Dict[str, Any]]:
         """Get status of a flow"""
         flow = self.active_flows.get(flow_id)
         if not flow:
             return None
-        
+
         return {
             "id": flow.id,
             "name": flow.name,
@@ -773,7 +773,7 @@ class AutomatedFlowUIEngine:
             ),
             "metrics": flow.metrics,
         }
-    
+
     def export_flow_visualization(self, flow: AutomatedFlow) -> Dict[str, Any]:
         """Export flow for visualization"""
         return {

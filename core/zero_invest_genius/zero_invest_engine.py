@@ -92,28 +92,28 @@ class FreeResource:
     category: ResourceCategory
     resource_type: ResourceType
     quality: ResourceQuality
-    
+
     # Access details
     base_url: str
     auth_method: str = "none"  # none, api_key, oauth, token
     documentation_url: str = ""
-    
+
     # Limits
     rate_limit: int = 0  # requests per minute, 0 = unlimited
     daily_limit: int = 0  # requests per day
     monthly_limit: int = 0
     context_limit: int = 0  # for LLMs
-    
+
     # Features
     features: List[str] = field(default_factory=list)
     limitations: List[str] = field(default_factory=list)
-    
+
     # Status
     is_active: bool = True
     last_verified: datetime = field(default_factory=datetime.now)
     success_rate: float = 1.0
     avg_latency_ms: float = 0.0
-    
+
     # Usage tracking
     requests_today: int = 0
     requests_this_month: int = 0
@@ -125,7 +125,7 @@ class FreeResource:
 
 class FreeResourceRegistry:
     """Registry of all known free resources."""
-    
+
     # LLM-Red-Team Free APIs
     LLM_FREE_APIS = [
         FreeResource(
@@ -207,7 +207,7 @@ class FreeResourceRegistry:
             limitations=["requires_self_hosting"]
         ),
     ]
-    
+
     # Image Generation Free APIs
     IMAGE_GEN_FREE = [
         FreeResource(
@@ -246,7 +246,7 @@ class FreeResourceRegistry:
             limitations=["lower_quality", "slow"]
         ),
     ]
-    
+
     # Voice/Audio Free APIs
     VOICE_FREE = [
         FreeResource(
@@ -274,7 +274,7 @@ class FreeResourceRegistry:
             limitations=["requires_local_compute"]
         ),
     ]
-    
+
     # Embedding APIs
     EMBEDDING_FREE = [
         FreeResource(
@@ -302,7 +302,7 @@ class FreeResourceRegistry:
             limitations=["requires_compute"]
         ),
     ]
-    
+
     # Search APIs
     SEARCH_FREE = [
         FreeResource(
@@ -341,7 +341,7 @@ class FreeResourceRegistry:
             limitations=["limited_free_tier"]
         ),
     ]
-    
+
     # Database Free Options
     DATABASE_FREE = [
         FreeResource(
@@ -378,7 +378,7 @@ class FreeResourceRegistry:
             limitations=["compute_limits"]
         ),
     ]
-    
+
     # Compute Free Options
     COMPUTE_FREE = [
         FreeResource(
@@ -415,7 +415,7 @@ class FreeResourceRegistry:
             limitations=["hour_limits"]
         ),
     ]
-    
+
     # Data Sources
     DATA_FREE = [
         FreeResource(
@@ -453,7 +453,7 @@ class FreeResourceRegistry:
             limitations=["wikipedia_content_only"]
         ),
     ]
-    
+
     @classmethod
     def get_all_resources(cls) -> List[FreeResource]:
         """Get all registered free resources."""
@@ -467,12 +467,12 @@ class FreeResourceRegistry:
         all_resources.extend(cls.COMPUTE_FREE)
         all_resources.extend(cls.DATA_FREE)
         return all_resources
-        
+
     @classmethod
     def get_by_type(cls, resource_type: ResourceType) -> List[FreeResource]:
         """Get resources by type."""
         return [r for r in cls.get_all_resources() if r.resource_type == resource_type]
-        
+
     @classmethod
     def get_by_category(cls, category: ResourceCategory) -> List[FreeResource]:
         """Get resources by category."""
@@ -484,7 +484,7 @@ class FreeResourceRegistry:
 
 class OpportunityScanner:
     """Scans for new free resource opportunities."""
-    
+
     def __init__(self):
         self.discovered_resources: List[FreeResource] = []
         self.scan_sources = [
@@ -495,15 +495,15 @@ class OpportunityScanner:
             "https://alternativeto.net",
             "https://free-for.dev",
         ]
-        
+
     async def scan_github_topics(self, session: aiohttp.ClientSession,
                                 topic: str) -> List[Dict[str, Any]]:
         """Scan GitHub for repositories with specific topic."""
         opportunities = []
-        
+
         # In production, this would actually scrape/API call
         # For now, returns known opportunities
-        
+
         known_github_opportunities = {
             "free-api": [
                 {"name": "LLM-Red-Team repositories", "type": "llm_api"},
@@ -516,18 +516,18 @@ class OpportunityScanner:
                 {"name": "n8n", "type": "automation"},
             ]
         }
-        
+
         return known_github_opportunities.get(topic, [])
-        
+
     async def discover_new_resources(self) -> List[Dict[str, Any]]:
         """Discover new free resources across the web."""
         async with aiohttp.ClientSession() as session:
             discoveries = []
-            
+
             for topic in ["free-api", "self-hosted", "open-source"]:
                 results = await self.scan_github_topics(session, topic)
                 discoveries.extend(results)
-                
+
             return discoveries
 
 # ============================================================================
@@ -536,64 +536,64 @@ class OpportunityScanner:
 
 class ResourceOptimizer:
     """Optimizes usage of free resources."""
-    
+
     def __init__(self, registry: FreeResourceRegistry):
         self.registry = registry
         self.usage_stats: Dict[str, Dict[str, Any]] = defaultdict(dict)
-        
-    def get_optimal_resource(self, 
+
+    def get_optimal_resource(self,
                             resource_type: ResourceType,
                             requirements: Dict[str, Any] = None) -> Optional[FreeResource]:
         """Get the optimal resource for a given type and requirements."""
         candidates = FreeResourceRegistry.get_by_type(resource_type)
-        
+
         if not candidates:
             return None
-            
+
         # Filter by requirements
         if requirements:
             min_quality = requirements.get("min_quality", ResourceQuality.UNRELIABLE)
             candidates = [c for c in candidates if c.quality.value >= min_quality.value]
-            
+
             required_features = requirements.get("features", [])
             if required_features:
                 candidates = [
-                    c for c in candidates 
+                    c for c in candidates
                     if all(f in c.features for f in required_features)
                 ]
-                
+
         if not candidates:
             return None
-            
+
         # Sort by quality and availability
         candidates.sort(key=lambda x: (
             x.quality.value,
             x.success_rate,
             -x.avg_latency_ms
         ), reverse=True)
-        
+
         # Check rate limits
         for candidate in candidates:
             if self._is_available(candidate):
                 return candidate
-                
+
         return candidates[0] if candidates else None
-        
+
     def _is_available(self, resource: FreeResource) -> bool:
         """Check if resource is available (not rate limited)."""
         if resource.rate_limit == 0 and resource.daily_limit == 0:
             return True
-            
+
         if resource.daily_limit > 0:
             if resource.requests_today >= resource.daily_limit:
                 return False
-                
+
         if resource.monthly_limit > 0:
             if resource.requests_this_month >= resource.monthly_limit:
                 return False
-                
+
         return True
-        
+
     def record_usage(self, resource_id: str, success: bool, latency_ms: float):
         """Record usage of a resource."""
         if resource_id not in self.usage_stats:
@@ -602,7 +602,7 @@ class ResourceOptimizer:
                 "successes": 0,
                 "total_latency": 0.0
             }
-            
+
         stats = self.usage_stats[resource_id]
         stats["total_requests"] += 1
         if success:
@@ -615,73 +615,73 @@ class ResourceOptimizer:
 
 class RateLimitManager:
     """Manages rate limits across all resources."""
-    
+
     def __init__(self):
         self.request_timestamps: Dict[str, List[datetime]] = defaultdict(list)
         self.daily_counts: Dict[str, int] = defaultdict(int)
         self.monthly_counts: Dict[str, int] = defaultdict(int)
         self.last_daily_reset: datetime = datetime.now()
         self.last_monthly_reset: datetime = datetime.now()
-        
+
     async def acquire(self, resource: FreeResource) -> bool:
         """Acquire permission to use a resource."""
         self._reset_if_needed()
-        
+
         resource_id = resource.resource_id
-        
+
         # Check rate limit (per minute)
         if resource.rate_limit > 0:
             now = datetime.now()
             minute_ago = now - timedelta(minutes=1)
-            
+
             # Clean old timestamps
             self.request_timestamps[resource_id] = [
                 ts for ts in self.request_timestamps[resource_id]
                 if ts > minute_ago
             ]
-            
+
             if len(self.request_timestamps[resource_id]) >= resource.rate_limit:
                 return False
-                
+
         # Check daily limit
         if resource.daily_limit > 0:
             if self.daily_counts[resource_id] >= resource.daily_limit:
                 return False
-                
+
         # Check monthly limit
         if resource.monthly_limit > 0:
             if self.monthly_counts[resource_id] >= resource.monthly_limit:
                 return False
-                
+
         # Record this request
         self.request_timestamps[resource_id].append(datetime.now())
         self.daily_counts[resource_id] += 1
         self.monthly_counts[resource_id] += 1
-        
+
         return True
-        
+
     def _reset_if_needed(self):
         """Reset counters if needed."""
         now = datetime.now()
-        
+
         # Daily reset
         if (now - self.last_daily_reset).days >= 1:
             self.daily_counts.clear()
             self.last_daily_reset = now
-            
+
         # Monthly reset
         if now.month != self.last_monthly_reset.month:
             self.monthly_counts.clear()
             self.last_monthly_reset = now
-            
+
     def get_remaining(self, resource: FreeResource) -> Dict[str, int]:
         """Get remaining quota for a resource."""
         self._reset_if_needed()
-        
+
         resource_id = resource.resource_id
-        
+
         remaining = {}
-        
+
         if resource.rate_limit > 0:
             now = datetime.now()
             minute_ago = now - timedelta(minutes=1)
@@ -690,13 +690,13 @@ class RateLimitManager:
                 if ts > minute_ago
             ])
             remaining["per_minute"] = max(0, resource.rate_limit - recent)
-            
+
         if resource.daily_limit > 0:
             remaining["daily"] = max(0, resource.daily_limit - self.daily_counts[resource_id])
-            
+
         if resource.monthly_limit > 0:
             remaining["monthly"] = max(0, resource.monthly_limit - self.monthly_counts[resource_id])
-            
+
         return remaining
 
 # ============================================================================
@@ -705,101 +705,101 @@ class RateLimitManager:
 
 class ZeroInvestGeniusEngine:
     """Main engine for zero-cost resource optimization."""
-    
+
     def __init__(self):
         self.registry = FreeResourceRegistry()
         self.optimizer = ResourceOptimizer(self.registry)
         self.rate_limiter = RateLimitManager()
         self.scanner = OpportunityScanner()
         self.active_resources: Dict[str, FreeResource] = {}
-        
+
     async def initialize(self) -> None:
         """Initialize the engine."""
         # Load all known resources
         for resource in FreeResourceRegistry.get_all_resources():
             self.active_resources[resource.resource_id] = resource
-            
+
         logger.info(f"Initialized with {len(self.active_resources)} free resources")
-        
-    async def get_llm(self, 
+
+    async def get_llm(self,
                      features: List[str] = None,
                      min_context: int = 0) -> Optional[FreeResource]:
         """Get best available free LLM."""
         resources = FreeResourceRegistry.get_by_type(ResourceType.LLM_API)
-        
+
         # Filter by features
         if features:
             resources = [r for r in resources if all(f in r.features for f in features)]
-            
+
         # Filter by context
         if min_context > 0:
             resources = [r for r in resources if r.context_limit >= min_context]
-            
+
         # Sort by quality
         resources.sort(key=lambda x: x.quality.value, reverse=True)
-        
+
         # Return first available
         for resource in resources:
             if await self.rate_limiter.acquire(resource):
                 return resource
-                
+
         return None
-        
+
     async def get_image_generator(self) -> Optional[FreeResource]:
         """Get best available free image generator."""
         resources = FreeResourceRegistry.get_by_type(ResourceType.IMAGE_GEN)
         resources.sort(key=lambda x: x.quality.value, reverse=True)
-        
+
         for resource in resources:
             if await self.rate_limiter.acquire(resource):
                 return resource
-                
+
         return None
-        
+
     async def get_search(self) -> Optional[FreeResource]:
         """Get best available free search API."""
         resources = FreeResourceRegistry.get_by_type(ResourceType.SEARCH_API)
         resources.sort(key=lambda x: x.quality.value, reverse=True)
-        
+
         for resource in resources:
             if await self.rate_limiter.acquire(resource):
                 return resource
-                
+
         return None
-        
+
     async def get_embeddings(self) -> Optional[FreeResource]:
         """Get best available free embeddings API."""
         resources = FreeResourceRegistry.get_by_type(ResourceType.EMBEDDINGS)
         resources.sort(key=lambda x: x.quality.value, reverse=True)
-        
+
         for resource in resources:
             if await self.rate_limiter.acquire(resource):
                 return resource
-                
+
         return None
-        
+
     async def discover_opportunities(self) -> List[Dict[str, Any]]:
         """Discover new zero-cost opportunities."""
         return await self.scanner.discover_new_resources()
-        
+
     def get_resource_stats(self) -> Dict[str, Any]:
         """Get statistics about available resources."""
         by_type = defaultdict(int)
         by_category = defaultdict(int)
         by_quality = defaultdict(int)
-        
+
         for resource in self.active_resources.values():
             by_type[resource.resource_type.value] += 1
             by_category[resource.category.value] += 1
             by_quality[resource.quality.name] += 1
-            
+
         return {
             "total_resources": len(self.active_resources),
             "by_type": dict(by_type),
             "by_category": dict(by_category),
             "by_quality": dict(by_quality)
         }
-        
+
     def get_savings_estimate(self) -> Dict[str, Any]:
         """Estimate cost savings from using free resources."""
         # Approximate commercial pricing
@@ -812,7 +812,7 @@ class ZeroInvestGeniusEngine:
             ResourceType.DATABASE: 25.0,  # per month
             ResourceType.COMPUTE: 50.0,  # per month
         }
-        
+
         # Estimate monthly usage
         monthly_usage = {
             ResourceType.LLM_API: 1000000,  # 1M tokens
@@ -823,16 +823,16 @@ class ZeroInvestGeniusEngine:
             ResourceType.DATABASE: 1,  # instance
             ResourceType.COMPUTE: 1,  # instance
         }
-        
+
         savings = {}
         total = 0.0
-        
+
         for rtype in ResourceType:
             if rtype in commercial_pricing:
                 monthly_cost = commercial_pricing[rtype] * monthly_usage.get(rtype, 0)
                 savings[rtype.value] = monthly_cost
                 total += monthly_cost
-                
+
         return {
             "estimated_monthly_savings": total,
             "breakdown": savings,
@@ -855,21 +855,21 @@ async def example_usage():
     """Example usage of the zero-invest engine."""
     engine = create_zero_invest_engine()
     await engine.initialize()
-    
+
     # Get stats
     print("Resource Statistics:")
     print(json.dumps(engine.get_resource_stats(), indent=2))
-    
+
     # Get savings estimate
     print("\nSavings Estimate:")
     print(json.dumps(engine.get_savings_estimate(), indent=2))
-    
+
     # Get best LLM for long context
     llm = await engine.get_llm(features=["long_context"], min_context=500000)
     if llm:
         print(f"\nBest LLM for long context: {llm.name}")
         print(f"Context limit: {llm.context_limit:,} tokens")
-        
+
     # Get image generator
     img_gen = await engine.get_image_generator()
     if img_gen:

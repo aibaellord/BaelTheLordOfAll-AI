@@ -78,13 +78,13 @@ class SkillMetrics:
     avg_execution_time_ms: float = 0.0
     avg_quality_score: float = 0.0
     evolution_count: int = 0
-    
+
     @property
     def success_rate(self) -> float:
         if self.usage_count == 0:
             return 0.0
         return self.success_count / self.usage_count
-    
+
     def record_usage(self, success: bool, time_ms: float, quality: float = 1.0):
         """Record a skill usage."""
         self.usage_count += 1
@@ -104,7 +104,7 @@ class SkillComponent:
     capability: str
     parameters: Dict[str, Any] = field(default_factory=dict)
     weight: float = 1.0  # Importance in composition
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.component_id,
@@ -122,53 +122,53 @@ class Skill:
     description: str
     tier: SkillTier
     domain: SkillDomain
-    
+
     # Composition
     components: List[SkillComponent] = field(default_factory=list)
     parent_skills: List[str] = field(default_factory=list)  # Skills this evolved from
     child_skills: List[str] = field(default_factory=list)   # Skills evolved from this
-    
+
     # Implementation
     implementation: str = ""
     prompt_template: str = ""
-    
+
     # Configuration
     parameters: Dict[str, Any] = field(default_factory=dict)
     constraints: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Metrics
     metrics: SkillMetrics = field(default_factory=SkillMetrics)
-    
+
     # Evolution
     version: str = "1.0.0"
     evolution_history: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     # Metadata
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
     tags: List[str] = field(default_factory=list)
-    
+
     def get_fitness_score(self) -> float:
         """Calculate fitness score for evolution selection."""
         # Combine metrics using golden ratio weighting
         success_weight = 1 / PHI
         quality_weight = 1 / (PHI ** 2)
         speed_weight = 1 / (PHI ** 3)
-        
+
         # Normalize execution time (lower is better)
         speed_score = 1.0 / (1.0 + self.metrics.avg_execution_time_ms / 1000)
-        
+
         fitness = (
             self.metrics.success_rate * success_weight +
             self.metrics.avg_quality_score * quality_weight +
             speed_score * speed_weight
         )
-        
+
         # Bonus for higher tier
         tier_bonus = self.tier.value * 0.1
-        
+
         return fitness + tier_bonus
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "skill_id": self.skill_id,
@@ -201,7 +201,7 @@ class SkillExecutionResult:
 class InfiniteSkillForge:
     """
     The Infinite Skill Forge - Self-evolving skill creation.
-    
+
     Revolutionary capabilities:
     1. Natural Language Skill Creation - Describe skills in plain language
     2. Automatic Skill Composition - Combine atomic skills into complex ones
@@ -211,7 +211,7 @@ class InfiniteSkillForge:
     6. Competitive Surpassing - Analyze and exceed existing skills
     7. Self-Improvement Loops - Continuous autonomous enhancement
     """
-    
+
     # Atomic capabilities that form the basis of all skills
     ATOMIC_CAPABILITIES = {
         "analyze": "Analyze input and extract insights",
@@ -230,7 +230,7 @@ class InfiniteSkillForge:
         "execute": "Execute actions",
         "monitor": "Monitor and track progress"
     }
-    
+
     def __init__(
         self,
         llm_provider: Optional[Callable] = None,
@@ -240,19 +240,19 @@ class InfiniteSkillForge:
         self.llm_provider = llm_provider
         self.auto_evolution = enable_auto_evolution
         self.evolution_threshold = evolution_threshold
-        
+
         # Skill registry
         self._skills: Dict[str, Skill] = {}
         self._atomic_skills: Dict[str, Skill] = {}
-        
+
         # Evolution population
         self._evolution_pool: List[Skill] = []
         self._evolution_history: List[Dict[str, Any]] = []
-        
+
         # Learning data
         self._execution_patterns: List[Dict[str, Any]] = []
         self._successful_compositions: List[Dict[str, Any]] = []
-        
+
         # Statistics
         self._stats = {
             "skills_created": 0,
@@ -261,12 +261,12 @@ class InfiniteSkillForge:
             "evolutions_performed": 0,
             "meta_skills_created": 0
         }
-        
+
         # Initialize atomic skills
         self._initialize_atomic_skills()
-        
+
         logger.info("InfiniteSkillForge initialized with evolutionary capabilities")
-    
+
     def _initialize_atomic_skills(self):
         """Initialize the atomic skill library."""
         for cap_id, cap_desc in self.ATOMIC_CAPABILITIES.items():
@@ -286,7 +286,7 @@ class InfiniteSkillForge:
             )
             self._atomic_skills[skill.skill_id] = skill
             self._skills[skill.skill_id] = skill
-    
+
     async def create_skill(
         self,
         description: str,
@@ -299,10 +299,10 @@ class InfiniteSkillForge:
         """
         # Generate skill ID
         skill_id = f"skill_{hashlib.md5(f'{description}{time.time()}'.encode()).hexdigest()[:10]}"
-        
+
         # Determine tier based on complexity
         tier = self._infer_tier(description, from_components)
-        
+
         # Select or create components
         if from_components:
             components = [
@@ -312,13 +312,13 @@ class InfiniteSkillForge:
             ]
         else:
             components = await self._infer_components(description)
-        
+
         # Generate implementation
         implementation = await self._generate_implementation(description, components)
-        
+
         # Generate prompt template
         prompt_template = await self._generate_prompt_template(description, components)
-        
+
         skill = Skill(
             skill_id=skill_id,
             name=self._generate_skill_name(description),
@@ -330,13 +330,13 @@ class InfiniteSkillForge:
             prompt_template=prompt_template,
             parameters=parameters or {}
         )
-        
+
         self._skills[skill_id] = skill
         self._stats["skills_created"] += 1
-        
+
         logger.info(f"Created skill: {skill.name} (Tier: {tier.name})")
         return skill
-    
+
     async def compose_skills(
         self,
         skill_ids: List[str],
@@ -346,7 +346,7 @@ class InfiniteSkillForge:
     ) -> Skill:
         """
         Compose multiple skills into a new higher-tier skill.
-        
+
         Composition types:
         - chain: Execute in sequence
         - parallel: Execute in parallel, combine results
@@ -354,22 +354,22 @@ class InfiniteSkillForge:
         - iterative: Repeat until condition met
         """
         skills = [self._skills[sid] for sid in skill_ids if sid in self._skills]
-        
+
         if not skills:
             raise ValueError("No valid skills to compose")
-        
+
         # Determine new tier
         max_tier = max(s.tier.value for s in skills)
         new_tier = SkillTier(min(max_tier + 1, SkillTier.TRANSCENDENT.value))
-        
+
         # Combine components
         all_components = []
         for skill in skills:
             all_components.extend(skill.components)
-        
+
         # Generate composition
         composed_id = f"composed_{hashlib.md5('_'.join(skill_ids).encode()).hexdigest()[:8]}"
-        
+
         composed = Skill(
             skill_id=composed_id,
             name=name or f"Composed_{composition_type.title()}",
@@ -380,16 +380,16 @@ class InfiniteSkillForge:
             parent_skills=skill_ids,
             parameters={"composition_type": composition_type}
         )
-        
+
         # Generate composed implementation
         composed.implementation = await self._generate_composition_implementation(
             skills, composition_type
         )
-        
+
         # Update parent skills
         for skill in skills:
             skill.child_skills.append(composed_id)
-        
+
         self._skills[composed_id] = composed
         self._stats["compositions_created"] += 1
         self._successful_compositions.append({
@@ -397,10 +397,10 @@ class InfiniteSkillForge:
             "type": composition_type,
             "result_tier": new_tier.value
         })
-        
+
         logger.info(f"Composed {len(skills)} skills into: {composed.name}")
         return composed
-    
+
     async def execute_skill(
         self,
         skill_id: str,
@@ -416,10 +416,10 @@ class InfiniteSkillForge:
                 execution_time_ms=0,
                 quality_score=0
             )
-        
+
         skill = self._skills[skill_id]
         start_time = time.time()
-        
+
         try:
             # Execute skill
             if self.llm_provider and skill.prompt_template:
@@ -432,18 +432,18 @@ class InfiniteSkillForge:
             else:
                 # Simulated execution
                 output = f"Executed {skill.name} on input"
-            
+
             execution_time = (time.time() - start_time) * 1000
             quality_score = random.uniform(0.7, 1.0)  # Would be calculated
-            
+
             # Record metrics
             skill.metrics.record_usage(True, execution_time, quality_score)
-            
+
             # Check for evolution trigger
             if self.auto_evolution and skill.metrics.usage_count >= self.evolution_threshold:
                 if skill.metrics.usage_count % self.evolution_threshold == 0:
                     asyncio.create_task(self._consider_evolution(skill))
-            
+
             result = SkillExecutionResult(
                 skill_id=skill_id,
                 success=True,
@@ -451,7 +451,7 @@ class InfiniteSkillForge:
                 execution_time_ms=execution_time,
                 quality_score=quality_score
             )
-            
+
             # Record pattern
             self._execution_patterns.append({
                 "skill_id": skill_id,
@@ -459,13 +459,13 @@ class InfiniteSkillForge:
                 "success": True,
                 "time_ms": execution_time
             })
-            
+
             return result
-            
+
         except Exception as e:
             execution_time = (time.time() - start_time) * 1000
             skill.metrics.record_usage(False, execution_time, 0)
-            
+
             return SkillExecutionResult(
                 skill_id=skill_id,
                 success=False,
@@ -474,7 +474,7 @@ class InfiniteSkillForge:
                 quality_score=0,
                 suggested_improvements=[f"Handle error: {type(e).__name__}"]
             )
-    
+
     async def evolve_skill(
         self,
         skill_id: str,
@@ -485,16 +485,16 @@ class InfiniteSkillForge:
         """
         if skill_id not in self._skills:
             raise ValueError(f"Skill not found: {skill_id}")
-        
+
         original = self._skills[skill_id]
-        
+
         # Create evolved version
         evolved_id = f"{skill_id}_v{len(original.evolution_history) + 2}"
-        
+
         evolved = copy.deepcopy(original)
         evolved.skill_id = evolved_id
         evolved.parent_skills = [skill_id]
-        
+
         # Apply evolution strategy
         if strategy == EvolutionStrategy.MUTATION:
             evolved = await self._apply_mutation(evolved)
@@ -511,7 +511,7 @@ class InfiniteSkillForge:
             evolved = await self._apply_generalization(evolved)
         elif strategy == EvolutionStrategy.TRANSCENDENCE:
             evolved = await self._apply_transcendence(evolved)
-        
+
         # Update version
         major, minor, patch = map(int, original.version.split('.'))
         if strategy == EvolutionStrategy.TRANSCENDENCE:
@@ -520,7 +520,7 @@ class InfiniteSkillForge:
             evolved.version = f"{major}.{minor + 1}.0"
         else:
             evolved.version = f"{major}.{minor}.{patch + 1}"
-        
+
         # Record evolution
         evolved.evolution_history.append({
             "from_skill": skill_id,
@@ -530,18 +530,18 @@ class InfiniteSkillForge:
         evolved.metrics = SkillMetrics()  # Reset metrics
         evolved.metrics.evolution_count = original.metrics.evolution_count + 1
         evolved.updated_at = datetime.utcnow()
-        
+
         # Update original's child skills
         original.child_skills.append(evolved_id)
-        
+
         # Register evolved skill
         self._skills[evolved_id] = evolved
         self._stats["skills_evolved"] += 1
         self._stats["evolutions_performed"] += 1
-        
+
         logger.info(f"Evolved {original.name} via {strategy.value} -> {evolved.version}")
         return evolved
-    
+
     async def create_meta_skill(
         self,
         purpose: str,
@@ -549,7 +549,7 @@ class InfiniteSkillForge:
     ) -> Skill:
         """
         Create a meta-skill that operates on other skills.
-        
+
         Meta-skills can:
         - Create new skills
         - Evolve existing skills
@@ -558,7 +558,7 @@ class InfiniteSkillForge:
         - Transfer learning between skills
         """
         meta_id = f"meta_{hashlib.md5(purpose.encode()).hexdigest()[:8]}"
-        
+
         meta_skill = Skill(
             skill_id=meta_id,
             name=f"Meta: {purpose[:30]}",
@@ -590,16 +590,16 @@ class InfiniteSkillForge:
             parameters={"purpose": purpose},
             tags=["meta", "self-improving", "autonomous"]
         )
-        
+
         # Generate meta-skill implementation
         meta_skill.implementation = await self._generate_meta_implementation(purpose)
-        
+
         self._skills[meta_id] = meta_skill
         self._stats["meta_skills_created"] += 1
-        
+
         logger.info(f"Created meta-skill: {meta_skill.name}")
         return meta_skill
-    
+
     async def find_best_skill(
         self,
         task_description: str,
@@ -607,25 +607,25 @@ class InfiniteSkillForge:
     ) -> Optional[Skill]:
         """Find the best skill for a given task."""
         candidates = []
-        
+
         for skill in self._skills.values():
             if domain and skill.domain != domain:
                 continue
-            
+
             # Calculate relevance score
             relevance = self._calculate_relevance(task_description, skill)
             fitness = skill.get_fitness_score()
-            
+
             combined_score = relevance * 0.6 + fitness * 0.4
             candidates.append((skill, combined_score))
-        
+
         if not candidates:
             return None
-        
+
         # Sort by combined score
         candidates.sort(key=lambda x: x[1], reverse=True)
         return candidates[0][0]
-    
+
     async def surpass_competitor(
         self,
         competitor_description: str,
@@ -636,11 +636,11 @@ class InfiniteSkillForge:
         """
         # Analyze what the competitor does
         competitor_analysis = await self._analyze_competitor(competitor_description)
-        
+
         # Create a superior skill
         superior_description = f"""
         Create a skill that exceeds this capability: {competitor_description}
-        
+
         Improvements:
         - Faster execution
         - Higher quality output
@@ -648,12 +648,12 @@ class InfiniteSkillForge:
         - Better error handling
         - Self-improving capability
         """
-        
+
         superior_skill = await self.create_skill(
             description=superior_description,
             domain=target_domain
         )
-        
+
         # Add competitive edge components
         superior_skill.components.append(
             SkillComponent(
@@ -662,11 +662,11 @@ class InfiniteSkillForge:
                 capability="Continuously analyze and surpass competitors"
             )
         )
-        
+
         superior_skill.tags.extend(["competitive", "superior", "evolved"])
-        
+
         return superior_skill
-    
+
     def _infer_tier(
         self,
         description: str,
@@ -685,7 +685,7 @@ class InfiniteSkillForge:
                 return SkillTier.ADVANCED
             else:
                 return SkillTier.EXPERT
-        
+
         # Infer from description complexity
         words = len(description.split())
         if words < 10:
@@ -696,12 +696,12 @@ class InfiniteSkillForge:
             return SkillTier.ADVANCED
         else:
             return SkillTier.EXPERT
-    
+
     async def _infer_components(self, description: str) -> List[SkillComponent]:
         """Infer required components from description."""
         components = []
         desc_lower = description.lower()
-        
+
         # Match against atomic capabilities
         for cap_id, cap_desc in self.ATOMIC_CAPABILITIES.items():
             if cap_id in desc_lower or any(
@@ -715,7 +715,7 @@ class InfiniteSkillForge:
                         weight=1.0 / PHI  # Golden ratio weighting
                     )
                 )
-        
+
         # Ensure at least one component
         if not components:
             components.append(
@@ -725,9 +725,9 @@ class InfiniteSkillForge:
                     capability="Execute the described task"
                 )
             )
-        
+
         return components
-    
+
     async def _generate_implementation(
         self,
         description: str,
@@ -735,33 +735,33 @@ class InfiniteSkillForge:
     ) -> str:
         """Generate skill implementation code."""
         component_list = ", ".join([c.name for c in components])
-        
+
         implementation = f'''
 async def execute(input_data, context=None):
     """
     {description}
-    
+
     Components: {component_list}
     """
     result = {{}}
-    
+
     # Execute each component
 '''
-        
+
         for comp in components:
             implementation += f'''
     # {comp.name}: {comp.capability}
     result["{comp.component_id}"] = await process_{comp.component_id}(input_data)
 '''
-        
+
         implementation += '''
     # Synthesize results
     final_result = synthesize(result)
     return final_result
 '''
-        
+
         return implementation
-    
+
     async def _generate_prompt_template(
         self,
         description: str,
@@ -772,7 +772,7 @@ async def execute(input_data, context=None):
             f"- {c.name}: {c.capability}"
             for c in components
         ])
-        
+
         return f'''You are executing the following skill:
 {description}
 
@@ -783,7 +783,7 @@ Input: {{input}}
 
 Provide a comprehensive response that demonstrates all capabilities.
 '''
-    
+
     async def _generate_composition_implementation(
         self,
         skills: List[Skill],
@@ -809,15 +809,15 @@ Provide a comprehensive response that demonstrates all capabilities.
             impl = "async def execute(input_data, context=None):\n"
             impl += "    # Custom composition logic\n"
             impl += "    return process(input_data)\n"
-        
+
         return impl
-    
+
     async def _consider_evolution(self, skill: Skill):
         """Consider whether to evolve a skill."""
         # Don't evolve atomic skills
         if skill.tier == SkillTier.ATOMIC:
             return
-        
+
         # Analyze metrics
         if skill.metrics.success_rate < 0.7:
             # Low success rate - try optimization
@@ -828,13 +828,13 @@ Provide a comprehensive response that demonstrates all capabilities.
         elif skill.metrics.usage_count >= 50:
             # Heavy usage - try specialization
             await self.evolve_skill(skill.skill_id, EvolutionStrategy.SPECIALIZATION)
-    
+
     async def _apply_mutation(self, skill: Skill) -> Skill:
         """Apply random mutations to a skill."""
         # Randomly modify weights
         for comp in skill.components:
             comp.weight *= random.uniform(0.8, 1.2)
-        
+
         # Potentially add or remove a component
         if random.random() > 0.7 and len(skill.components) > 1:
             skill.components.pop(random.randint(0, len(skill.components) - 1))
@@ -848,24 +848,24 @@ Provide a comprehensive response that demonstrates all capabilities.
                     capability=self.ATOMIC_CAPABILITIES[cap_id]
                 )
             )
-        
+
         skill.description = f"[Mutated] {skill.description}"
         return skill
-    
+
     async def _apply_crossover(self, skill: Skill, partner: Skill) -> Skill:
         """Crossover with another skill."""
         # Take components from both
         all_components = skill.components + partner.components
-        
+
         # Select subset using golden ratio
         num_to_keep = int(len(all_components) / PHI)
         skill.components = random.sample(all_components, max(1, num_to_keep))
-        
+
         skill.description = f"[Crossover] {skill.description}"
         skill.parent_skills.append(partner.skill_id)
-        
+
         return skill
-    
+
     async def _apply_optimization(self, skill: Skill) -> Skill:
         """Optimize skill for better performance."""
         # Increase weights of high-performing components
@@ -873,30 +873,30 @@ Provide a comprehensive response that demonstrates all capabilities.
         for comp in skill.components:
             if "analyze" in comp.capability.lower() or "optimize" in comp.capability.lower():
                 comp.weight *= PHI
-        
+
         # Normalize weights
         total_weight = sum(c.weight for c in skill.components)
         for comp in skill.components:
             comp.weight /= total_weight
-        
+
         skill.description = f"[Optimized] {skill.description}"
         return skill
-    
+
     async def _apply_specialization(self, skill: Skill) -> Skill:
         """Specialize skill for specific use cases."""
         # Keep only most weighted components
         skill.components.sort(key=lambda c: c.weight, reverse=True)
         skill.components = skill.components[:max(1, len(skill.components) // 2)]
-        
+
         # Increase remaining weights
         for comp in skill.components:
             comp.weight *= PHI
-        
+
         skill.description = f"[Specialized] {skill.description}"
         skill.tier = SkillTier(min(skill.tier.value + 1, SkillTier.EXPERT.value))
-        
+
         return skill
-    
+
     async def _apply_generalization(self, skill: Skill) -> Skill:
         """Generalize skill for broader application."""
         # Add more general components
@@ -910,10 +910,10 @@ Provide a comprehensive response that demonstrates all capabilities.
                         weight=1.0 / PHI
                     )
                 )
-        
+
         skill.description = f"[Generalized] {skill.description}"
         return skill
-    
+
     async def _apply_transcendence(self, skill: Skill) -> Skill:
         """Transcend to a higher tier of capability."""
         # Add meta-components
@@ -933,13 +933,13 @@ Provide a comprehensive response that demonstrates all capabilities.
                 weight=PHI
             )
         )
-        
+
         skill.tier = SkillTier(min(skill.tier.value + 1, SkillTier.TRANSCENDENT.value))
         skill.description = f"[Transcendent] {skill.description}"
         skill.tags.append("transcendent")
-        
+
         return skill
-    
+
     def _find_crossover_partner(self, skill: Skill) -> Optional[Skill]:
         """Find a compatible skill for crossover."""
         candidates = [
@@ -949,27 +949,27 @@ Provide a comprehensive response that demonstrates all capabilities.
             and abs(s.tier.value - skill.tier.value) <= 1
             and s.metrics.success_rate > 0.5
         ]
-        
+
         if not candidates:
             return None
-        
+
         # Select best fitness partner
         return max(candidates, key=lambda s: s.get_fitness_score())
-    
+
     def _calculate_relevance(self, task: str, skill: Skill) -> float:
         """Calculate relevance of skill to task."""
         task_words = set(task.lower().split())
         desc_words = set(skill.description.lower().split())
-        
+
         # Jaccard similarity
         intersection = len(task_words & desc_words)
         union = len(task_words | desc_words)
-        
+
         if union == 0:
             return 0.0
-        
+
         return intersection / union
-    
+
     async def _analyze_competitor(self, description: str) -> Dict[str, Any]:
         """Analyze competitor capability."""
         return {
@@ -977,14 +977,14 @@ Provide a comprehensive response that demonstrates all capabilities.
             "weaknesses": ["Limited by fixed implementation", "No self-improvement"],
             "opportunities": ["Add evolution", "Add meta-learning", "Add multi-domain support"]
         }
-    
+
     async def _generate_meta_implementation(self, purpose: str) -> str:
         """Generate meta-skill implementation."""
         return f'''
 async def execute_meta(skill_forge, target_skills, context=None):
     """
     Meta-skill: {purpose}
-    
+
     Operations on skills:
     - Analyze performance
     - Suggest improvements
@@ -992,12 +992,12 @@ async def execute_meta(skill_forge, target_skills, context=None):
     - Transfer learning
     """
     results = {{}}
-    
+
     for skill_id in target_skills:
         skill = skill_forge._skills.get(skill_id)
         if not skill:
             continue
-        
+
         # Analyze
         analysis = {{
             "fitness": skill.get_fitness_score(),
@@ -1005,44 +1005,44 @@ async def execute_meta(skill_forge, target_skills, context=None):
             "usage": skill.metrics.usage_count,
             "success_rate": skill.metrics.success_rate
         }}
-        
+
         # Suggest evolution if needed
         if analysis["success_rate"] < 0.8:
             await skill_forge.evolve_skill(skill_id, EvolutionStrategy.OPTIMIZATION)
-        
+
         results[skill_id] = analysis
-    
+
     return results
 '''
-    
+
     def _generate_skill_name(self, description: str) -> str:
         """Generate skill name from description."""
         words = description.split()[:4]
         name = " ".join(w.title() for w in words if len(w) > 2)
         return name or "Custom Skill"
-    
+
     def get_skills_by_tier(self, tier: SkillTier) -> List[Skill]:
         """Get all skills of a specific tier."""
         return [s for s in self._skills.values() if s.tier == tier]
-    
+
     def get_skills_by_domain(self, domain: SkillDomain) -> List[Skill]:
         """Get all skills in a specific domain."""
         return [s for s in self._skills.values() if s.domain == domain]
-    
+
     def get_evolution_lineage(self, skill_id: str) -> List[str]:
         """Get the evolution lineage of a skill."""
         if skill_id not in self._skills:
             return []
-        
+
         lineage = [skill_id]
         skill = self._skills[skill_id]
-        
+
         # Trace back to ancestors
         for parent_id in skill.parent_skills:
             lineage = self.get_evolution_lineage(parent_id) + lineage
-        
+
         return lineage
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get forge statistics."""
         return {
@@ -1069,9 +1069,9 @@ def get_skill_forge() -> InfiniteSkillForge:
 async def demo():
     """Demonstrate the Infinite Skill Forge."""
     forge = get_skill_forge()
-    
+
     print("=== INFINITE SKILL FORGE DEMO ===\n")
-    
+
     # Create a skill from description
     print("--- Creating Skill from Description ---")
     skill1 = await forge.create_skill(
@@ -1081,14 +1081,14 @@ async def demo():
     print(f"Created: {skill1.name}")
     print(f"  Tier: {skill1.tier.name}")
     print(f"  Components: {len(skill1.components)}")
-    
+
     # Create another skill
     skill2 = await forge.create_skill(
         description="Research best practices and synthesize recommendations",
         domain=SkillDomain.RESEARCH
     )
     print(f"\nCreated: {skill2.name}")
-    
+
     # Compose skills
     print("\n--- Composing Skills ---")
     composed = await forge.compose_skills(
@@ -1099,7 +1099,7 @@ async def demo():
     print(f"Composed: {composed.name}")
     print(f"  Tier: {composed.tier.name}")
     print(f"  Parent skills: {len(composed.parent_skills)}")
-    
+
     # Execute skill
     print("\n--- Executing Skill ---")
     result = await forge.execute_skill(
@@ -1108,7 +1108,7 @@ async def demo():
     )
     print(f"Execution success: {result.success}")
     print(f"Time: {result.execution_time_ms:.2f}ms")
-    
+
     # Evolve skill
     print("\n--- Evolving Skill ---")
     evolved = await forge.evolve_skill(
@@ -1117,7 +1117,7 @@ async def demo():
     )
     print(f"Evolved to: {evolved.version}")
     print(f"  New tier: {evolved.tier.name}")
-    
+
     # Create meta-skill
     print("\n--- Creating Meta-Skill ---")
     meta = await forge.create_meta_skill(
@@ -1125,7 +1125,7 @@ async def demo():
     )
     print(f"Meta-skill: {meta.name}")
     print(f"  Tier: {meta.tier.name}")
-    
+
     # Show stats
     print("\n--- Forge Statistics ---")
     for key, value in forge.get_stats().items():

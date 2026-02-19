@@ -66,12 +66,12 @@ class Problem:
     context: Dict[str, Any] = field(default_factory=dict)
     priority: float = 1.0
     deadline: Optional[datetime] = None
-    
+
     # Problem analysis
     complexity: float = 0.5
     novelty: float = 0.5  # How novel/unique the problem is
     interdependencies: List[str] = field(default_factory=list)
-    
+
     # Attempt history
     failed_approaches: List[Dict] = field(default_factory=list)
     partial_solutions: List[Dict] = field(default_factory=list)
@@ -84,22 +84,22 @@ class Solution:
     problem_id: str = ""
     strategy: SolutionStrategy = SolutionStrategy.DIRECT
     quality: SolutionQuality = SolutionQuality.GOOD
-    
+
     # Solution content
     approach: str = ""
     steps: List[Dict[str, Any]] = field(default_factory=list)
     implementation: str = ""
-    
+
     # Metrics
     confidence: float = 0.8
     estimated_success_rate: float = 0.9
     resource_cost: float = 0.5
     time_to_implement: float = 1.0
-    
+
     # Validation
     validated: bool = False
     validation_results: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Metadata
     created_at: datetime = field(default_factory=datetime.now)
     source_strategies: List[SolutionStrategy] = field(default_factory=list)
@@ -119,9 +119,9 @@ class SolutionPath:
 class OmniscientSolutionWeaver:
     """
     THE ULTIMATE PROBLEM-SOLVING ENGINE
-    
+
     Core philosophy: There is ALWAYS a solution
-    
+
     Capabilities:
     - Never gives up - explores infinite solution space
     - Combines strategies that have never been combined
@@ -129,13 +129,13 @@ class OmniscientSolutionWeaver:
     - Learns from every problem to solve future ones better
     - Predicts problems before they occur
     """
-    
+
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or {}
         self.solution_library: Dict[str, Solution] = {}
         self.problem_patterns: Dict[str, Any] = {}
         self.strategy_effectiveness: Dict[SolutionStrategy, float] = defaultdict(lambda: 0.5)
-        
+
         # Engines
         self.decomposer = ProblemDecomposer()
         self.analogizer = AnalogyEngine()
@@ -143,7 +143,7 @@ class OmniscientSolutionWeaver:
         self.validator = SolutionValidator()
         self.predictor = ProblemPredictor()
         self.meta_solver = MetaSolver()
-    
+
     async def solve(
         self,
         problem: Problem,
@@ -152,7 +152,7 @@ class OmniscientSolutionWeaver:
     ) -> Solution:
         """
         Solve a problem - GUARANTEED to find a solution
-        
+
         Will not return until a solution is found.
         Uses every strategy available, creates new strategies
         if needed, and combines approaches in novel ways.
@@ -161,33 +161,33 @@ class OmniscientSolutionWeaver:
         attempts = 0
         best_solution = None
         best_quality = 0
-        
+
         # Analyze problem
         analyzed = await self._analyze_problem(problem)
-        
+
         # Get ordered strategies based on problem analysis
         strategies = await self._order_strategies(analyzed)
-        
+
         while attempts < max_attempts:
             if timeout_seconds and (time.time() - start_time) > timeout_seconds:
                 break
-            
+
             attempts += 1
-            
+
             # Try each strategy
             for strategy in strategies:
                 solution = await self._try_strategy(problem, strategy, analyzed)
-                
+
                 if solution:
                     quality = self._rate_solution(solution, problem)
-                    
+
                     if quality >= SolutionQuality.PERFECT.value:
                         return solution  # Perfect solution found!
-                    
+
                     if quality > best_quality:
                         best_quality = quality
                         best_solution = solution
-            
+
             # Try combinations of strategies
             if attempts % 5 == 0:
                 combined = await self._try_combination(problem, strategies[:3], analyzed)
@@ -196,7 +196,7 @@ class OmniscientSolutionWeaver:
                     if quality > best_quality:
                         best_quality = quality
                         best_solution = combined
-            
+
             # Try meta-solving (solving how to solve)
             if attempts % 10 == 0:
                 meta_solution = await self.meta_solver.solve(problem, best_solution)
@@ -205,7 +205,7 @@ class OmniscientSolutionWeaver:
                     if quality > best_quality:
                         best_quality = quality
                         best_solution = meta_solution
-            
+
             # If stuck, try creative approaches
             if attempts % 20 == 0 and best_quality < SolutionQuality.GOOD.value:
                 creative = await self._creative_solve(problem, analyzed)
@@ -214,15 +214,15 @@ class OmniscientSolutionWeaver:
                     if quality > best_quality:
                         best_quality = quality
                         best_solution = creative
-        
+
         # If we have any solution, return it
         if best_solution:
             self._record_solution(problem, best_solution)
             return best_solution
-        
+
         # Absolute last resort - generate minimal viable solution
         return await self._generate_minimal_solution(problem)
-    
+
     async def _analyze_problem(self, problem: Problem) -> Dict[str, Any]:
         """Deep analysis of the problem"""
         return {
@@ -235,32 +235,32 @@ class OmniscientSolutionWeaver:
             'constraints_analysis': self._analyze_constraints(problem),
             'key_challenges': self._identify_challenges(problem)
         }
-    
+
     async def _order_strategies(self, analysis: Dict) -> List[SolutionStrategy]:
         """Order strategies based on problem analysis"""
         scores = {}
-        
+
         for strategy in SolutionStrategy:
             score = self.strategy_effectiveness[strategy]
-            
+
             # Adjust based on problem type
             if analysis['complexity'] > 0.7:
                 if strategy == SolutionStrategy.DECOMPOSITION:
                     score += 0.3
-            
+
             if analysis.get('similar_problems'):
                 if strategy == SolutionStrategy.ANALOGY:
                     score += 0.4
-            
+
             if len(analysis.get('constraints_analysis', {}).get('hard', [])) > 3:
                 if strategy == SolutionStrategy.CONSTRAINT_RELAXATION:
                     score += 0.2
-            
+
             scores[strategy] = score
-        
+
         # Sort by score descending
         return sorted(strategies := list(SolutionStrategy), key=lambda s: scores[s], reverse=True)
-    
+
     async def _try_strategy(
         self,
         problem: Problem,
@@ -289,7 +289,7 @@ class OmniscientSolutionWeaver:
                 return await self._generic_solve(problem, strategy)
         except Exception:
             return None
-    
+
     async def _direct_solve(self, problem: Problem) -> Optional[Solution]:
         """Direct approach to solving"""
         return Solution(
@@ -303,7 +303,7 @@ class OmniscientSolutionWeaver:
             ],
             confidence=0.7
         )
-    
+
     async def _decomposition_solve(
         self,
         problem: Problem,
@@ -313,13 +313,13 @@ class OmniscientSolutionWeaver:
         sub_problems = analysis.get('sub_problems', [])
         if not sub_problems:
             return None
-        
+
         sub_solutions = []
         for sub in sub_problems:
             sub_solution = await self._direct_solve(sub)
             if sub_solution:
                 sub_solutions.append(sub_solution)
-        
+
         if sub_solutions:
             return Solution(
                 problem_id=problem.problem_id,
@@ -332,7 +332,7 @@ class OmniscientSolutionWeaver:
                 confidence=0.8
             )
         return None
-    
+
     async def _analogy_solve(
         self,
         problem: Problem,
@@ -342,7 +342,7 @@ class OmniscientSolutionWeaver:
         similar = analysis.get('similar_problems', [])
         if not similar:
             return None
-        
+
         # Find best matching solution
         best_analogy = similar[0] if similar else None
         if best_analogy and best_analogy.get('solution'):
@@ -358,7 +358,7 @@ class OmniscientSolutionWeaver:
                 confidence=0.75
             )
         return None
-    
+
     async def _inversion_solve(
         self,
         problem: Problem,
@@ -368,7 +368,7 @@ class OmniscientSolutionWeaver:
         inverse = analysis.get('inverse_problem')
         if not inverse:
             return None
-        
+
         return Solution(
             problem_id=problem.problem_id,
             strategy=SolutionStrategy.INVERSION,
@@ -380,7 +380,7 @@ class OmniscientSolutionWeaver:
             ],
             confidence=0.6
         )
-    
+
     async def _constraint_relaxation_solve(
         self,
         problem: Problem,
@@ -389,7 +389,7 @@ class OmniscientSolutionWeaver:
         """Solve by temporarily relaxing constraints"""
         constraints = analysis.get('constraints_analysis', {})
         soft_constraints = constraints.get('soft', [])
-        
+
         if soft_constraints:
             return Solution(
                 problem_id=problem.problem_id,
@@ -403,7 +403,7 @@ class OmniscientSolutionWeaver:
                 confidence=0.65
             )
         return None
-    
+
     async def _combination_solve(
         self,
         problem: Problem,
@@ -421,7 +421,7 @@ class OmniscientSolutionWeaver:
             ],
             confidence=0.7
         )
-    
+
     async def _transformation_solve(
         self,
         problem: Problem,
@@ -439,7 +439,7 @@ class OmniscientSolutionWeaver:
             ],
             confidence=0.6
         )
-    
+
     async def _quantum_solve(
         self,
         problem: Problem,
@@ -452,12 +452,12 @@ class OmniscientSolutionWeaver:
             SolutionStrategy.DECOMPOSITION,
             SolutionStrategy.ANALOGY
         ]
-        
+
         solutions = await asyncio.gather(*[
             self._try_strategy(problem, strategy, analysis)
             for strategy in approaches
         ])
-        
+
         # Collapse to best
         valid_solutions = [s for s in solutions if s is not None]
         if valid_solutions:
@@ -466,7 +466,7 @@ class OmniscientSolutionWeaver:
             best.source_strategies = approaches
             return best
         return None
-    
+
     async def _generic_solve(
         self,
         problem: Problem,
@@ -479,7 +479,7 @@ class OmniscientSolutionWeaver:
             approach=f"Applied {strategy.name} strategy",
             confidence=0.5
         )
-    
+
     async def _try_combination(
         self,
         problem: Problem,
@@ -492,11 +492,11 @@ class OmniscientSolutionWeaver:
             sol = await self._try_strategy(problem, strategy, analysis)
             if sol:
                 solutions.append(sol)
-        
+
         if len(solutions) >= 2:
             return await self.combiner.combine(solutions, problem)
         return None
-    
+
     async def _creative_solve(
         self,
         problem: Problem,
@@ -510,9 +510,9 @@ class OmniscientSolutionWeaver:
             "Work backwards from desired outcome",
             "Find the meta-pattern"
         ]
-        
+
         approach = random.choice(creative_approaches)
-        
+
         return Solution(
             problem_id=problem.problem_id,
             strategy=SolutionStrategy.RANDOM_EXPLORATION,
@@ -525,7 +525,7 @@ class OmniscientSolutionWeaver:
             ],
             confidence=0.5
         )
-    
+
     async def _generate_minimal_solution(self, problem: Problem) -> Solution:
         """Generate absolute minimum viable solution"""
         return Solution(
@@ -541,11 +541,11 @@ class OmniscientSolutionWeaver:
             confidence=0.4,
             validated=False
         )
-    
+
     def _estimate_complexity(self, problem: Problem) -> float:
         """Estimate problem complexity"""
         complexity = 0.3
-        
+
         if len(problem.constraints) > 5:
             complexity += 0.2
         if len(problem.objectives) > 3:
@@ -554,13 +554,13 @@ class OmniscientSolutionWeaver:
             complexity += 0.2
         if problem.novelty > 0.7:
             complexity += 0.2
-        
+
         return min(1.0, complexity)
-    
+
     def _classify_problem(self, problem: Problem) -> str:
         """Classify problem type"""
         keywords = problem.description.lower()
-        
+
         if any(w in keywords for w in ['optimize', 'maximize', 'minimize']):
             return 'optimization'
         if any(w in keywords for w in ['create', 'generate', 'build']):
@@ -570,11 +570,11 @@ class OmniscientSolutionWeaver:
         if any(w in keywords for w in ['transform', 'convert', 'migrate']):
             return 'transformation'
         return 'general'
-    
+
     async def _find_similar_problems(self, problem: Problem) -> List[Dict]:
         """Find similar problems from history"""
         similar = []
-        
+
         for pattern_id, pattern in self.problem_patterns.items():
             similarity = self._calculate_similarity(problem, pattern)
             if similarity > 0.5:
@@ -584,21 +584,21 @@ class OmniscientSolutionWeaver:
                     'description': pattern.get('description', ''),
                     'solution': pattern.get('solution')
                 })
-        
+
         return sorted(similar, key=lambda x: x['similarity'], reverse=True)
-    
+
     def _calculate_similarity(self, problem: Problem, pattern: Dict) -> float:
         """Calculate similarity between problem and pattern"""
         # Simple keyword overlap for now
         problem_words = set(problem.description.lower().split())
         pattern_words = set(pattern.get('description', '').lower().split())
-        
+
         if not problem_words or not pattern_words:
             return 0.0
-        
+
         overlap = len(problem_words & pattern_words)
         return overlap / len(problem_words | pattern_words)
-    
+
     def _invert_problem(self, problem: Problem) -> Dict:
         """Create inverse version of problem"""
         return {
@@ -608,7 +608,7 @@ class OmniscientSolutionWeaver:
                 for obj in problem.objectives
             ]
         }
-    
+
     def _abstract_problem(self, problem: Problem) -> Dict:
         """Abstract problem to higher level"""
         return {
@@ -616,28 +616,28 @@ class OmniscientSolutionWeaver:
             'level': 'abstract',
             'core_need': problem.objectives[0] if problem.objectives else {}
         }
-    
+
     def _analyze_constraints(self, problem: Problem) -> Dict:
         """Analyze constraints into categories"""
         hard = []
         soft = []
-        
+
         for constraint in problem.constraints:
             if constraint.get('hard', True):
                 hard.append(constraint)
             else:
                 soft.append(constraint)
-        
+
         return {
             'hard': hard,
             'soft': soft,
             'total': len(problem.constraints)
         }
-    
+
     def _identify_challenges(self, problem: Problem) -> List[str]:
         """Identify key challenges in the problem"""
         challenges = []
-        
+
         if len(problem.constraints) > 5:
             challenges.append("Many constraints to satisfy")
         if problem.complexity > 0.7:
@@ -646,27 +646,27 @@ class OmniscientSolutionWeaver:
             challenges.append("Novel problem - limited prior solutions")
         if problem.deadline:
             challenges.append("Time constraint")
-        
+
         return challenges
-    
+
     def _rate_solution(self, solution: Solution, problem: Problem) -> float:
         """Rate solution quality"""
         score = solution.confidence
-        
+
         # Bonus for validation
         if solution.validated:
             score += 0.2
-        
+
         # Penalty for workarounds
         if solution.quality == SolutionQuality.WORKAROUND:
             score -= 0.2
-        
+
         return max(0.0, min(1.0, score))
-    
+
     def _record_solution(self, problem: Problem, solution: Solution):
         """Record solution for future reference"""
         self.solution_library[solution.solution_id] = solution
-        
+
         # Update problem patterns
         pattern_id = f"pattern_{len(self.problem_patterns)}"
         self.problem_patterns[pattern_id] = {
@@ -674,7 +674,7 @@ class OmniscientSolutionWeaver:
             'type': self._classify_problem(problem),
             'solution': solution.approach
         }
-        
+
         # Update strategy effectiveness
         self.strategy_effectiveness[solution.strategy] = (
             self.strategy_effectiveness[solution.strategy] * 0.9 +
@@ -684,11 +684,11 @@ class OmniscientSolutionWeaver:
 
 class ProblemDecomposer:
     """Decomposes problems into sub-problems"""
-    
+
     async def decompose(self, problem: Problem) -> List[Problem]:
         """Decompose problem into sub-problems"""
         sub_problems = []
-        
+
         # Simple decomposition by objectives
         for i, objective in enumerate(problem.objectives):
             sub = Problem(
@@ -698,40 +698,40 @@ class ProblemDecomposer:
                 constraints=problem.constraints
             )
             sub_problems.append(sub)
-        
+
         return sub_problems
 
 
 class AnalogyEngine:
     """Finds analogous problems and solutions"""
-    
+
     async def find_analogy(self, problem: Problem, library: Dict) -> Optional[Dict]:
         """Find analogous problem in library"""
         best_match = None
         best_score = 0
-        
+
         for sol_id, solution in library.items():
             score = self._analogy_score(problem.description, solution.approach)
             if score > best_score:
                 best_score = score
                 best_match = solution
-        
+
         return {'solution': best_match, 'score': best_score} if best_match else None
-    
+
     def _analogy_score(self, desc1: str, desc2: str) -> float:
         """Calculate analogy score between descriptions"""
         words1 = set(desc1.lower().split())
         words2 = set(desc2.lower().split())
-        
+
         if not words1 or not words2:
             return 0.0
-        
+
         return len(words1 & words2) / len(words1 | words2)
 
 
 class SolutionCombiner:
     """Combines multiple solutions"""
-    
+
     async def combine(
         self,
         solutions: List[Solution],
@@ -740,11 +740,11 @@ class SolutionCombiner:
         """Combine multiple solutions into one"""
         if not solutions:
             return None
-        
+
         combined_steps = []
         for sol in solutions:
             combined_steps.extend(sol.steps)
-        
+
         return Solution(
             problem_id=problem.problem_id,
             strategy=SolutionStrategy.COMBINATION,
@@ -757,7 +757,7 @@ class SolutionCombiner:
 
 class SolutionValidator:
     """Validates solutions"""
-    
+
     async def validate(
         self,
         solution: Solution,
@@ -769,21 +769,21 @@ class SolutionValidator:
             'constraint_satisfaction': {},
             'objective_achievement': {}
         }
-        
+
         # Check constraints
         for constraint in problem.constraints:
             results['constraint_satisfaction'][constraint.get('name', 'unnamed')] = True
-        
+
         # Check objectives
         for objective in problem.objectives:
             results['objective_achievement'][objective.get('name', 'unnamed')] = 0.8
-        
+
         return results
 
 
 class ProblemPredictor:
     """Predicts future problems"""
-    
+
     async def predict(
         self,
         current_problem: Problem,
@@ -791,20 +791,20 @@ class ProblemPredictor:
     ) -> List[Problem]:
         """Predict problems that might arise from solution"""
         predictions = []
-        
+
         # Predict potential issues
         if solution.quality == SolutionQuality.WORKAROUND:
             predictions.append(Problem(
                 description="Workaround may need replacement with proper solution",
                 priority=0.5
             ))
-        
+
         return predictions
 
 
 class MetaSolver:
     """Solves at meta level - solving how to solve"""
-    
+
     async def solve(
         self,
         problem: Problem,
@@ -819,7 +819,7 @@ class MetaSolver:
                 approach="Meta-analysis suggests decomposition approach",
                 confidence=0.6
             )
-        
+
         if best_attempt.confidence < 0.5:
             # Low confidence - suggest different strategy
             return Solution(
@@ -828,7 +828,7 @@ class MetaSolver:
                 approach="Meta-analysis: try constraint relaxation",
                 confidence=0.65
             )
-        
+
         return None
 
 

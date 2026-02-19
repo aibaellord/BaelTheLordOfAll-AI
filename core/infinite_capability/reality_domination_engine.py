@@ -112,11 +112,11 @@ class DominationPlan:
 
 class DomainMapper:
     """Maps and understands any domain completely."""
-    
+
     def __init__(self):
         self.mapped_domains: Dict[str, Domain] = {}
         self.domain_relationships: Dict[str, List[str]] = {}
-    
+
     async def map_domain(self, domain_name: str, description: str) -> Domain:
         """Map a domain completely."""
         domain = Domain(
@@ -127,10 +127,10 @@ class DomainMapper:
             opportunities=self._identify_opportunities(description),
             threats=self._identify_threats(description)
         )
-        
+
         self.mapped_domains[domain_name] = domain
         return domain
-    
+
     def _infer_domain_type(self, description: str) -> DomainType:
         desc_lower = description.lower()
         if any(w in desc_lower for w in ["code", "software", "tech", "ai"]):
@@ -144,7 +144,7 @@ class DomainMapper:
         elif any(w in desc_lower for w in ["strategy", "plan", "compete"]):
             return DomainType.STRATEGIC
         return DomainType.UNIVERSAL
-    
+
     def _extract_key_factors(self, description: str) -> List[str]:
         return [
             "Innovation capability",
@@ -153,7 +153,7 @@ class DomainMapper:
             "Quality of output",
             "Adaptability"
         ]
-    
+
     def _identify_opportunities(self, description: str) -> List[str]:
         return [
             "Untapped market segments",
@@ -161,7 +161,7 @@ class DomainMapper:
             "Process improvements",
             "Strategic partnerships"
         ]
-    
+
     def _identify_threats(self, description: str) -> List[str]:
         return [
             "Competitor innovation",
@@ -173,7 +173,7 @@ class DomainMapper:
 
 class CompetitorAnalyzer:
     """Deep analysis of all competitors."""
-    
+
     KNOWN_COMPETITORS = {
         "autogpt": {
             "strengths": ["Autonomous operation", "Goal pursuit", "Self-prompting"],
@@ -201,14 +201,14 @@ class CompetitorAnalyzer:
             "threat_level": 0.5
         }
     }
-    
+
     def __init__(self):
         self.analyzed_competitors: Dict[str, Competitor] = {}
-    
+
     async def analyze_competitor(self, competitor_name: str) -> Competitor:
         """Analyze a competitor deeply."""
         name_lower = competitor_name.lower().replace(" ", "").replace("-", "")
-        
+
         if name_lower in self.KNOWN_COMPETITORS:
             info = self.KNOWN_COMPETITORS[name_lower]
             competitor = Competitor(
@@ -224,16 +224,16 @@ class CompetitorAnalyzer:
                 weaknesses=["Unknown - needs research"],
                 threat_level=0.5
             )
-        
+
         self.analyzed_competitors[competitor_name] = competitor
         return competitor
-    
+
     async def analyze_all_competitors(self) -> Dict[str, Competitor]:
         """Analyze all known competitors."""
         for name in self.KNOWN_COMPETITORS:
             await self.analyze_competitor(name)
         return self.analyzed_competitors
-    
+
     def get_competitive_advantage_areas(self) -> List[str]:
         """Identify areas where Ba'el has advantage."""
         return [
@@ -250,10 +250,10 @@ class CompetitorAnalyzer:
 
 class AdvantageSynthesizer:
     """Creates unbeatable advantages."""
-    
+
     def __init__(self):
         self.synthesized_advantages: List[Advantage] = []
-    
+
     async def synthesize_advantage(self,
                                    advantage_type: AdvantageType,
                                    context: Dict[str, Any]) -> Advantage:
@@ -265,10 +265,10 @@ class AdvantageSynthesizer:
             sustainability=self._calculate_sustainability(advantage_type),
             exploitability=self._calculate_exploitability(advantage_type)
         )
-        
+
         self.synthesized_advantages.append(advantage)
         return advantage
-    
+
     async def synthesize_all_advantages(self) -> List[Advantage]:
         """Synthesize advantages across all types."""
         advantages = []
@@ -276,7 +276,7 @@ class AdvantageSynthesizer:
             advantage = await self.synthesize_advantage(adv_type, {})
             advantages.append(advantage)
         return advantages
-    
+
     def _generate_description(self, adv_type: AdvantageType, context: Dict) -> str:
         descriptions = {
             AdvantageType.SPEED: "Execute faster than any competitor through parallel processing",
@@ -288,23 +288,23 @@ class AdvantageSynthesizer:
             AdvantageType.COMPREHENSIVENESS: "Cover all aspects through 200+ integrated modules"
         }
         return descriptions.get(adv_type, "Unique advantage in this area")
-    
+
     def _calculate_magnitude(self, adv_type: AdvantageType) -> float:
         return 0.7 + (hash(adv_type.value) % 30) / 100
-    
+
     def _calculate_sustainability(self, adv_type: AdvantageType) -> float:
         return 0.8 + (hash(adv_type.value) % 20) / 100
-    
+
     def _calculate_exploitability(self, adv_type: AdvantageType) -> float:
         return 0.75 + (hash(adv_type.value) % 25) / 100
 
 
 class VictoryPlanner:
     """Plans that guarantee victory."""
-    
+
     def __init__(self):
         self.plans: Dict[str, DominationPlan] = {}
-    
+
     async def create_domination_plan(self,
                                      domain: Domain,
                                      objectives: List[str]) -> DominationPlan:
@@ -316,10 +316,10 @@ class VictoryPlanner:
             milestones=self._generate_milestones(objectives),
             success_probability=self._calculate_success_probability(domain)
         )
-        
+
         self.plans[domain.name] = plan
         return plan
-    
+
     def _generate_strategies(self, domain: Domain, objectives: List[str]) -> List[Dict]:
         strategies = [
             {
@@ -351,7 +351,7 @@ class VictoryPlanner:
             }
         ]
         return strategies
-    
+
     def _generate_milestones(self, objectives: List[str]) -> List[Dict]:
         milestones = []
         for i, obj in enumerate(objectives):
@@ -363,7 +363,7 @@ class VictoryPlanner:
             }
             milestones.append(milestone)
         return milestones
-    
+
     def _calculate_success_probability(self, domain: Domain) -> float:
         base_probability = 0.8
         if domain.dominance_level.value >= DominanceLevel.LEADING.value:
@@ -376,27 +376,27 @@ class VictoryPlanner:
 class RealityDominationEngine:
     """
     The ultimate engine for achieving dominance in any domain.
-    
+
     Combines all domination capabilities:
     - Domain mapping and understanding
     - Competitor analysis
     - Advantage synthesis
     - Victory planning
     - Perpetual dominance maintenance
-    
+
     "All domains bow to Ba'el." - Ba'el
     """
-    
+
     def __init__(self):
         self.domain_mapper = DomainMapper()
         self.competitor_analyzer = CompetitorAnalyzer()
         self.advantage_synthesizer = AdvantageSynthesizer()
         self.victory_planner = VictoryPlanner()
-        
+
         self.dominance_level = DominanceLevel.SUPREME
         self.domains_dominated: List[str] = []
         self.total_advantages: int = 0
-    
+
     async def dominate_domain(self,
                              domain_name: str,
                              description: str,
@@ -408,23 +408,23 @@ class RealityDominationEngine:
             "Establish unbeatable position",
             "Maintain perpetual supremacy"
         ]
-        
+
         # Step 1: Map the domain
         domain = await self.domain_mapper.map_domain(domain_name, description)
-        
+
         # Step 2: Analyze competitors
         competitors = await self.competitor_analyzer.analyze_all_competitors()
-        
+
         # Step 3: Synthesize advantages
         advantages = await self.advantage_synthesizer.synthesize_all_advantages()
-        
+
         # Step 4: Create domination plan
         plan = await self.victory_planner.create_domination_plan(domain, objectives)
-        
+
         # Record domination
         self.domains_dominated.append(domain_name)
         self.total_advantages += len(advantages)
-        
+
         return {
             "domain": domain_name,
             "dominance_achieved": True,
@@ -438,21 +438,21 @@ class RealityDominationEngine:
             },
             "competitive_advantages": self.competitor_analyzer.get_competitive_advantage_areas()
         }
-    
+
     async def get_competitor_report(self) -> Dict[str, Any]:
         """Get comprehensive competitor analysis report."""
         competitors = await self.competitor_analyzer.analyze_all_competitors()
-        
+
         return {
             "competitors_analyzed": len(competitors),
             "threat_levels": {
-                name: comp.threat_level 
+                name: comp.threat_level
                 for name, comp in competitors.items()
             },
             "bael_advantages": self.competitor_analyzer.get_competitive_advantage_areas(),
             "domination_status": self.dominance_level.name
         }
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Get domination engine status."""
         return {
@@ -473,12 +473,12 @@ async def create_domination_engine() -> RealityDominationEngine:
 if __name__ == "__main__":
     async def demo():
         engine = await create_domination_engine()
-        
+
         result = await engine.dominate_domain(
             "AI Agent Frameworks",
             "The domain of autonomous AI agent systems and frameworks"
         )
-        
+
         print("=" * 60)
         print("REALITY DOMINATION ENGINE")
         print("=" * 60)
@@ -489,5 +489,5 @@ if __name__ == "__main__":
         for adv in result['competitive_advantages'][:5]:
             print(f"  - {adv}")
         print(f"\nStatus: {engine.get_status()}")
-    
+
     asyncio.run(demo())

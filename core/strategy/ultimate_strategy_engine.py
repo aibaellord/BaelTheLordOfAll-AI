@@ -94,7 +94,7 @@ class Competitor:
     known_strategies: List[StrategyType]
     threat_level: float  # 0-1
     vulnerability_score: float  # 0-1
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -154,7 +154,7 @@ class StrategyPlan:
 class UltimateStrategyEngine:
     """
     The Ultimate Strategy Engine - strategic genius.
-    
+
     Provides:
     - Multi-domain strategic planning
     - Competitive analysis and counter-strategy
@@ -162,13 +162,13 @@ class UltimateStrategyEngine:
     - Victory optimization
     - Alliance and disruption management
     """
-    
+
     def __init__(self):
         self.competitors: Dict[str, Competitor] = {}
         self.objectives: Dict[str, StrategicObjective] = {}
         self.tactics: Dict[str, TacticalMove] = {}
         self.plans: Dict[str, StrategyPlan] = {}
-        
+
         # Strategy templates
         self.strategy_templates: Dict[StrategyType, List[str]] = {
             StrategyType.BLITZKRIEG: [
@@ -214,13 +214,13 @@ class UltimateStrategyEngine:
                 "Accelerate obsolescence"
             ]
         }
-        
+
         logger.info("UltimateStrategyEngine initialized - strategic genius active")
-    
+
     # -------------------------------------------------------------------------
     # COMPETITOR ANALYSIS
     # -------------------------------------------------------------------------
-    
+
     async def analyze_competitor(
         self,
         name: str,
@@ -228,7 +228,7 @@ class UltimateStrategyEngine:
     ) -> Competitor:
         """Analyze a competitor deeply."""
         domains = domains or [random.choice(list(StrategyDomain)) for _ in range(3)]
-        
+
         competitor = Competitor(
             id=self._gen_id("comp"),
             name=name,
@@ -240,10 +240,10 @@ class UltimateStrategyEngine:
             threat_level=random.uniform(0.3, 0.9),
             vulnerability_score=random.uniform(0.2, 0.8)
         )
-        
+
         self.competitors[competitor.id] = competitor
         return competitor
-    
+
     async def find_vulnerabilities(
         self,
         competitor_id: str
@@ -252,7 +252,7 @@ class UltimateStrategyEngine:
         competitor = self.competitors.get(competitor_id)
         if not competitor:
             return []
-        
+
         vulnerabilities = []
         for weakness in competitor.weaknesses:
             vulnerability = {
@@ -263,11 +263,11 @@ class UltimateStrategyEngine:
                 "priority": random.randint(1, 10)
             }
             vulnerabilities.append(vulnerability)
-        
+
         # Sort by priority
         vulnerabilities.sort(key=lambda x: x["priority"], reverse=True)
         return vulnerabilities
-    
+
     async def predict_competitor_moves(
         self,
         competitor_id: str
@@ -276,7 +276,7 @@ class UltimateStrategyEngine:
         competitor = self.competitors.get(competitor_id)
         if not competitor:
             return []
-        
+
         predictions = []
         for strategy in competitor.known_strategies:
             prediction = {
@@ -287,9 +287,9 @@ class UltimateStrategyEngine:
                 "counter_strategy": self._get_counter_strategy(strategy).value
             }
             predictions.append(prediction)
-        
+
         return predictions
-    
+
     def _generate_strengths(self) -> List[str]:
         """Generate competitor strengths."""
         all_strengths = [
@@ -299,7 +299,7 @@ class UltimateStrategyEngine:
             "Talent acquisition", "Data advantage", "Network effects"
         ]
         return random.sample(all_strengths, random.randint(2, 5))
-    
+
     def _generate_weaknesses(self) -> List[str]:
         """Generate competitor weaknesses."""
         all_weaknesses = [
@@ -309,7 +309,7 @@ class UltimateStrategyEngine:
             "Single product dependency", "Poor culture", "Market blindspot"
         ]
         return random.sample(all_weaknesses, random.randint(2, 5))
-    
+
     def _get_counter_strategy(self, strategy: StrategyType) -> StrategyType:
         """Get optimal counter-strategy."""
         counters = {
@@ -325,11 +325,11 @@ class UltimateStrategyEngine:
             StrategyType.DISRUPTION: StrategyType.OFFENSIVE
         }
         return counters.get(strategy, StrategyType.OFFENSIVE)
-    
+
     # -------------------------------------------------------------------------
     # STRATEGIC PLANNING
     # -------------------------------------------------------------------------
-    
+
     async def create_objective(
         self,
         name: str,
@@ -348,10 +348,10 @@ class UltimateStrategyEngine:
             current_progress=0.0,
             required_resources=["Capital", "Talent", "Technology"]
         )
-        
+
         self.objectives[objective.id] = objective
         return objective
-    
+
     async def generate_tactics(
         self,
         objective_id: str,
@@ -361,10 +361,10 @@ class UltimateStrategyEngine:
         objective = self.objectives.get(objective_id)
         if not objective:
             return []
-        
+
         template = self.strategy_templates.get(strategy_type, [])
         tactics = []
-        
+
         for i, step in enumerate(template):
             tactic = TacticalMove(
                 id=self._gen_id("tact"),
@@ -381,9 +381,9 @@ class UltimateStrategyEngine:
             )
             tactics.append(tactic)
             self.tactics[tactic.id] = tactic
-        
+
         return tactics
-    
+
     async def create_battle_plan(
         self,
         name: str,
@@ -394,14 +394,14 @@ class UltimateStrategyEngine:
         """Create a complete battle plan."""
         # Get objectives
         obj_list = [self.objectives[o] for o in objectives if o in self.objectives]
-        
+
         # Generate tactics for each objective
         all_tactics = []
         for obj in obj_list:
             for st in strategy_types:
                 tactics = await self.generate_tactics(obj.id, st)
                 all_tactics.extend(tactics)
-        
+
         # Create phases
         phases = [
             {"phase": StrategyPhase.RECONNAISSANCE.value, "duration": "1 week"},
@@ -411,7 +411,7 @@ class UltimateStrategyEngine:
             {"phase": StrategyPhase.CONSOLIDATION.value, "duration": "2 weeks"},
             {"phase": StrategyPhase.EXPANSION.value, "duration": "ongoing"}
         ]
-        
+
         plan = StrategyPlan(
             id=self._gen_id("plan"),
             name=name,
@@ -425,10 +425,10 @@ class UltimateStrategyEngine:
             success_probability=random.uniform(0.7, 0.95),
             created_at=datetime.now()
         )
-        
+
         self.plans[plan.id] = plan
         return plan
-    
+
     async def generate_domination_strategy(
         self,
         domain: StrategyDomain,
@@ -441,7 +441,7 @@ class UltimateStrategyEngine:
             domain=domain,
             priority=10
         )
-        
+
         # Determine best strategy types based on competitors
         if competitors:
             # If competitors are weak, use blitzkrieg
@@ -452,7 +452,7 @@ class UltimateStrategyEngine:
                 strategy_types = [StrategyType.GUERRILLA, StrategyType.INFILTRATION]
         else:
             strategy_types = [StrategyType.BLITZKRIEG, StrategyType.DISRUPTION]
-        
+
         # Create battle plan
         plan = await self.create_battle_plan(
             name=f"Operation Dominate {domain.value.upper()}",
@@ -460,13 +460,13 @@ class UltimateStrategyEngine:
             strategy_types=strategy_types,
             competitors=[c.id for c in (competitors or [])]
         )
-        
+
         return plan
-    
+
     # -------------------------------------------------------------------------
     # INFORMATION WARFARE
     # -------------------------------------------------------------------------
-    
+
     async def plan_information_warfare(
         self,
         target: str,
@@ -482,7 +482,7 @@ class UltimateStrategyEngine:
             "Reputation management",
             "Counter-narrative preparation"
         ]
-        
+
         return {
             "target": target,
             "objectives": objectives,
@@ -492,11 +492,11 @@ class UltimateStrategyEngine:
             "metrics": ["share of voice", "sentiment", "credibility"],
             "risk_level": "medium"
         }
-    
+
     # -------------------------------------------------------------------------
     # ALLIANCE STRATEGIES
     # -------------------------------------------------------------------------
-    
+
     async def identify_alliance_opportunities(
         self,
         domain: StrategyDomain
@@ -522,17 +522,17 @@ class UltimateStrategyEngine:
                 "commitment_level": "high"
             }
         ]
-        
+
         return opportunities
-    
+
     # -------------------------------------------------------------------------
     # HELPERS
     # -------------------------------------------------------------------------
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get strategy engine statistics."""
         return {
@@ -568,32 +568,32 @@ async def demo():
     print("=" * 60)
     print("⚔️ ULTIMATE STRATEGY ENGINE ⚔️")
     print("=" * 60)
-    
+
     engine = get_strategy_engine()
-    
+
     # Analyze competitors
     print("\n--- Analyzing Competitors ---")
     comp1 = await engine.analyze_competitor("MegaCorp", [StrategyDomain.MARKET, StrategyDomain.TECHNOLOGY])
     comp2 = await engine.analyze_competitor("TechGiant", [StrategyDomain.TECHNOLOGY, StrategyDomain.TALENT])
-    
+
     print(f"\n{comp1.name}:")
     print(f"  Status: {comp1.status.value}")
     print(f"  Threat: {comp1.threat_level:.0%}")
     print(f"  Vulnerabilities: {comp1.vulnerability_score:.0%}")
-    
+
     # Find vulnerabilities
     print("\n--- Finding Vulnerabilities ---")
     vulns = await engine.find_vulnerabilities(comp1.id)
     for v in vulns[:3]:
         print(f"  - {v['weakness']}: {v['exploitability']:.0%} exploitable")
-    
+
     # Predict moves
     print("\n--- Predicting Competitor Moves ---")
     predictions = await engine.predict_competitor_moves(comp1.id)
     for p in predictions:
         print(f"  - {p['strategy']}: {p['probability']:.0%} probability")
         print(f"    Counter: {p['counter_strategy']}")
-    
+
     # Generate domination strategy
     print("\n--- Generating Domination Strategy ---")
     plan = await engine.generate_domination_strategy(
@@ -604,7 +604,7 @@ async def demo():
     print(f"  Objectives: {len(plan.objectives)}")
     print(f"  Tactics: {len(plan.tactics)}")
     print(f"  Success probability: {plan.success_probability:.0%}")
-    
+
     # Information warfare
     print("\n--- Information Warfare Plan ---")
     info_war = await engine.plan_information_warfare(
@@ -613,13 +613,13 @@ async def demo():
     )
     print(f"  Target: {info_war['target']}")
     print(f"  Tactics: {len(info_war['tactics'])}")
-    
+
     # Stats
     print("\n--- Statistics ---")
     stats = engine.get_stats()
     print(f"Competitors analyzed: {stats['competitors_analyzed']}")
     print(f"Plans created: {stats['plans_created']}")
-    
+
     print("\n" + "=" * 60)
     print("⚔️ STRATEGIC DOMINANCE ACHIEVED ⚔️")
 

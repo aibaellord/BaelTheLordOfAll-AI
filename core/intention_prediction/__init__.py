@@ -50,17 +50,17 @@ class BehaviorPattern:
 
 class IntentionPredictionEngine:
     """Predicts user intentions based on context and patterns."""
-    
+
     def __init__(self, storage_path: str = "./data/intentions"):
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        
+
         self._patterns: Dict[str, BehaviorPattern] = {}
         self._action_history: List[Dict[str, Any]] = []
         self._context_cache: Dict[str, Any] = {}
-        
+
         self._load_data()
-    
+
     def _load_data(self):
         """Load learned patterns."""
         patterns_file = self.storage_path / "patterns.pkl"
@@ -72,7 +72,7 @@ class IntentionPredictionEngine:
                     self._action_history = data.get("history", [])[-1000:]
             except:
                 pass
-    
+
     def _save_data(self):
         """Save learned patterns."""
         patterns_file = self.storage_path / "patterns.pkl"
@@ -81,7 +81,7 @@ class IntentionPredictionEngine:
                 "patterns": self._patterns,
                 "history": self._action_history[-1000:]
             }, f)
-    
+
     def record_action(self, action: str, context: Dict[str, Any] = None):
         """Record an action for pattern learning."""
         context = context or {}
@@ -89,13 +89,13 @@ class IntentionPredictionEngine:
             "hour": datetime.utcnow().hour,
             "day": datetime.utcnow().weekday()
         })
-        
+
         self._action_history.append({
             "action": action,
             "context": context,
             "timestamp": datetime.utcnow().isoformat()
         })
-        
+
         # Learn pattern
         pattern_key = self._context_to_key(context)
         if pattern_key in self._patterns:
@@ -109,15 +109,15 @@ class IntentionPredictionEngine:
                 resulting_action=action,
                 frequency=1
             )
-        
+
         if len(self._action_history) % 10 == 0:
             self._save_data()
-    
+
     def _context_to_key(self, context: Dict[str, Any]) -> str:
         """Convert context to pattern key."""
         key_parts = [f"{k}:{v}" for k, v in sorted(context.items()) if k in ["hour", "day", "prev_action"]]
         return "|".join(key_parts)
-    
+
     async def predict(self, context: Dict[str, Any] = None) -> List[IntentionPrediction]:
         """Predict likely intentions based on current context."""
         context = context or {}
@@ -125,13 +125,13 @@ class IntentionPredictionEngine:
             "hour": datetime.utcnow().hour,
             "day": datetime.utcnow().weekday()
         })
-        
+
         # Add previous action
         if self._action_history:
             context["prev_action"] = self._action_history[-1]["action"]
-        
+
         predictions = []
-        
+
         # Find matching patterns
         for pattern in self._patterns.values():
             match_score = self._calculate_match(context, pattern.trigger_context)
@@ -145,25 +145,25 @@ class IntentionPredictionEngine:
                     auto_execute=pattern.confidence > 0.9 and match_score > 0.8
                 )
                 predictions.append(prediction)
-        
+
         # Add time-based predictions
         hour = context.get("hour", datetime.utcnow().hour)
         time_predictions = self._get_time_based_predictions(hour)
         predictions.extend(time_predictions)
-        
+
         # Sort by confidence
         predictions.sort(key=lambda p: p.confidence, reverse=True)
-        
+
         return predictions[:5]
-    
+
     def _calculate_match(self, current: Dict[str, Any], pattern: Dict[str, Any]) -> float:
         """Calculate how well current context matches pattern."""
         if not pattern:
             return 0.0
-        
+
         matches = 0
         total = 0
-        
+
         for key, value in pattern.items():
             if key in current:
                 total += 1
@@ -173,13 +173,13 @@ class IntentionPredictionEngine:
                     # Fuzzy match for numbers
                     if abs(current[key] - value) <= 1:
                         matches += 0.5
-        
+
         return matches / total if total > 0 else 0.0
-    
+
     def _get_time_based_predictions(self, hour: int) -> List[IntentionPrediction]:
         """Get predictions based on time of day."""
         predictions = []
-        
+
         time_actions = {
             range(6, 9): ("Start morning routine", "Check emails and status"),
             range(9, 12): ("Focus work time", "Run development tasks"),
@@ -188,7 +188,7 @@ class IntentionPredictionEngine:
             range(17, 19): ("End of day", "Commit and push changes"),
             range(19, 22): ("Evening wrap-up", "Plan for tomorrow")
         }
-        
+
         for time_range, (intention, action) in time_actions.items():
             if hour in time_range:
                 predictions.append(IntentionPrediction(
@@ -198,7 +198,7 @@ class IntentionPredictionEngine:
                     reasoning=f"Typical activity for {hour}:00",
                     suggested_action=action
                 ))
-        
+
         return predictions
 
 

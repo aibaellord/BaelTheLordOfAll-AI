@@ -103,34 +103,34 @@ class ComfortCommand:
     usage_count: int = 0
     last_used: Optional[datetime] = None
     context_requirements: Dict[str, Any] = field(default_factory=dict)
-    
+
     def matches(self, input_text: str, context: Dict[str, Any] = None) -> float:
         """Check if input matches this command. Returns confidence 0-1."""
         input_lower = input_text.lower().strip()
-        
+
         # Exact match
         if input_lower == self.trigger.lower():
             return 1.0
-        
+
         # Alias match
         for alias in self.aliases:
             if input_lower == alias.lower():
                 return 0.95
-        
+
         # Prefix match
         if self.trigger.lower().startswith(input_lower):
             return 0.7 + (len(input_lower) / len(self.trigger)) * 0.2
-        
+
         # Contains match
         if self.trigger_type == TriggerType.KEYWORD:
             if self.trigger.lower() in input_lower:
                 return 0.5
-        
+
         # Pattern match
         if self.trigger_type == TriggerType.PATTERN:
             if re.search(self.trigger, input_lower, re.IGNORECASE):
                 return 0.8
-        
+
         # Context match
         if context and self.context_requirements:
             matches = all(
@@ -139,9 +139,9 @@ class ComfortCommand:
             )
             if matches:
                 return 0.6
-        
+
         return 0.0
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -162,7 +162,7 @@ class Macro:
     created_at: datetime
     usage_count: int = 0
     description: str = ""
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -181,7 +181,7 @@ class SmartDefault:
     context: Dict[str, Any]
     confidence: float
     source: str  # Where this default came from
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "field": self.field_name,
@@ -225,7 +225,7 @@ class ExecutionResult:
 class UltraComfortEngine:
     """
     Zero-friction automation layer.
-    
+
     Provides maximum comfort through:
     - Single-word commands
     - Context-aware shortcuts
@@ -233,7 +233,7 @@ class UltraComfortEngine:
     - Smart defaults
     - Macro recording
     """
-    
+
     def __init__(self):
         self.commands: Dict[str, ComfortCommand] = {}
         self.macros: Dict[str, Macro] = {}
@@ -241,15 +241,15 @@ class UltraComfortEngine:
         self.smart_defaults: Dict[str, List[SmartDefault]] = defaultdict(list)
         self.command_history: deque = deque(maxlen=1000)
         self.recording_macro: Optional[List[Dict[str, Any]]] = None
-        
+
         # Action handlers
         self.action_handlers: Dict[str, Callable] = {}
-        
+
         # Initialize built-in commands
         self._init_builtin_commands()
-        
+
         logger.info("UltraComfortEngine initialized")
-    
+
     def _init_builtin_commands(self) -> None:
         """Initialize built-in comfort commands."""
         builtin = [
@@ -344,7 +344,7 @@ class UltraComfortEngine:
                 description="Skip current item",
                 aliases=["pass", "ignore"]
             ),
-            
+
             # Context-aware shortcuts
             ComfortCommand(
                 id="yes",
@@ -364,7 +364,7 @@ class UltraComfortEngine:
                 description="Cancel/reject",
                 aliases=["n", "nope", "cancel", "abort"]
             ),
-            
+
             # Power shortcuts
             ComfortCommand(
                 id="all",
@@ -384,7 +384,7 @@ class UltraComfortEngine:
                 description="Deselect all",
                 aliases=["nothing", "zero"]
             ),
-            
+
             # Abbreviation commands
             ComfortCommand(
                 id="q",
@@ -459,20 +459,20 @@ class UltraComfortEngine:
                 description="List items"
             ),
         ]
-        
+
         for cmd in builtin:
             self.commands[cmd.id] = cmd
-    
+
     # -------------------------------------------------------------------------
     # PREFERENCES
     # -------------------------------------------------------------------------
-    
+
     def get_preferences(self, user_id: str = "default") -> UserPreferences:
         """Get or create user preferences."""
         if user_id not in self.user_preferences:
             self.user_preferences[user_id] = UserPreferences(user_id=user_id)
         return self.user_preferences[user_id]
-    
+
     def set_comfort_level(
         self,
         level: ComfortLevel,
@@ -481,7 +481,7 @@ class UltraComfortEngine:
         """Set user's comfort level."""
         prefs = self.get_preferences(user_id)
         prefs.comfort_level = level
-        
+
         # Adjust settings based on comfort level
         if level == ComfortLevel.MAXIMUM:
             prefs.verbosity = 0.1
@@ -505,11 +505,11 @@ class UltraComfortEngine:
             prefs.speed = 0.5
             prefs.auto_confirm = False
             prefs.predictive_enabled = False
-    
+
     # -------------------------------------------------------------------------
     # COMMAND MATCHING
     # -------------------------------------------------------------------------
-    
+
     def match_command(
         self,
         input_text: str,
@@ -518,20 +518,20 @@ class UltraComfortEngine:
     ) -> List[Tuple[ComfortCommand, float]]:
         """Match input to comfort commands. Returns [(command, confidence)]."""
         results = []
-        
+
         # Check all commands
         for cmd in self.commands.values():
             confidence = cmd.matches(input_text, context)
             if confidence > 0:
                 results.append((cmd, confidence))
-        
+
         # Check user's custom commands
         prefs = self.get_preferences(user_id)
         for cmd in prefs.custom_commands:
             confidence = cmd.matches(input_text, context)
             if confidence > 0:
                 results.append((cmd, confidence))
-        
+
         # Check macros
         for macro in self.macros.values():
             if input_text.lower().strip() == macro.trigger.lower():
@@ -545,12 +545,12 @@ class UltraComfortEngine:
                     description=macro.description or f"Run macro: {macro.name}"
                 )
                 results.append((macro_cmd, 1.0))
-        
+
         # Sort by confidence
         results.sort(key=lambda x: x[1], reverse=True)
-        
+
         return results
-    
+
     def get_best_match(
         self,
         input_text: str,
@@ -562,11 +562,11 @@ class UltraComfortEngine:
         if matches and matches[0][1] >= 0.5:  # Minimum confidence threshold
             return matches[0]
         return None
-    
+
     # -------------------------------------------------------------------------
     # COMMAND EXECUTION
     # -------------------------------------------------------------------------
-    
+
     async def execute(
         self,
         input_text: str,
@@ -575,10 +575,10 @@ class UltraComfortEngine:
     ) -> ExecutionResult:
         """Execute a comfort command."""
         start_time = time.time()
-        
+
         # Find matching command
         match = self.get_best_match(input_text, context, user_id)
-        
+
         if not match:
             return ExecutionResult(
                 success=False,
@@ -588,9 +588,9 @@ class UltraComfortEngine:
                 duration_ms=(time.time() - start_time) * 1000,
                 message=f"No matching command for: {input_text}"
             )
-        
+
         command, confidence = match
-        
+
         # Record in history
         self.command_history.append({
             "command_id": command.id,
@@ -598,11 +598,11 @@ class UltraComfortEngine:
             "timestamp": datetime.now(),
             "confidence": confidence
         })
-        
+
         # Update usage stats
         command.usage_count += 1
         command.last_used = datetime.now()
-        
+
         # Record in macro if recording
         if self.recording_macro is not None:
             self.recording_macro.append({
@@ -610,7 +610,7 @@ class UltraComfortEngine:
                 "input": input_text,
                 "action": command.action
             })
-        
+
         # Execute action
         try:
             if command.action.startswith("run_macro:"):
@@ -622,9 +622,9 @@ class UltraComfortEngine:
             else:
                 # Default action simulation
                 result = await self._simulate_action(command.action, context)
-            
+
             duration = (time.time() - start_time) * 1000
-            
+
             return ExecutionResult(
                 success=True,
                 command_id=command.id,
@@ -634,7 +634,7 @@ class UltraComfortEngine:
                 message=f"Executed: {command.description}",
                 undoable=command.execution_mode in [ExecutionMode.UNDO_SAFE, ExecutionMode.PREVIEW]
             )
-            
+
         except Exception as e:
             duration = (time.time() - start_time) * 1000
             return ExecutionResult(
@@ -645,7 +645,7 @@ class UltraComfortEngine:
                 duration_ms=duration,
                 message=f"Error: {str(e)}"
             )
-    
+
     async def _simulate_action(
         self,
         action: str,
@@ -657,7 +657,7 @@ class UltraComfortEngine:
             "status": "simulated",
             "context": context
         }
-    
+
     def register_handler(
         self,
         action: str,
@@ -665,16 +665,16 @@ class UltraComfortEngine:
     ) -> None:
         """Register an action handler."""
         self.action_handlers[action] = handler
-    
+
     # -------------------------------------------------------------------------
     # MACRO SYSTEM
     # -------------------------------------------------------------------------
-    
+
     def start_recording(self, macro_name: str) -> None:
         """Start recording a macro."""
         self.recording_macro = []
         logger.info(f"Started recording macro: {macro_name}")
-    
+
     def stop_recording(
         self,
         macro_name: str,
@@ -683,11 +683,11 @@ class UltraComfortEngine:
         """Stop recording and save macro."""
         if self.recording_macro is None:
             return None
-        
+
         if not self.recording_macro:
             self.recording_macro = None
             return None
-        
+
         macro = Macro(
             id=hashlib.md5(f"{macro_name}{time.time()}".encode()).hexdigest()[:8],
             name=macro_name,
@@ -695,41 +695,41 @@ class UltraComfortEngine:
             actions=self.recording_macro.copy(),
             created_at=datetime.now()
         )
-        
+
         self.macros[macro.id] = macro
         self.recording_macro = None
-        
+
         logger.info(f"Saved macro '{macro_name}' with {len(macro.actions)} actions")
-        
+
         return macro
-    
+
     def cancel_recording(self) -> None:
         """Cancel macro recording."""
         self.recording_macro = None
-    
+
     async def run_macro(self, macro_id: str) -> List[ExecutionResult]:
         """Run a recorded macro."""
         macro = self.macros.get(macro_id)
         if not macro:
             return []
-        
+
         results = []
         for action_data in macro.actions:
             result = await self.execute(action_data.get("input", ""))
             results.append(result)
-        
+
         macro.usage_count += 1
-        
+
         return results
-    
+
     def list_macros(self) -> List[Dict[str, Any]]:
         """List all macros."""
         return [macro.to_dict() for macro in self.macros.values()]
-    
+
     # -------------------------------------------------------------------------
     # SMART DEFAULTS
     # -------------------------------------------------------------------------
-    
+
     def learn_default(
         self,
         field_name: str,
@@ -745,7 +745,7 @@ class UltraComfortEngine:
             confidence=0.5,
             source=source
         )
-        
+
         # Check if similar default exists
         existing = self.smart_defaults[field_name]
         for i, existing_default in enumerate(existing):
@@ -754,10 +754,10 @@ class UltraComfortEngine:
                 existing[i].value = value
                 existing[i].confidence = min(existing[i].confidence + 0.1, 1.0)
                 return
-        
+
         # Add new
         self.smart_defaults[field_name].append(default)
-    
+
     def get_smart_default(
         self,
         field_name: str,
@@ -765,14 +765,14 @@ class UltraComfortEngine:
     ) -> Optional[Any]:
         """Get a smart default for a field based on context."""
         defaults = self.smart_defaults.get(field_name, [])
-        
+
         if not defaults:
             return None
-        
+
         # Find best matching context
         best_match = None
         best_score = 0.0
-        
+
         for default in defaults:
             # Calculate context match score
             if not default.context:
@@ -783,17 +783,17 @@ class UltraComfortEngine:
                     if context.get(k) == v
                 )
                 score = (matching_keys / len(default.context)) * default.confidence
-            
+
             if score > best_score:
                 best_score = score
                 best_match = default
-        
+
         return best_match.value if best_match and best_score > 0.3 else None
-    
+
     # -------------------------------------------------------------------------
     # PREDICTIVE COMPLETION
     # -------------------------------------------------------------------------
-    
+
     def predict_next(
         self,
         partial_input: str = "",
@@ -802,7 +802,7 @@ class UltraComfortEngine:
     ) -> List[Dict[str, Any]]:
         """Predict what the user might want next."""
         predictions = []
-        
+
         # Based on partial input
         if partial_input:
             matches = self.match_command(partial_input, context, user_id)
@@ -813,11 +813,11 @@ class UltraComfortEngine:
                     "description": cmd.description,
                     "confidence": confidence
                 })
-        
+
         # Based on history
         if len(self.command_history) >= 3:
             recent = list(self.command_history)[-10:]
-            
+
             # Find commonly followed commands
             last_cmd = recent[-1]["command_id"] if recent else None
             if last_cmd:
@@ -827,7 +827,7 @@ class UltraComfortEngine:
                     if entry["command_id"] == last_cmd and i + 1 < len(recent):
                         next_cmd = recent[i + 1]["command_id"]
                         followers[next_cmd] += 1
-                
+
                 for cmd_id, count in sorted(followers.items(), key=lambda x: x[1], reverse=True)[:3]:
                     if cmd_id in self.commands:
                         cmd = self.commands[cmd_id]
@@ -837,7 +837,7 @@ class UltraComfortEngine:
                             "description": f"Often follows previous action",
                             "confidence": min(0.8, 0.3 + count * 0.2)
                         })
-        
+
         # Time-based predictions
         hour = datetime.now().hour
         time_commands = {
@@ -845,7 +845,7 @@ class UltraComfortEngine:
             (12, 13): ["save", "status"],  # Lunch: save work
             (17, 18): ["save", "done"]  # End of day: wrap up
         }
-        
+
         for (start, end), cmds in time_commands.items():
             if start <= hour <= end:
                 for cmd_id in cmds:
@@ -857,7 +857,7 @@ class UltraComfortEngine:
                             "description": cmd.description,
                             "confidence": 0.4
                         })
-        
+
         # Sort by confidence and deduplicate
         seen = set()
         unique_predictions = []
@@ -865,13 +865,13 @@ class UltraComfortEngine:
             if pred["text"] not in seen:
                 seen.add(pred["text"])
                 unique_predictions.append(pred)
-        
+
         return unique_predictions[:5]
-    
+
     # -------------------------------------------------------------------------
     # CUSTOM COMMANDS
     # -------------------------------------------------------------------------
-    
+
     def create_custom_command(
         self,
         trigger: str,
@@ -890,16 +890,16 @@ class UltraComfortEngine:
             description=description,
             aliases=aliases or []
         )
-        
+
         prefs = self.get_preferences(user_id)
         prefs.custom_commands.append(cmd)
-        
+
         return cmd
-    
+
     # -------------------------------------------------------------------------
     # ADAPTATION
     # -------------------------------------------------------------------------
-    
+
     def adapt_response(
         self,
         content: str,
@@ -907,7 +907,7 @@ class UltraComfortEngine:
     ) -> str:
         """Adapt response based on user preferences."""
         prefs = self.get_preferences(user_id)
-        
+
         # Verbosity adaptation
         if prefs.verbosity < 0.3:
             # Minimal: Take first sentence only
@@ -916,13 +916,13 @@ class UltraComfortEngine:
         elif prefs.verbosity > 0.7:
             # Verbose: Add helpful context
             content = f"📋 {content}\n\n💡 Tip: Use 'help' for more options."
-        
+
         # Speed adaptation (affects how much we ask for confirmation)
         if prefs.speed > 0.8:
             # Fast: Skip confirmations in response
             content = content.replace("Are you sure?", "Done.")
             content = content.replace("Would you like to", "I will")
-        
+
         # Formality adaptation
         if prefs.formality < 0.3:
             # Casual
@@ -932,13 +932,13 @@ class UltraComfortEngine:
             # Formal
             content = content.replace("Hey", "Greetings")
             content = content.replace("Sure", "Certainly")
-        
+
         return content
-    
+
     # -------------------------------------------------------------------------
     # AMBIENT INTELLIGENCE
     # -------------------------------------------------------------------------
-    
+
     async def ambient_optimize(
         self,
         context: Dict[str, Any],
@@ -946,19 +946,19 @@ class UltraComfortEngine:
     ) -> List[Dict[str, Any]]:
         """Background optimization suggestions."""
         optimizations = []
-        
+
         # Analyze command history for inefficiencies
         if len(self.command_history) >= 10:
             recent = list(self.command_history)[-50:]
-            
+
             # Find repeated sequences that could be macros
             sequence_length = 3
             sequences: Dict[str, int] = defaultdict(int)
-            
+
             for i in range(len(recent) - sequence_length + 1):
                 seq = tuple(entry["command_id"] for entry in recent[i:i + sequence_length])
                 sequences[seq] += 1
-            
+
             for seq, count in sequences.items():
                 if count >= 3:
                     optimizations.append({
@@ -967,7 +967,7 @@ class UltraComfortEngine:
                         "sequence": list(seq),
                         "priority": count
                     })
-        
+
         # Suggest underused but relevant commands
         prefs = self.get_preferences(user_id)
         if prefs.comfort_level == ComfortLevel.MODERATE:
@@ -976,33 +976,33 @@ class UltraComfortEngine:
                 "message": "Consider upgrading to HIGH comfort level for faster workflow",
                 "priority": 3
             })
-        
+
         return optimizations
-    
+
     # -------------------------------------------------------------------------
     # UTILITIES
     # -------------------------------------------------------------------------
-    
+
     def get_help(self, category: CommandType = None) -> str:
         """Get help text for commands."""
         lines = ["🚀 **Ultra-Comfort Commands**\n"]
-        
+
         # Group by category
         by_category: Dict[CommandType, List[ComfortCommand]] = defaultdict(list)
         for cmd in self.commands.values():
             by_category[cmd.command_type].append(cmd)
-        
+
         for cmd_type, commands in by_category.items():
             if category and cmd_type != category:
                 continue
-            
+
             lines.append(f"\n**{cmd_type.value.replace('_', ' ').title()}**")
             for cmd in sorted(commands, key=lambda c: c.trigger):
                 aliases = f" ({', '.join(cmd.aliases)})" if cmd.aliases else ""
                 lines.append(f"  `{cmd.trigger}`{aliases} - {cmd.description}")
-        
+
         return "\n".join(lines)
-    
+
     def list_commands(self) -> List[Dict[str, Any]]:
         """List all available commands."""
         return [cmd.to_dict() for cmd in self.commands.values()]
@@ -1032,9 +1032,9 @@ async def demo():
     print("=" * 60)
     print("ULTRA-COMFORT AUTOMATION LAYER")
     print("=" * 60)
-    
+
     engine = get_comfort_engine()
-    
+
     # Set comfort level
     print("\n--- Setting Comfort Level ---")
     engine.set_comfort_level(ComfortLevel.MAXIMUM)
@@ -1042,28 +1042,28 @@ async def demo():
     print(f"Comfort Level: {prefs.comfort_level.value}")
     print(f"Verbosity: {prefs.verbosity}")
     print(f"Speed: {prefs.speed}")
-    
+
     # Execute single-word commands
     print("\n--- Executing Commands ---")
     test_inputs = ["help", "status", "run", "y", "q"]
-    
+
     for input_text in test_inputs:
         result = await engine.execute(input_text)
         print(f"'{input_text}' -> {result.message}")
-    
+
     # Predictive completion
     print("\n--- Predictive Completion ---")
     predictions = engine.predict_next("s", {})
     for pred in predictions:
         print(f"  {pred['text']}: {pred['description']} ({pred['confidence']:.2f})")
-    
+
     # Smart defaults
     print("\n--- Smart Defaults ---")
     engine.learn_default("output_format", "json", {"context": "api"})
     engine.learn_default("output_format", "json", {"context": "api"})  # Reinforce
     default = engine.get_smart_default("output_format", {"context": "api"})
     print(f"Learned default for output_format: {default}")
-    
+
     # Macro recording
     print("\n--- Macro Recording ---")
     engine.start_recording("daily_routine")
@@ -1073,7 +1073,7 @@ async def demo():
     macro = engine.stop_recording("daily_routine", "daily")
     if macro:
         print(f"Created macro: {macro.name} with {len(macro.actions)} actions")
-    
+
     # Custom command
     print("\n--- Custom Command ---")
     custom = engine.create_custom_command(
@@ -1083,18 +1083,18 @@ async def demo():
         aliases=["ship", "push"]
     )
     print(f"Created: {custom.trigger} -> {custom.action}")
-    
+
     # Adaptation
     print("\n--- Response Adaptation ---")
     response = "Please wait while I process your request. Are you sure?"
     adapted = engine.adapt_response(response)
     print(f"Original: {response}")
     print(f"Adapted:  {adapted}")
-    
+
     # Help
     print("\n--- Available Commands ---")
     print(engine.get_help())
-    
+
     print("\n" + "=" * 60)
     print("ULTRA-COMFORT DEMO COMPLETE")
 

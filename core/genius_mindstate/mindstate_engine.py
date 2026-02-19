@@ -89,39 +89,39 @@ class Mindstate:
     mindstate_id: str
     name: str
     description: str
-    
+
     # Configuration
     thinking_modes: List[ThinkingMode] = field(default_factory=list)
     creativity_level: CreativityLevel = CreativityLevel.ENHANCED
     motivation_triggers: List[MotivationalTrigger] = field(default_factory=list)
     geometry_principles: List[GeometryPrinciple] = field(default_factory=list)
-    
+
     # Parameters (0.0 to 1.0)
     focus_intensity: float = 0.7
     creativity_boost: float = 0.5
     risk_tolerance: float = 0.5
     detail_orientation: float = 0.5
     speed_vs_quality: float = 0.5  # 0 = max speed, 1 = max quality
-    
+
     # Psychological amplifiers
     confidence_multiplier: float = 1.0
     curiosity_multiplier: float = 1.0
     persistence_multiplier: float = 1.0
-    
+
     # State
     active: bool = False
     activation_count: int = 0
     total_active_time: float = 0.0
-    
+
     def get_prompt_enhancement(self) -> str:
         """Generate prompt enhancement based on this mindstate."""
         parts = []
-        
+
         # Add thinking mode context
         if self.thinking_modes:
             modes_str = ", ".join(m.value for m in self.thinking_modes)
             parts.append(f"Apply {modes_str} thinking approaches.")
-        
+
         # Add motivation
         if self.motivation_triggers:
             trigger = random.choice(self.motivation_triggers)
@@ -138,15 +138,15 @@ class Mindstate:
                 MotivationalTrigger.AUTONOMY: "You have complete freedom - unleash your potential."
             }
             parts.append(motivation_prompts.get(trigger, "Give your absolute best."))
-        
+
         # Add creativity boost
         if self.creativity_level.value >= CreativityLevel.GENIUS.value:
             parts.append("Think beyond all conventional limits. Make unexpected connections.")
-        
+
         # Add geometry principles
         if GeometryPrinciple.GOLDEN_RATIO in self.geometry_principles:
             parts.append("Apply golden ratio proportions for perfect balance.")
-        
+
         return " ".join(parts)
 
 
@@ -156,30 +156,30 @@ class MindstateStack:
     stack_id: str
     name: str
     mindstates: List[Mindstate] = field(default_factory=list)
-    
+
     # Combined parameters
     combined_creativity: float = 0.0
     combined_focus: float = 0.0
     combined_risk: float = 0.0
-    
+
     def add_mindstate(self, mindstate: Mindstate):
         """Add a mindstate to the stack."""
         self.mindstates.append(mindstate)
         self._recalculate_combined()
-    
+
     def remove_mindstate(self, mindstate_id: str):
         """Remove a mindstate from the stack."""
         self.mindstates = [m for m in self.mindstates if m.mindstate_id != mindstate_id]
         self._recalculate_combined()
-    
+
     def _recalculate_combined(self):
         """Recalculate combined parameters."""
         if not self.mindstates:
             return
-        
+
         # Apply golden ratio weighting - later mindstates have more influence
         total_weight = sum(PHI_INVERSE ** i for i in range(len(self.mindstates)))
-        
+
         self.combined_creativity = sum(
             m.creativity_boost * (PHI_INVERSE ** i) / total_weight
             for i, m in enumerate(self.mindstates)
@@ -192,7 +192,7 @@ class MindstateStack:
             m.risk_tolerance * (PHI_INVERSE ** i) / total_weight
             for i, m in enumerate(self.mindstates)
         )
-    
+
     def get_combined_prompt_enhancement(self) -> str:
         """Get combined prompt enhancement from all mindstates."""
         enhancements = [m.get_prompt_enhancement() for m in self.mindstates]
@@ -205,16 +205,16 @@ class ThinkingSession:
     session_id: str
     topic: str
     started_at: datetime
-    
+
     # Configuration
     mindstate_stack: MindstateStack = None
     thinking_modes: List[ThinkingMode] = field(default_factory=list)
-    
+
     # Results
     thoughts: List[Dict[str, Any]] = field(default_factory=list)
     insights: List[str] = field(default_factory=list)
     breakthroughs: List[str] = field(default_factory=list)
-    
+
     # Metrics
     creativity_score: float = 0.0
     depth_score: float = 0.0
@@ -224,14 +224,14 @@ class ThinkingSession:
 class GeniusMindstateEngine:
     """
     The Genius Mindstate Engine.
-    
+
     Applies psychological principles to maximize:
     - Creativity and innovation
     - Problem-solving capability
     - Quality of output
     - Speed of insight
     - Breakthrough potential
-    
+
     Uses:
     - Multiple thinking modes layered together
     - Motivational psychology triggers
@@ -239,7 +239,7 @@ class GeniusMindstateEngine:
     - Zero-investment creative mindset
     - Perspective multiplication
     """
-    
+
     # Predefined genius mindstates
     PRESET_MINDSTATES = {
         "zero_invest_creator": {
@@ -315,7 +315,7 @@ class GeniusMindstateEngine:
             "curiosity_multiplier": 2.0
         }
     }
-    
+
     def __init__(
         self,
         enable_geometry: bool = True,
@@ -325,15 +325,15 @@ class GeniusMindstateEngine:
         self.enable_geometry = enable_geometry
         self.enable_motivation = enable_motivation
         self.default_creativity = default_creativity
-        
+
         # Mindstate registry
         self._mindstates: Dict[str, Mindstate] = {}
         self._active_stack: Optional[MindstateStack] = None
-        
+
         # Session tracking
         self._sessions: Dict[str, ThinkingSession] = {}
         self._current_session: Optional[ThinkingSession] = None
-        
+
         # Statistics
         self._stats = {
             "total_sessions": 0,
@@ -341,12 +341,12 @@ class GeniusMindstateEngine:
             "insights_generated": 0,
             "avg_creativity_score": 0.0
         }
-        
+
         # Initialize preset mindstates
         self._initialize_presets()
-        
+
         logger.info("GeniusMindstateEngine initialized")
-    
+
     def _initialize_presets(self):
         """Initialize preset mindstates."""
         for preset_id, config in self.PRESET_MINDSTATES.items():
@@ -354,12 +354,12 @@ class GeniusMindstateEngine:
                 mindstate_id=preset_id,
                 name=config["name"],
                 description=config["description"],
-                thinking_modes=[ThinkingMode(m) if isinstance(m, str) else m 
+                thinking_modes=[ThinkingMode(m) if isinstance(m, str) else m
                                for m in config.get("thinking_modes", [])],
                 creativity_level=config.get("creativity_level", CreativityLevel.ENHANCED),
-                motivation_triggers=[MotivationalTrigger(t) if isinstance(t, str) else t 
+                motivation_triggers=[MotivationalTrigger(t) if isinstance(t, str) else t
                                     for t in config.get("motivation_triggers", [])],
-                geometry_principles=[GeometryPrinciple(g) if isinstance(g, str) else g 
+                geometry_principles=[GeometryPrinciple(g) if isinstance(g, str) else g
                                     for g in config.get("geometry_principles", [])],
                 focus_intensity=config.get("focus_intensity", 0.7),
                 creativity_boost=config.get("creativity_boost", 0.5),
@@ -370,7 +370,7 @@ class GeniusMindstateEngine:
                 persistence_multiplier=config.get("persistence_multiplier", 1.0)
             )
             self._mindstates[preset_id] = mindstate
-    
+
     def create_mindstate(
         self,
         name: str,
@@ -382,7 +382,7 @@ class GeniusMindstateEngine:
     ) -> Mindstate:
         """Create a custom mindstate."""
         mindstate_id = f"custom_{hashlib.md5(name.encode()).hexdigest()[:8]}"
-        
+
         mindstate = Mindstate(
             mindstate_id=mindstate_id,
             name=name,
@@ -392,10 +392,10 @@ class GeniusMindstateEngine:
             motivation_triggers=motivation_triggers or [],
             **kwargs
         )
-        
+
         self._mindstates[mindstate_id] = mindstate
         return mindstate
-    
+
     def activate_mindstate(
         self,
         mindstate_id: str,
@@ -404,22 +404,22 @@ class GeniusMindstateEngine:
         """Activate a mindstate, optionally adding to existing stack."""
         if mindstate_id not in self._mindstates:
             raise ValueError(f"Mindstate {mindstate_id} not found")
-        
+
         mindstate = self._mindstates[mindstate_id]
         mindstate.active = True
         mindstate.activation_count += 1
-        
+
         if replace_stack or self._active_stack is None:
             self._active_stack = MindstateStack(
                 stack_id=f"stack_{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}",
                 name=mindstate.name
             )
-        
+
         self._active_stack.add_mindstate(mindstate)
-        
+
         logger.info(f"Activated mindstate: {mindstate.name}")
         return self._active_stack
-    
+
     def activate_multiple(
         self,
         mindstate_ids: List[str]
@@ -429,23 +429,23 @@ class GeniusMindstateEngine:
             stack_id=f"stack_{hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}",
             name="Multi-Mindstate Stack"
         )
-        
+
         for mindstate_id in mindstate_ids:
             if mindstate_id in self._mindstates:
                 mindstate = self._mindstates[mindstate_id]
                 mindstate.active = True
                 mindstate.activation_count += 1
                 self._active_stack.add_mindstate(mindstate)
-        
+
         return self._active_stack
-    
+
     def get_active_prompt_enhancement(self) -> str:
         """Get prompt enhancement from active mindstate stack."""
         if not self._active_stack or not self._active_stack.mindstates:
             return ""
-        
+
         return self._active_stack.get_combined_prompt_enhancement()
-    
+
     async def start_thinking_session(
         self,
         topic: str,
@@ -454,18 +454,18 @@ class GeniusMindstateEngine:
     ) -> ThinkingSession:
         """Start a thinking session with appropriate mindstates."""
         session_id = f"session_{hashlib.md5(f'{topic}{time.time()}'.encode()).hexdigest()[:12]}"
-        
+
         # Auto-select mindstates based on topic if requested
         if auto_select and not mindstate_ids:
             mindstate_ids = self._auto_select_mindstates(topic)
-        
+
         # Activate mindstates
         if mindstate_ids:
             self.activate_multiple(mindstate_ids)
         else:
             # Default to innovation maximizer
             self.activate_mindstate("innovation_maximizer", replace_stack=True)
-        
+
         session = ThinkingSession(
             session_id=session_id,
             topic=topic,
@@ -475,49 +475,49 @@ class GeniusMindstateEngine:
                 mode for m in self._active_stack.mindstates for mode in m.thinking_modes
             ))
         )
-        
+
         self._sessions[session_id] = session
         self._current_session = session
         self._stats["total_sessions"] += 1
-        
+
         return session
-    
+
     def _auto_select_mindstates(self, topic: str) -> List[str]:
         """Automatically select appropriate mindstates for a topic."""
         topic_lower = topic.lower()
         selected = []
-        
+
         # Always include transcendent for maximum potential
         if "transcend" in topic_lower or "beyond" in topic_lower or "best" in topic_lower:
             selected.append("meta_transcendent")
-        
+
         # Creative topics
         if any(word in topic_lower for word in ["create", "design", "innovate", "new", "novel"]):
             selected.append("zero_invest_creator")
-        
+
         # Analytical topics
         if any(word in topic_lower for word in ["analyze", "understand", "debug", "solve"]):
             selected.append("analytical_genius")
-        
+
         # Strategic topics
         if any(word in topic_lower for word in ["plan", "strategy", "future", "goal"]):
             selected.append("visionary_strategist")
-        
+
         # Competitive topics
         if any(word in topic_lower for word in ["beat", "surpass", "compete", "win"]):
             selected.append("challenger")
             selected.append("innovation_maximizer")
-        
+
         # User-focused topics
         if any(word in topic_lower for word in ["user", "experience", "comfort", "easy"]):
             selected.append("empathic_designer")
-        
+
         # Default: innovation + analytical
         if not selected:
             selected = ["innovation_maximizer", "analytical_genius"]
-        
+
         return list(set(selected))  # Remove duplicates
-    
+
     async def think(
         self,
         prompt: str,
@@ -525,17 +525,17 @@ class GeniusMindstateEngine:
     ) -> Dict[str, Any]:
         """
         Perform enhanced thinking with active mindstates.
-        
+
         Returns thoughts, insights, and potential breakthroughs.
         """
         if not self._active_stack:
             self.activate_mindstate("innovation_maximizer", replace_stack=True)
-        
+
         enhancement = self.get_active_prompt_enhancement()
-        
+
         # Apply golden ratio to determine optimal thinking depth
         optimal_depth = int(depth * PHI)
-        
+
         result = {
             "original_prompt": prompt,
             "enhancement": enhancement,
@@ -546,36 +546,36 @@ class GeniusMindstateEngine:
             "perspectives": [],
             "recommendations": []
         }
-        
+
         # Generate thoughts from each thinking mode
         for mode in self._current_session.thinking_modes if self._current_session else [ThinkingMode.ANALYTICAL]:
             thought = await self._think_in_mode(prompt, mode, enhancement)
             result["thoughts"].append(thought)
-        
+
         # Apply geometry principles
         if self.enable_geometry:
             geometric_insights = self._apply_geometry_principles(result["thoughts"])
             result["insights"].extend(geometric_insights)
-        
+
         # Synthesize insights
         result["insights"].extend(self._synthesize_insights(result["thoughts"]))
-        
+
         # Check for breakthroughs
         breakthroughs = self._detect_breakthroughs(result)
         result["breakthroughs"] = breakthroughs
-        
+
         if breakthroughs:
             self._stats["breakthroughs"] += len(breakthroughs)
         self._stats["insights_generated"] += len(result["insights"])
-        
+
         # Update session
         if self._current_session:
             self._current_session.thoughts.extend(result["thoughts"])
             self._current_session.insights.extend(result["insights"])
             self._current_session.breakthroughs.extend(result["breakthroughs"])
-        
+
         return result
-    
+
     async def _think_in_mode(
         self,
         prompt: str,
@@ -590,7 +590,7 @@ class GeniusMindstateEngine:
             "connections": [],
             "questions": []
         }
-        
+
         # Mode-specific thinking patterns
         if mode == ThinkingMode.LATERAL:
             thought["connections"] = [
@@ -606,19 +606,19 @@ class GeniusMindstateEngine:
         elif mode == ThinkingMode.TRANSCENDENT:
             thought["content"] = f"Transcending normal limits to see '{prompt[:30]}...' in its totality"
             thought["depth"] = 10  # Maximum depth
-        
+
         return thought
-    
+
     def _apply_geometry_principles(
         self,
         thoughts: List[Dict[str, Any]]
     ) -> List[str]:
         """Apply sacred geometry principles to generate insights."""
         insights = []
-        
+
         if not thoughts:
             return insights
-        
+
         # Golden Ratio: Find optimal proportions
         if len(thoughts) >= 2:
             # The golden point between first and last
@@ -627,7 +627,7 @@ class GeniusMindstateEngine:
                 insights.append(
                     f"Golden ratio insight: Key focus point identified at thought {golden_index + 1}"
                 )
-        
+
         # Fibonacci: Natural growth pattern
         fib = [1, 1, 2, 3, 5, 8, 13, 21]
         relevant_fib = [f for f in fib if f <= len(thoughts)]
@@ -635,45 +635,45 @@ class GeniusMindstateEngine:
             insights.append(
                 f"Fibonacci pattern: Natural growth points at positions {relevant_fib}"
             )
-        
+
         return insights
-    
+
     def _synthesize_insights(
         self,
         thoughts: List[Dict[str, Any]]
     ) -> List[str]:
         """Synthesize insights from multiple thoughts."""
         insights = []
-        
+
         if len(thoughts) < 2:
             return insights
-        
+
         # Look for connections between different modes
         modes = [t.get("mode") for t in thoughts]
         if "lateral" in modes and "analytical" in modes:
             insights.append(
                 "Synthesis: Combining lateral creativity with analytical rigor"
             )
-        
+
         if "meta" in modes:
             insights.append(
                 "Meta-insight: Higher-order patterns emerging from the analysis"
             )
-        
+
         if len(thoughts) >= 3:
             insights.append(
                 f"Multi-perspective synthesis: {len(thoughts)} viewpoints integrated"
             )
-        
+
         return insights
-    
+
     def _detect_breakthroughs(
         self,
         result: Dict[str, Any]
     ) -> List[str]:
         """Detect potential breakthroughs in the thinking."""
         breakthroughs = []
-        
+
         # Check for transcendent thoughts
         for thought in result.get("thoughts", []):
             if thought.get("mode") == "transcendent":
@@ -684,15 +684,15 @@ class GeniusMindstateEngine:
                 breakthroughs.append(
                     f"Deep insight breakthrough at depth {thought['depth']}"
                 )
-        
+
         # Check for high insight density
         if len(result.get("insights", [])) >= 5:
             breakthroughs.append(
                 "Insight cascade: Multiple interconnected insights discovered"
             )
-        
+
         return breakthroughs
-    
+
     async def maximize_output(
         self,
         task: str,
@@ -703,27 +703,27 @@ class GeniusMindstateEngine:
         This is the ultimate function for genius-level output.
         """
         context = context or {}
-        
+
         # Activate maximum potential mindstates
         stack = self.activate_multiple([
             "meta_transcendent",
             "innovation_maximizer",
             "zero_invest_creator"
         ])
-        
+
         # Start session
         session = await self.start_thinking_session(
             topic=task,
             mindstate_ids=None,  # Already activated
             auto_select=False
         )
-        
+
         # Apply all motivational triggers
         motivation_boost = self._generate_motivation_boost()
-        
+
         # Think at maximum depth
         thinking_result = await self.think(task, depth=7)
-        
+
         # Generate final enhanced output
         result = {
             "task": task,
@@ -741,9 +741,9 @@ class GeniusMindstateEngine:
                 "Think beyond all known limits"
             ]
         }
-        
+
         return result
-    
+
     def _generate_motivation_boost(self) -> str:
         """Generate a motivational boost message."""
         boosts = [
@@ -756,11 +756,11 @@ class GeniusMindstateEngine:
             "The impossible is just a challenge waiting to be conquered."
         ]
         return random.choice(boosts)
-    
+
     def get_mindstate(self, mindstate_id: str) -> Optional[Mindstate]:
         """Get a mindstate by ID."""
         return self._mindstates.get(mindstate_id)
-    
+
     def list_mindstates(self) -> List[Dict[str, Any]]:
         """List all available mindstates."""
         return [
@@ -773,7 +773,7 @@ class GeniusMindstateEngine:
             }
             for m in self._mindstates.values()
         ]
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get engine statistics."""
         return {
@@ -799,22 +799,22 @@ def get_mindstate_engine() -> GeniusMindstateEngine:
 async def demo():
     """Demonstrate the genius mindstate engine."""
     engine = get_mindstate_engine()
-    
+
     print("=== GENIUS MINDSTATE ENGINE DEMO ===\n")
-    
+
     # List available mindstates
     mindstates = engine.list_mindstates()
     print(f"Available Mindstates: {len(mindstates)}")
     for m in mindstates:
         print(f"  - {m['name']}: {m['description'][:50]}...")
-    
+
     # Activate innovation maximizer
     print("\n\nActivating Innovation Maximizer...")
     engine.activate_mindstate("innovation_maximizer", replace_stack=True)
-    
+
     enhancement = engine.get_active_prompt_enhancement()
     print(f"Prompt Enhancement: {enhancement[:100]}...")
-    
+
     # Start a thinking session
     print("\n\n--- THINKING SESSION ---")
     session = await engine.start_thinking_session(
@@ -823,36 +823,36 @@ async def demo():
     )
     print(f"Session started: {session.session_id}")
     print(f"Active thinking modes: {[m.value for m in session.thinking_modes]}")
-    
+
     # Think
     print("\nThinking...")
     result = await engine.think(
         "Design a system that surpasses AutoGPT, LangChain, and all competitors"
     )
-    
+
     print(f"\nThoughts generated: {len(result['thoughts'])}")
     print(f"Insights: {len(result['insights'])}")
     print(f"Breakthroughs: {len(result['breakthroughs'])}")
-    
+
     if result['insights']:
         print("\nInsights:")
         for insight in result['insights'][:3]:
             print(f"  ✨ {insight}")
-    
+
     if result['breakthroughs']:
         print("\nBreakthroughs:")
         for bt in result['breakthroughs']:
             print(f"  🚀 {bt}")
-    
+
     # Maximize output
     print("\n\n--- MAXIMUM OUTPUT MODE ---")
     max_result = await engine.maximize_output(
         "Create the ultimate AI orchestration system"
     )
-    
+
     print(f"Creativity Level: {max_result['creativity_level']}")
     print(f"Motivation: {max_result['motivation_boost']}")
-    
+
     # Stats
     print("\n=== STATS ===")
     for key, value in engine.get_stats().items():

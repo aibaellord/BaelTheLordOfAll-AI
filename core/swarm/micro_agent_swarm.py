@@ -109,7 +109,7 @@ class MicroTask:
     quality_threshold: float  # 0-1
     timeout_seconds: float = 30.0
     retries_allowed: int = 3
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -132,7 +132,7 @@ class AgentOutput:
     execution_time_ms: float
     iteration: int  # Which attempt
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "task_id": self.task_id,
@@ -156,7 +156,7 @@ class MicroAgent:
     total_execution_time_ms: float = 0.0
     failures: int = 0
     created_at: datetime = field(default_factory=datetime.now)
-    
+
     def update_stats(self, output: AgentOutput) -> None:
         """Update agent statistics."""
         self.tasks_completed += 1
@@ -166,7 +166,7 @@ class MicroAgent:
             / self.tasks_completed
         )
         self.total_execution_time_ms += output.execution_time_ms
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -203,7 +203,7 @@ class SwarmResult:
     outputs: List[AgentOutput]
     best_agent_id: Optional[str]
     metadata: Dict[str, Any]
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "task": self.task_description[:50],
@@ -223,17 +223,17 @@ class SwarmResult:
 class MicroAgentEngine:
     """
     Engine for spawning and managing micro-agents.
-    
+
     Provides:
     - Agent lifecycle management
     - Specialized agent creation
     - Performance tracking
     """
-    
+
     def __init__(self):
         self.agents: Dict[str, MicroAgent] = {}
         self.agent_pool: Dict[AgentRole, List[MicroAgent]] = defaultdict(list)
-        
+
         # Agent templates for each role
         self.role_templates = {
             AgentRole.RESEARCHER: {
@@ -269,7 +269,7 @@ class MicroAgentEngine:
                 "quality_weight": 0.85
             }
         }
-    
+
     def spawn_agent(
         self,
         role: AgentRole,
@@ -281,12 +281,12 @@ class MicroAgentEngine:
             role=role,
             specialization=specialization
         )
-        
+
         self.agents[agent.id] = agent
         self.agent_pool[role].append(agent)
-        
+
         return agent
-    
+
     def get_available_agent(
         self,
         role: AgentRole
@@ -295,23 +295,23 @@ class MicroAgentEngine:
         for agent in self.agent_pool[role]:
             if agent.status == AgentStatus.IDLE:
                 return agent
-        
+
         # No available agent, spawn new one
         return self.spawn_agent(role)
-    
+
     def release_agent(self, agent_id: str) -> None:
         """Release an agent back to the pool."""
         if agent_id in self.agents:
             self.agents[agent_id].status = AgentStatus.IDLE
             self.agents[agent_id].current_task = None
-    
+
     def get_best_agent(self, role: AgentRole) -> Optional[MicroAgent]:
         """Get the best performing agent for a role."""
         role_agents = [a for a in self.agent_pool[role] if a.tasks_completed > 0]
         if not role_agents:
             return None
         return max(role_agents, key=lambda a: a.average_quality)
-    
+
     async def execute_task(
         self,
         agent: MicroAgent,
@@ -320,25 +320,25 @@ class MicroAgentEngine:
     ) -> AgentOutput:
         """Execute a task with an agent."""
         start_time = time.time()
-        
+
         agent.status = AgentStatus.WORKING
         agent.current_task = task.id
-        
+
         iteration = 0
         best_output = None
-        
+
         while iteration < task.retries_allowed:
             iteration += 1
-            
+
             # Simulate agent work (in production, this would call LLM)
             await asyncio.sleep(0.01)  # Simulate processing
-            
+
             # Generate result based on role
             result = await self._simulate_agent_work(agent, task)
-            
+
             # Calculate quality (in production, would use evaluator)
             quality = self._evaluate_quality(result, task)
-            
+
             output = AgentOutput(
                 task_id=task.id,
                 agent_id=agent.id,
@@ -349,28 +349,28 @@ class MicroAgentEngine:
                 execution_time_ms=(time.time() - start_time) * 1000,
                 iteration=iteration
             )
-            
+
             # Keep best output
             if best_output is None or output.quality_score > best_output.quality_score:
                 best_output = output
-            
+
             # Check if quality threshold met
             effective_threshold = max(task.quality_threshold, force_quality)
             if quality >= effective_threshold:
                 break
-            
+
             # Force agent to improve
             if force_quality > 0 and quality < force_quality:
                 # Add pressure context for next iteration
                 task.inputs["previous_quality"] = quality
                 task.inputs["required_quality"] = force_quality
                 task.inputs["feedback"] = "MUST IMPROVE - quality below threshold"
-        
+
         agent.update_stats(best_output)
         agent.status = AgentStatus.COMPLETED
-        
+
         return best_output
-    
+
     async def _simulate_agent_work(
         self,
         agent: MicroAgent,
@@ -378,7 +378,7 @@ class MicroAgentEngine:
     ) -> Dict[str, Any]:
         """Simulate agent work (in production, calls LLM)."""
         template = self.role_templates.get(agent.role, {})
-        
+
         return {
             "type": task.expected_output_type,
             "content": f"[{agent.role.value}] Analysis of: {task.description[:50]}",
@@ -386,7 +386,7 @@ class MicroAgentEngine:
             "specialization": agent.specialization,
             "task_id": task.id
         }
-    
+
     def _evaluate_quality(
         self,
         result: Dict[str, Any],
@@ -395,18 +395,18 @@ class MicroAgentEngine:
         """Evaluate output quality."""
         # In production, would use sophisticated evaluation
         base_quality = 0.6
-        
+
         # Boost for correct type
         if result.get("type") == task.expected_output_type:
             base_quality += 0.1
-        
+
         # Boost for content presence
         if result.get("content"):
             base_quality += 0.1
-        
+
         # Random variance for simulation
         variance = random.uniform(-0.1, 0.2)
-        
+
         return min(1.0, max(0.0, base_quality + variance))
 
 
@@ -418,7 +418,7 @@ class TaskDecompositionEngine:
     """
     Decomposes complex tasks into micro-tasks.
     """
-    
+
     def __init__(self):
         # Role assignment patterns
         self.role_patterns = {
@@ -431,11 +431,11 @@ class TaskDecompositionEngine:
             "validate": AgentRole.VALIDATOR,
             "expert": AgentRole.SPECIALIST
         }
-    
+
     def estimate_complexity(self, task_description: str) -> TaskComplexity:
         """Estimate task complexity."""
         length = len(task_description)
-        
+
         # Simple heuristics
         complexity_keywords = {
             "comprehensive": 2,
@@ -448,17 +448,17 @@ class TaskDecompositionEngine:
             "complex": 3,
             "entire": 2
         }
-        
+
         score = 0
         for keyword, weight in complexity_keywords.items():
             if keyword in task_description.lower():
                 score += weight
-        
+
         if length > 500:
             score += 2
         if length > 200:
             score += 1
-        
+
         if score >= 8:
             return TaskComplexity.MASSIVE
         elif score >= 5:
@@ -469,7 +469,7 @@ class TaskDecompositionEngine:
             return TaskComplexity.SIMPLE
         else:
             return TaskComplexity.TRIVIAL
-    
+
     def decompose(
         self,
         task_description: str,
@@ -477,7 +477,7 @@ class TaskDecompositionEngine:
     ) -> List[MicroTask]:
         """Decompose a task into micro-tasks."""
         complexity = self.estimate_complexity(task_description)
-        
+
         # Determine number of sub-tasks based on complexity
         task_counts = {
             TaskComplexity.TRIVIAL: 1,
@@ -486,13 +486,13 @@ class TaskDecompositionEngine:
             TaskComplexity.COMPLEX: 15,
             TaskComplexity.MASSIVE: 30
         }
-        
+
         num_tasks = task_counts.get(complexity, 5)
-        
+
         # Create task tree
         tasks = []
         parent_id = hashlib.md5(task_description.encode()).hexdigest()[:8]
-        
+
         # Standard decomposition pattern
         phases = [
             ("Research phase", AgentRole.RESEARCHER, 0.6),
@@ -503,7 +503,7 @@ class TaskDecompositionEngine:
             ("Optimization", AgentRole.OPTIMIZER, 0.85),
             ("Validation", AgentRole.VALIDATOR, 0.9)
         ]
-        
+
         for i, (phase_name, role, quality) in enumerate(phases[:min(num_tasks, len(phases))]):
             task = MicroTask(
                 id=f"{parent_id}_{i}",
@@ -517,16 +517,16 @@ class TaskDecompositionEngine:
                 quality_threshold=quality
             )
             tasks.append(task)
-        
+
         # Add specialist tasks for complex problems
         if complexity in [TaskComplexity.COMPLEX, TaskComplexity.MASSIVE]:
             specialist_tasks = self._create_specialist_tasks(
                 task_description, parent_id, len(tasks)
             )
             tasks.extend(specialist_tasks)
-        
+
         return tasks
-    
+
     def _create_specialist_tasks(
         self,
         task_description: str,
@@ -539,7 +539,7 @@ class TaskDecompositionEngine:
             "technical_specialist",
             "edge_case_analyst"
         ]
-        
+
         tasks = []
         for i, spec in enumerate(specialists):
             task = MicroTask(
@@ -554,7 +554,7 @@ class TaskDecompositionEngine:
                 quality_threshold=0.8
             )
             tasks.append(task)
-        
+
         return tasks
 
 
@@ -565,23 +565,23 @@ class TaskDecompositionEngine:
 class SwarmOrchestrator:
     """
     Orchestrates micro-agent swarms for complex tasks.
-    
+
     The core of the force multiplier - coordinates hundreds
     of agents working in parallel to produce genius output.
     """
-    
+
     def __init__(self, config: SwarmConfig = None):
         self.config = config or SwarmConfig()
         self.agent_engine = MicroAgentEngine()
         self.decomposition_engine = TaskDecompositionEngine()
         self.execution_history: List[SwarmResult] = []
-        
+
         logger.info(f"SwarmOrchestrator initialized with mode: {self.config.mode.value}")
-    
+
     # -------------------------------------------------------------------------
     # MAIN EXECUTION
     # -------------------------------------------------------------------------
-    
+
     async def execute(
         self,
         task_description: str,
@@ -591,7 +591,7 @@ class SwarmOrchestrator:
         """Execute a task with the swarm."""
         start_time = time.time()
         mode = mode or self.config.mode
-        
+
         # Set quality threshold based on level
         quality_thresholds = {
             QualityLevel.MINIMUM: 0.5,
@@ -601,10 +601,10 @@ class SwarmOrchestrator:
             QualityLevel.TRANSCENDENT: 0.95
         }
         force_quality = quality_thresholds.get(quality_level, 0.8)
-        
+
         # Decompose task
         micro_tasks = self.decomposition_engine.decompose(task_description)
-        
+
         # Execute based on mode
         if mode == SwarmMode.PARALLEL:
             outputs = await self._execute_parallel(micro_tasks, force_quality)
@@ -620,10 +620,10 @@ class SwarmOrchestrator:
             outputs = await self._execute_evolutionary(micro_tasks, force_quality)
         else:
             outputs = await self._execute_parallel(micro_tasks, force_quality)
-        
+
         # Aggregate results
         final_output, quality_score, best_agent = self._aggregate_outputs(outputs)
-        
+
         # Create result
         result = SwarmResult(
             task_description=task_description,
@@ -641,15 +641,15 @@ class SwarmOrchestrator:
                 "force_threshold": force_quality
             }
         )
-        
+
         self.execution_history.append(result)
-        
+
         return result
-    
+
     # -------------------------------------------------------------------------
     # EXECUTION MODES
     # -------------------------------------------------------------------------
-    
+
     async def _execute_parallel(
         self,
         tasks: List[MicroTask],
@@ -659,10 +659,10 @@ class SwarmOrchestrator:
         async def run_task(task: MicroTask) -> AgentOutput:
             agent = self.agent_engine.get_available_agent(task.role_required)
             return await self.agent_engine.execute_task(agent, task, force_quality)
-        
+
         outputs = await asyncio.gather(*[run_task(t) for t in tasks])
         return list(outputs)
-    
+
     async def _execute_sequential(
         self,
         tasks: List[MicroTask],
@@ -671,20 +671,20 @@ class SwarmOrchestrator:
         """Execute tasks sequentially, passing context."""
         outputs = []
         context = {}
-        
+
         for task in tasks:
             # Add previous outputs as context
             task.inputs["previous_outputs"] = context
-            
+
             agent = self.agent_engine.get_available_agent(task.role_required)
             output = await self.agent_engine.execute_task(agent, task, force_quality)
             outputs.append(output)
-            
+
             # Update context
             context[task.id] = output.result
-        
+
         return outputs
-    
+
     async def _execute_competitive(
         self,
         tasks: List[MicroTask],
@@ -692,23 +692,23 @@ class SwarmOrchestrator:
     ) -> List[AgentOutput]:
         """Multiple agents compete for best solution."""
         all_outputs = []
-        
+
         for task in tasks:
             # Spawn multiple competing agents
             competitors = self.config.competition_rounds
             competing_outputs = []
-            
+
             for _ in range(competitors):
                 agent = self.agent_engine.spawn_agent(task.role_required)
                 output = await self.agent_engine.execute_task(agent, task, force_quality)
                 competing_outputs.append(output)
-            
+
             # Keep only the best
             best = max(competing_outputs, key=lambda o: o.quality_score)
             all_outputs.append(best)
-        
+
         return all_outputs
-    
+
     async def _execute_collaborative(
         self,
         tasks: List[MicroTask],
@@ -717,24 +717,24 @@ class SwarmOrchestrator:
         """Agents build on each other's work."""
         outputs = []
         accumulated_knowledge = []
-        
+
         for task in tasks:
             # Share accumulated knowledge
             task.inputs["accumulated_knowledge"] = accumulated_knowledge
-            
+
             agent = self.agent_engine.get_available_agent(task.role_required)
             output = await self.agent_engine.execute_task(agent, task, force_quality)
             outputs.append(output)
-            
+
             # Accumulate knowledge
             accumulated_knowledge.append({
                 "task_id": task.id,
                 "role": task.role_required.value,
                 "insight": output.result
             })
-        
+
         return outputs
-    
+
     async def _execute_hierarchical(
         self,
         tasks: List[MicroTask],
@@ -742,25 +742,25 @@ class SwarmOrchestrator:
     ) -> List[AgentOutput]:
         """Tree structure execution."""
         outputs = []
-        
+
         # Group tasks by dependency level
         levels: Dict[int, List[MicroTask]] = defaultdict(list)
         for task in tasks:
             level = len(task.dependencies)
             levels[level].append(task)
-        
+
         # Execute level by level
         level_results: Dict[str, Any] = {}
         for level in sorted(levels.keys()):
             level_tasks = levels[level]
-            
+
             # Inject dependency results
             for task in level_tasks:
                 task.inputs["dependency_results"] = {
                     dep_id: level_results.get(dep_id)
                     for dep_id in task.dependencies
                 }
-            
+
             # Execute level in parallel
             level_outputs = await asyncio.gather(*[
                 self.agent_engine.execute_task(
@@ -770,13 +770,13 @@ class SwarmOrchestrator:
                 )
                 for t in level_tasks
             ])
-            
+
             for output in level_outputs:
                 outputs.append(output)
                 level_results[output.task_id] = output.result
-        
+
         return outputs
-    
+
     async def _execute_evolutionary(
         self,
         tasks: List[MicroTask],
@@ -784,45 +784,45 @@ class SwarmOrchestrator:
     ) -> List[AgentOutput]:
         """Survival of the fittest approach."""
         all_outputs = []
-        
+
         for task in tasks:
             generation = 0
             population_size = 5
             best_ever = None
-            
+
             while generation < self.config.max_iterations:
                 generation += 1
-                
+
                 # Generate population
                 population = []
                 for _ in range(population_size):
                     agent = self.agent_engine.spawn_agent(task.role_required)
                     output = await self.agent_engine.execute_task(agent, task, force_quality)
                     population.append(output)
-                
+
                 # Select best
                 best = max(population, key=lambda o: o.quality_score)
-                
+
                 if best_ever is None or best.quality_score > best_ever.quality_score:
                     best_ever = best
-                
+
                 # Check if good enough
                 if best.quality_score >= force_quality:
                     break
-                
+
                 # Evolve - increase pressure
                 task.inputs["evolution_generation"] = generation
                 task.inputs["best_score_so_far"] = best.quality_score
                 population_size = min(population_size + 2, 10)  # Grow population
-            
+
             all_outputs.append(best_ever)
-        
+
         return all_outputs
-    
+
     # -------------------------------------------------------------------------
     # AGGREGATION
     # -------------------------------------------------------------------------
-    
+
     def _aggregate_outputs(
         self,
         outputs: List[AgentOutput]
@@ -830,22 +830,22 @@ class SwarmOrchestrator:
         """Aggregate outputs from all agents."""
         if not outputs:
             return {}, 0.0, None
-        
+
         # Collect results by role
         by_role: Dict[str, List[AgentOutput]] = defaultdict(list)
         for output in outputs:
             if output.task_id in self.agent_engine.agents:
                 agent = self.agent_engine.agents[output.agent_id]
                 by_role[agent.role.value].append(output)
-        
+
         # Find best agent
         best_output = max(outputs, key=lambda o: o.quality_score)
-        
+
         # Calculate weighted average quality
         total_quality = sum(o.quality_score * o.confidence for o in outputs)
         total_confidence = sum(o.confidence for o in outputs)
         avg_quality = total_quality / total_confidence if total_confidence > 0 else 0
-        
+
         # Synthesize final output
         final_output = {
             "summary": f"Aggregated from {len(outputs)} agent outputs",
@@ -857,13 +857,13 @@ class SwarmOrchestrator:
             },
             "confidence": avg_quality
         }
-        
+
         return final_output, avg_quality, best_output.agent_id
-    
+
     # -------------------------------------------------------------------------
     # FORCE MULTIPLIER
     # -------------------------------------------------------------------------
-    
+
     async def force_multiply(
         self,
         task_description: str,
@@ -872,51 +872,51 @@ class SwarmOrchestrator:
     ) -> SwarmResult:
         """
         Force multiply to achieve target quality.
-        
+
         Throws more agents at the problem until quality is achieved.
         """
         logger.info(f"Force multiplying for quality {target_quality} with max {max_agents} agents")
-        
+
         best_result = None
         agents_used = 0
-        
+
         # Start with small swarm, scale up
         swarm_sizes = [5, 10, 25, 50, 100]
-        
+
         for size in swarm_sizes:
             if size > max_agents:
                 break
-            
+
             # Configure for this iteration
             self.config.max_agents = size
             self.config.force_threshold = target_quality
-            
+
             result = await self.execute(
                 task_description,
                 mode=SwarmMode.COMPETITIVE,
                 quality_level=QualityLevel.GENIUS
             )
-            
+
             agents_used += result.agents_used
-            
+
             if best_result is None or result.quality_score > best_result.quality_score:
                 best_result = result
-            
+
             if result.quality_score >= target_quality:
                 logger.info(f"Target quality achieved with {agents_used} agents")
                 break
-        
+
         return best_result
-    
+
     # -------------------------------------------------------------------------
     # UTILITIES
     # -------------------------------------------------------------------------
-    
+
     def get_swarm_stats(self) -> Dict[str, Any]:
         """Get statistics about swarm performance."""
         if not self.execution_history:
             return {"message": "No executions yet"}
-        
+
         return {
             "total_executions": len(self.execution_history),
             "total_agents_spawned": len(self.agent_engine.agents),
@@ -955,7 +955,7 @@ async def demo():
     print("=" * 60)
     print("MICRO-AGENT SWARM FORCE MULTIPLIER")
     print("=" * 60)
-    
+
     config = SwarmConfig(
         mode=SwarmMode.COLLABORATIVE,
         max_agents=50,
@@ -963,12 +963,12 @@ async def demo():
         competition_rounds=3,
         enable_self_improvement=True
     )
-    
+
     orchestrator = get_swarm_orchestrator(config)
-    
+
     # Test different modes
     test_task = "Analyze the competitive landscape for AI assistants and provide strategic recommendations"
-    
+
     print("\n--- Parallel Execution ---")
     result = await orchestrator.execute(
         test_task,
@@ -976,7 +976,7 @@ async def demo():
         quality_level=QualityLevel.EXCELLENT
     )
     print(json.dumps(result.to_dict(), indent=2))
-    
+
     print("\n--- Competitive Execution ---")
     result = await orchestrator.execute(
         test_task,
@@ -984,7 +984,7 @@ async def demo():
         quality_level=QualityLevel.GENIUS
     )
     print(json.dumps(result.to_dict(), indent=2))
-    
+
     print("\n--- Collaborative Execution ---")
     result = await orchestrator.execute(
         test_task,
@@ -992,7 +992,7 @@ async def demo():
         quality_level=QualityLevel.EXCELLENT
     )
     print(json.dumps(result.to_dict(), indent=2))
-    
+
     print("\n--- Evolutionary Execution ---")
     result = await orchestrator.execute(
         test_task,
@@ -1000,7 +1000,7 @@ async def demo():
         quality_level=QualityLevel.TRANSCENDENT
     )
     print(json.dumps(result.to_dict(), indent=2))
-    
+
     print("\n--- Force Multiplier ---")
     result = await orchestrator.force_multiply(
         "Create the ultimate AI strategy document",
@@ -1008,11 +1008,11 @@ async def demo():
         max_agents=100
     )
     print(json.dumps(result.to_dict(), indent=2))
-    
+
     print("\n--- Swarm Statistics ---")
     stats = orchestrator.get_swarm_stats()
     print(json.dumps(stats, indent=2))
-    
+
     print("\n" + "=" * 60)
     print("SWARM DEMONSTRATION COMPLETE")
 

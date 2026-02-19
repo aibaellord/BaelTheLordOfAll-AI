@@ -31,16 +31,16 @@ class Competitor:
     category: str
     website: str = ""
     repo_url: str = ""
-    
+
     # Analysis
     features: List[str] = field(default_factory=list)
     strengths: List[str] = field(default_factory=list)
     weaknesses: List[str] = field(default_factory=list)
-    
+
     # Metrics
     stars: int = 0
     users: int = 0
-    
+
     # Strategy
     surpass_strategy: str = ""
     priority: int = 5  # 1-10
@@ -70,10 +70,10 @@ class SurpassStrategy:
 
 class CompetitorAnalyzer:
     """Analyzes competitors for weaknesses and opportunities."""
-    
+
     def __init__(self):
         self._known_competitors = self._load_competitors()
-    
+
     def _load_competitors(self) -> Dict[str, Competitor]:
         """Load known competitors."""
         competitors = {
@@ -129,14 +129,14 @@ class CompetitorAnalyzer:
             )
         }
         return competitors
-    
+
     async def analyze(self, competitor_id: str) -> Dict[str, Any]:
         """Analyze a specific competitor."""
         if competitor_id not in self._known_competitors:
             return {"error": f"Unknown competitor: {competitor_id}"}
-        
+
         competitor = self._known_competitors[competitor_id]
-        
+
         return {
             "competitor": competitor.name,
             "features": competitor.features,
@@ -145,11 +145,11 @@ class CompetitorAnalyzer:
             "opportunities": self._identify_opportunities(competitor),
             "surpass_strategy": self._generate_surpass_strategy(competitor)
         }
-    
+
     def _identify_opportunities(self, competitor: Competitor) -> List[str]:
         """Identify opportunities to surpass."""
         opportunities = []
-        
+
         for weakness in competitor.weaknesses:
             if "cost" in weakness.lower():
                 opportunities.append("Offer free/local alternative")
@@ -161,9 +161,9 @@ class CompetitorAnalyzer:
                 opportunities.append("Provide comprehensive solution")
             if "documentation" in weakness.lower():
                 opportunities.append("Create excellent documentation")
-        
+
         return opportunities
-    
+
     def _generate_surpass_strategy(self, competitor: Competitor) -> SurpassStrategy:
         """Generate strategy to surpass competitor."""
         steps = [
@@ -175,7 +175,7 @@ class CompetitorAnalyzer:
             "Create superior documentation",
             "Build stronger community"
         ]
-        
+
         return SurpassStrategy(
             strategy_id=f"surpass_{competitor.competitor_id}",
             competitor_name=competitor.name,
@@ -183,13 +183,13 @@ class CompetitorAnalyzer:
             steps=steps,
             expected_outcome=f"Complete superiority over {competitor.name}"
         )
-    
+
     def compare_features(self) -> List[FeatureComparison]:
         """Compare features across all competitors."""
         all_features = set()
         for comp in self._known_competitors.values():
             all_features.update(comp.features)
-        
+
         comparisons = []
         for feature in all_features:
             comp_scores = {}
@@ -198,7 +198,7 @@ class CompetitorAnalyzer:
                     comp_scores[comp.name] = 80  # They have it
                 else:
                     comp_scores[comp.name] = 0  # They don't
-            
+
             comparisons.append(FeatureComparison(
                 feature_name=feature,
                 bael_status="superior",
@@ -207,37 +207,37 @@ class CompetitorAnalyzer:
                 gap_analysis="Ba'el exceeds all competitors",
                 surpass_plan="Continue innovation"
             ))
-        
+
         return comparisons
 
 
 class CompetitorAnnihilationSystem:
     """
     Systematically surpass every competitor.
-    
+
     Features:
     - Competitive intelligence
     - Feature gap analysis
     - Automatic feature generation
     - Benchmark domination
     """
-    
+
     def __init__(self):
         self.analyzer = CompetitorAnalyzer()
-        
+
         logger.info("CompetitorAnnihilationSystem initialized - Domination begins!")
-    
+
     async def analyze_competitor(self, competitor_id: str) -> Dict[str, Any]:
         """Analyze a competitor."""
         return await self.analyzer.analyze(competitor_id)
-    
+
     async def analyze_all(self) -> Dict[str, Any]:
         """Analyze all known competitors."""
         results = {}
         for comp_id in self.analyzer._known_competitors:
             results[comp_id] = await self.analyze_competitor(comp_id)
         return results
-    
+
     def get_feature_comparison(self) -> List[Dict[str, Any]]:
         """Get feature comparison matrix."""
         comparisons = self.analyzer.compare_features()
@@ -250,12 +250,12 @@ class CompetitorAnnihilationSystem:
             }
             for c in comparisons
         ]
-    
+
     def get_surpass_priorities(self) -> List[Dict[str, Any]]:
         """Get prioritized list of competitors to surpass."""
         competitors = list(self.analyzer._known_competitors.values())
         competitors.sort(key=lambda c: c.stars, reverse=True)
-        
+
         return [
             {
                 "competitor": c.name,
@@ -265,7 +265,7 @@ class CompetitorAnnihilationSystem:
             }
             for i, c in enumerate(competitors)
         ]
-    
+
     def get_domination_status(self) -> Dict[str, Any]:
         """Get current domination status."""
         return {

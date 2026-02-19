@@ -70,10 +70,10 @@ class ThoughtVector:
     associations: Set[str] = field(default_factory=set)
     contradictions: Set[str] = field(default_factory=set)
     synthesis_parent: Optional[Tuple[str, str]] = None
-    
+
     def get_dimensional_position(self) -> List[float]:
         return [self.dimensions.get(d, 0.0) for d in ThoughtDimension]
-    
+
     def similarity(self, other: 'ThoughtVector') -> float:
         v1 = self.get_dimensional_position()
         v2 = other.get_dimensional_position()
@@ -83,7 +83,7 @@ class ThoughtVector:
         if mag1 == 0 or mag2 == 0:
             return 0.0
         return dot_product / (mag1 * mag2)
-    
+
     def distance(self, other: 'ThoughtVector') -> float:
         v1 = self.get_dimensional_position()
         v2 = other.get_dimensional_position()
@@ -105,17 +105,17 @@ class DimensionalInsight:
 
 class QuantumThoughtProcessor:
     """Process thoughts in quantum superposition"""
-    
+
     def __init__(self):
         self.superpositions: Dict[str, List[ThoughtVector]] = {}
-    
+
     def create_superposition(self, thoughts: List[ThoughtVector]) -> str:
         superposition_id = str(uuid.uuid4())
         for thought in thoughts:
             thought.state = ThoughtState.SUPERPOSED
         self.superpositions[superposition_id] = thoughts
         return superposition_id
-    
+
     def observe(self, superposition_id: str, dimension: ThoughtDimension) -> Optional[ThoughtVector]:
         thoughts = self.superpositions.get(superposition_id)
         if not thoughts:
@@ -124,7 +124,7 @@ class QuantumThoughtProcessor:
         best.state = ThoughtState.COLLAPSED
         del self.superpositions[superposition_id]
         return best
-    
+
     def interfere(self, superposition_id: str) -> Optional[ThoughtVector]:
         thoughts = self.superpositions.get(superposition_id)
         if not thoughts:
@@ -146,10 +146,10 @@ class QuantumThoughtProcessor:
 
 class ParadoxResolver:
     """Resolve paradoxes through dimensional transcendence"""
-    
+
     def __init__(self):
         self.resolved_paradoxes: List[Dict[str, Any]] = []
-    
+
     async def resolve(self, thought_a: ThoughtVector, thought_b: ThoughtVector) -> Optional[ThoughtVector]:
         if thought_a.similarity(thought_b) > -0.5:
             return None
@@ -181,11 +181,11 @@ class ParadoxResolver:
 class DimensionalThinkingMatrix:
     """
     THE ULTIMATE HYPER-COGNITIVE ARCHITECTURE
-    
+
     Think in infinite dimensions simultaneously.
     See every angle, resolve every paradox, discover every insight.
     """
-    
+
     def __init__(self):
         self.thoughts: Dict[str, ThoughtVector] = {}
         self.quantum_processor = QuantumThoughtProcessor()
@@ -193,7 +193,7 @@ class DimensionalThinkingMatrix:
         self.thinking_depth = 0
         self.max_depth = 10
         self.meta_thoughts: List[str] = []
-    
+
     async def think(self, content: str, dimensions: Optional[Dict[ThoughtDimension, float]] = None) -> ThoughtVector:
         if dimensions is None:
             dimensions = await self._analyze_dimensions(content)
@@ -210,7 +210,7 @@ class DimensionalThinkingMatrix:
         thought.state = ThoughtState.CRYSTALLIZED
         self.thoughts[thought.id] = thought
         return thought
-    
+
     async def _analyze_dimensions(self, content: str) -> Dict[ThoughtDimension, float]:
         dimensions = {}
         content_lower = content.lower()
@@ -230,16 +230,16 @@ class DimensionalThinkingMatrix:
             if dim not in dimensions:
                 dimensions[dim] = 0.0
         return dimensions
-    
+
     def _calculate_magnitude(self, dimensions: Dict[ThoughtDimension, float]) -> float:
         return math.sqrt(sum(v * v for v in dimensions.values()))
-    
+
     async def _find_associations(self, thought: ThoughtVector) -> Set[str]:
         return {tid for tid, other in self.thoughts.items() if thought.similarity(other) > 0.5}
-    
+
     async def _find_contradictions(self, thought: ThoughtVector) -> Set[str]:
         return {tid for tid, other in self.thoughts.items() if thought.similarity(other) < -0.5}
-    
+
     async def synthesize(self, thought_a_id: str, thought_b_id: str) -> Optional[ThoughtVector]:
         thought_a = self.thoughts.get(thought_a_id)
         thought_b = self.thoughts.get(thought_b_id)
@@ -260,7 +260,7 @@ class DimensionalThinkingMatrix:
         )
         self.thoughts[synthesis.id] = synthesis
         return synthesis
-    
+
     async def explore_all_angles(self, topic: str) -> Dict[ThoughtDimension, ThoughtVector]:
         angles = {}
         for dim in ThoughtDimension:
@@ -269,7 +269,7 @@ class DimensionalThinkingMatrix:
             thought = await self.think(f"[{dim.name}] {topic}", dimensions)
             angles[dim] = thought
         return angles
-    
+
     def get_stats(self) -> Dict[str, Any]:
         return {
             "total_thoughts": len(self.thoughts),

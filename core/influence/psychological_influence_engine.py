@@ -112,7 +112,7 @@ class Target:
     current_influence_level: InfluenceLevel
     resistance_level: float  # 0-1
     trust_level: float  # 0-1
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -171,7 +171,7 @@ class InfluenceResult:
 class PsychologicalInfluenceEngine:
     """
     The Psychological Influence Engine - master of minds.
-    
+
     Provides:
     - Deep behavioral analysis
     - Cognitive bias exploitation
@@ -179,18 +179,18 @@ class PsychologicalInfluenceEngine:
     - Persuasion pattern application
     - Influence campaign management
     """
-    
+
     def __init__(self):
         self.targets: Dict[str, Target] = {}
         self.tactics: Dict[str, InfluenceTactic] = {}
         self.campaigns: Dict[str, InfluenceCampaign] = {}
         self.influence_history: List[InfluenceResult] = []
-        
+
         # Initialize tactics library
         self._init_tactics()
-        
+
         logger.info("PsychologicalInfluenceEngine initialized - minds are open")
-    
+
     def _init_tactics(self):
         """Initialize the tactics library."""
         tactics_templates = [
@@ -299,7 +299,7 @@ class PsychologicalInfluenceEngine:
                 ]
             }
         ]
-        
+
         for i, template in enumerate(tactics_templates):
             tactic = InfluenceTactic(
                 id=f"tactic_{i:04d}",
@@ -314,11 +314,11 @@ class PsychologicalInfluenceEngine:
                 implementation_steps=template["steps"]
             )
             self.tactics[tactic.id] = tactic
-    
+
     # -------------------------------------------------------------------------
     # TARGET PROFILING
     # -------------------------------------------------------------------------
-    
+
     async def profile_target(
         self,
         name: str,
@@ -336,7 +336,7 @@ class PsychologicalInfluenceEngine:
         else:
             vulnerabilities = random.sample(list(CognitiveBias), 3)
             triggers = random.sample(list(EmotionalTrigger), 2)
-        
+
         target = Target(
             id=self._gen_id("target"),
             name=name,
@@ -348,10 +348,10 @@ class PsychologicalInfluenceEngine:
             resistance_level=random.uniform(0.2, 0.6),
             trust_level=random.uniform(0.1, 0.3)
         )
-        
+
         self.targets[target.id] = target
         return target
-    
+
     async def analyze_vulnerabilities(
         self,
         target_id: str
@@ -360,7 +360,7 @@ class PsychologicalInfluenceEngine:
         target = self.targets.get(target_id)
         if not target:
             return {}
-        
+
         analysis = {
             "target": target.name,
             "vulnerabilities": [
@@ -382,16 +382,16 @@ class PsychologicalInfluenceEngine:
             "overall_susceptibility": 1 - target.resistance_level,
             "trust_building_needed": 1 - target.trust_level
         }
-        
+
         return analysis
-    
+
     def _get_tactic_for_bias(self, bias: CognitiveBias) -> Optional[InfluenceTactic]:
         """Find best tactic for a specific bias."""
         for tactic in self.tactics.values():
             if bias in tactic.biases_exploited:
                 return tactic
         return None
-    
+
     def _get_trigger_activation(self, trigger: EmotionalTrigger) -> str:
         """Get method to activate a trigger."""
         activations = {
@@ -405,7 +405,7 @@ class PsychologicalInfluenceEngine:
             EmotionalTrigger.HOPE: "Paint vision of better future"
         }
         return activations.get(trigger, "Standard activation")
-    
+
     def _get_trigger_response(self, trigger: EmotionalTrigger) -> str:
         """Get expected response to trigger."""
         responses = {
@@ -419,11 +419,11 @@ class PsychologicalInfluenceEngine:
             EmotionalTrigger.HOPE: "Optimistic engagement"
         }
         return responses.get(trigger, "Variable response")
-    
+
     # -------------------------------------------------------------------------
     # INFLUENCE EXECUTION
     # -------------------------------------------------------------------------
-    
+
     async def apply_tactic(
         self,
         target_id: str,
@@ -432,7 +432,7 @@ class PsychologicalInfluenceEngine:
         """Apply an influence tactic to a target."""
         target = self.targets.get(target_id)
         tactic = self.tactics.get(tactic_id)
-        
+
         if not target or not tactic:
             return InfluenceResult(
                 target_id=target_id,
@@ -444,16 +444,16 @@ class PsychologicalInfluenceEngine:
                 new_influence_level=InfluenceLevel.NONE,
                 notes="Target or tactic not found"
             )
-        
+
         # Calculate success based on tactic effectiveness vs resistance
         base_chance = tactic.effectiveness
         resistance_modifier = 1 - target.resistance_level
         bias_bonus = 0.1 * len([b for b in target.vulnerabilities if b in tactic.biases_exploited])
         trigger_bonus = 0.1 * len([t for t in target.emotional_triggers if t in tactic.triggers_activated])
-        
+
         success_chance = base_chance * resistance_modifier + bias_bonus + trigger_bonus
         success = random.random() < success_chance
-        
+
         if success:
             influence_change = random.uniform(0.1, 0.3)
             trust_change = random.uniform(0.05, 0.15)
@@ -462,15 +462,15 @@ class PsychologicalInfluenceEngine:
             influence_change = random.uniform(-0.1, 0.05)
             trust_change = random.uniform(-0.1, 0)
             resistance_change = random.uniform(0, 0.1)
-        
+
         # Update target
         target.trust_level = max(0, min(1, target.trust_level + trust_change))
         target.resistance_level = max(0, min(1, target.resistance_level + resistance_change))
-        
+
         # Update influence level
         new_level = self._calculate_influence_level(target, success)
         target.current_influence_level = new_level
-        
+
         result = InfluenceResult(
             target_id=target_id,
             tactic_used=tactic.name,
@@ -481,22 +481,22 @@ class PsychologicalInfluenceEngine:
             new_influence_level=new_level,
             notes=f"{'Tactic successful' if success else 'Tactic failed'}: {tactic.name}"
         )
-        
+
         self.influence_history.append(result)
         return result
-    
+
     def _calculate_influence_level(self, target: Target, success: bool) -> InfluenceLevel:
         """Calculate new influence level."""
         levels = list(InfluenceLevel)
         current_idx = levels.index(target.current_influence_level)
-        
+
         if success and current_idx < len(levels) - 1:
             return levels[current_idx + 1]
         elif not success and current_idx > 0:
             return levels[current_idx]  # Stay same on failure
-        
+
         return target.current_influence_level
-    
+
     async def create_campaign(
         self,
         target_id: str,
@@ -514,9 +514,9 @@ class PsychologicalInfluenceEngine:
                 ][:4]
             else:
                 tactics = list(self.tactics.keys())[:4]
-        
+
         tactic_objects = [self.tactics[t] for t in tactics if t in self.tactics]
-        
+
         campaign = InfluenceCampaign(
             id=self._gen_id("campaign"),
             name=f"Campaign: {objective[:30]}",
@@ -530,10 +530,10 @@ class PsychologicalInfluenceEngine:
             status="active",
             created_at=datetime.now()
         )
-        
+
         self.campaigns[campaign.id] = campaign
         return campaign
-    
+
     async def execute_campaign(
         self,
         campaign_id: str
@@ -542,28 +542,28 @@ class PsychologicalInfluenceEngine:
         campaign = self.campaigns.get(campaign_id)
         if not campaign:
             return []
-        
+
         results = []
         for i, tactic in enumerate(campaign.tactics):
             result = await self.apply_tactic(campaign.target_id, tactic.id)
             results.append(result)
-            
+
             campaign.current_phase = i + 1
             campaign.progress = (i + 1) / campaign.phases_total
-            
+
             await asyncio.sleep(0.1)  # Simulate time between tactics
-        
+
         campaign.status = "completed"
         return results
-    
+
     # -------------------------------------------------------------------------
     # HELPERS
     # -------------------------------------------------------------------------
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get influence engine statistics."""
         return {
@@ -600,9 +600,9 @@ async def demo():
     print("=" * 60)
     print("🧠 PSYCHOLOGICAL INFLUENCE ENGINE 🧠")
     print("=" * 60)
-    
+
     engine = get_influence_engine()
-    
+
     # Profile target
     print("\n--- Profiling Target ---")
     target = await engine.profile_target(
@@ -614,14 +614,14 @@ async def demo():
     print(f"  Type: {target.target_type.value}")
     print(f"  Resistance: {target.resistance_level:.0%}")
     print(f"  Vulnerabilities: {[v.value for v in target.vulnerabilities[:3]]}")
-    
+
     # Analyze vulnerabilities
     print("\n--- Analyzing Vulnerabilities ---")
     analysis = await engine.analyze_vulnerabilities(target.id)
     print(f"Overall susceptibility: {analysis['overall_susceptibility']:.0%}")
     for v in analysis['vulnerabilities'][:2]:
         print(f"  - {v['bias']}: {v['exploitability']:.0%}")
-    
+
     # Apply tactics
     print("\n--- Applying Influence Tactics ---")
     tactics = list(engine.tactics.values())
@@ -629,7 +629,7 @@ async def demo():
         result = await engine.apply_tactic(target.id, tactic.id)
         status = "✓" if result.success else "✗"
         print(f"  {status} {result.tactic_used}: {result.notes}")
-    
+
     # Create and execute campaign
     print("\n--- Executing Influence Campaign ---")
     campaign = await engine.create_campaign(
@@ -637,25 +637,25 @@ async def demo():
         "Achieve complete influence over decision making"
     )
     print(f"Campaign: {campaign.name}")
-    
+
     results = await engine.execute_campaign(campaign.id)
     successes = sum(1 for r in results if r.success)
     print(f"  Phases completed: {len(results)}")
     print(f"  Successful: {successes}/{len(results)}")
-    
+
     # Check final state
     print("\n--- Final Target State ---")
     updated_target = engine.targets[target.id]
     print(f"  Influence level: {updated_target.current_influence_level.value}")
     print(f"  Trust: {updated_target.trust_level:.0%}")
     print(f"  Resistance: {updated_target.resistance_level:.0%}")
-    
+
     # Stats
     print("\n--- Statistics ---")
     stats = engine.get_stats()
     print(f"Targets profiled: {stats['targets_profiled']}")
     print(f"Success rate: {stats['success_rate']:.0%}")
-    
+
     print("\n" + "=" * 60)
     print("🧠 MINDS INFLUENCED 🧠")
 

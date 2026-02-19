@@ -32,6 +32,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
+from .oauth import OAuthConfig, OAuthTokenManager
 
 logger = logging.getLogger("BAEL.Providers")
 
@@ -789,6 +790,115 @@ class OllamaProvider(BaseProvider):
 
 
 # =============================================================================
+# GOOGLE PROVIDER (OAuth example)
+# =============================================================================
+
+
+class GoogleProvider(BaseProvider):
+    """Google (Gemini) provider example using OAuth token manager."""
+
+    async def initialize(self) -> bool:
+        try:
+            # Build OAuth config from environment if available
+            client_id = os.environ.get("GOOGLE_CLIENT_ID")
+            client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
+            refresh_token = os.environ.get("GOOGLE_REFRESH_TOKEN")
+            token_url = os.environ.get("GOOGLE_TOKEN_URL", "https://oauth2.googleapis.com/token")
+
+            oauth_cfg = OAuthConfig(
+                client_id=client_id,
+                client_secret=client_secret,
+                refresh_token=refresh_token,
+                token_url=token_url,
+                cache_path=os.environ.get("GOOGLE_OAUTH_CACHE", ".cache/google_oauth.json")
+            )
+
+            token = await OAuthTokenManager.refresh_or_get(oauth_cfg)
+
+            if not token:
+                logger.warning("Google OAuth token not available; skipping Google provider")
+                return False
+
+            # Store token in api_key for reuse by complete()/stream()
+            self.config.api_key = token
+            self.config.base_url = os.environ.get("GOOGLE_API_BASE", "https://gemini.googleapis.com/v1")
+            self._initialized = True
+            logger.info("Google provider initialized (OAuth)")
+            return True
+
+        except Exception as e:
+            logger.warning(f"Google provider initialization failed: {e}")
+            return False
+
+    async def complete(self, request: CompletionRequest) -> CompletionResponse:
+        start_time = time.time()
+        try:
+            import aiohttp
+
+            model = request.model or "gemini-1.5"  # default
+
+            headers = {
+                "Authorization": f"Bearer {self.config.api_key}",
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "model": model,
+                "messages": request.messages,
+                "max_tokens": request.max_tokens,
+                "temperature": request.temperature,
+            }
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{self.config.base_url}/models/{model}:generate",
+                    json=payload,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout_seconds)
+                ) as resp:
+                    data = await resp.json()
+
+            latency = (time.time() - start_time) * 1000
+
+            # Best-effort parsing; provider responses vary
+            content = ""
+            if isinstance(data, dict):
+                # Gemini style may include 'candidates' or 'output'
+                if "candidates" in data and data["candidates"]:
+                    content = data["candidates"][0].get("content", "")
+                elif "output" in data:
+                    # output can be structured
+                    content = json.dumps(data["output"]) if not isinstance(data["output"], str) else data["output"]
+
+            input_tokens = 0
+            output_tokens = 0
+
+            self.record_usage(input_tokens + output_tokens)
+
+            return CompletionResponse(
+                id=data.get("id", str(uuid4())) if isinstance(data, dict) else str(uuid4()),
+                content=content,
+                model=model,
+                provider=ProviderType.GOOGLE,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                total_tokens=input_tokens + output_tokens,
+                latency_ms=latency,
+                cost=0.0,
+                finish_reason="stop"
+            )
+
+        except Exception as e:
+            logger.error(f"Google completion failed: {e}")
+            raise
+
+    async def stream(self, request: CompletionRequest) -> AsyncIterator[str]:
+        # For now, fallback to non-streaming complete
+        resp = await self.complete(request)
+        yield resp.content
+
+
+# =============================================================================
 # PROVIDER ROUTER
 # =============================================================================
 
@@ -827,6 +937,7 @@ class ProviderRouter:
             (ProviderType.GROQ, GroqProvider, 1),
             (ProviderType.OPENROUTER, OpenRouterProvider, 2),
             (ProviderType.OLLAMA, OllamaProvider, 3),
+            (ProviderType.GOOGLE, GoogleProvider, 4),
         ]
 
         for ptype, provider_class, priority in provider_configs:
@@ -907,6 +1018,76 @@ class ProviderRouter:
                 continue
 
         raise Exception("All providers failed for streaming")
+
+    async def ensemble_complete(self, request: CompletionRequest, top_k: int = 2, timeout: int = 20) -> CompletionResponse:
+        """Query the top_k providers in parallel and return the best response.
+
+        Strategy:
+        - Select up to `top_k` available providers (by priority and availability).
+        - Run their `complete()` calls in parallel with timeouts.
+        - Score responses by provider model `quality_score` and response length.
+        - Return the highest-scoring single `CompletionResponse`.
+        - If none succeed, raise an exception.
+        """
+        if not self._initialized:
+            await self.initialize()
+
+        # Select candidate providers
+        candidates: List[Tuple[ProviderType, BaseProvider]] = []
+        for ptype in self._priority_order:
+            provider = self._providers.get(ptype)
+            if not provider:
+                continue
+            if provider.can_handle_request(request):
+                candidates.append((ptype, provider))
+            if len(candidates) >= top_k:
+                break
+
+        if not candidates:
+            raise Exception("No available providers for ensemble")
+
+        async def _call_provider(ptype: ProviderType, provider: BaseProvider):
+            try:
+                coro = provider.complete(request)
+                return await asyncio.wait_for(coro, timeout=timeout)
+            except Exception as e:
+                logger.debug(f"Ensemble provider {ptype.value} call failed: {e}")
+                return None
+
+        tasks = [asyncio.create_task(_call_provider(ptype, prov)) for ptype, prov in candidates]
+
+        done, pending = await asyncio.wait(tasks, timeout=timeout)
+
+        responses: List[CompletionResponse] = [t.result() for t in done if t.result() is not None]
+
+        for p in pending:
+            p.cancel()
+
+        if not responses:
+            self._metrics["errors"] += 1
+            raise Exception("Ensemble failed: no providers returned responses")
+
+        # Score responses using provider quality and content length
+        def _score(resp: CompletionResponse) -> float:
+            quality = 0.5
+            # try to find quality score for model
+            models = PROVIDER_MODELS.get(resp.provider, [])
+            for m in models:
+                if m.model_id == resp.model or resp.model.startswith(m.model_id.split(":")[0]):
+                    quality = m.quality_score
+                    break
+            length_score = max(1.0, len(resp.content))
+            return quality * (1.0 + (length_score / 200.0))
+
+        best = max(responses, key=_score)
+
+        # Update metrics
+        self._metrics["total_tokens"] += best.total_tokens
+        self._metrics["total_cost"] += best.cost
+        self._metrics["provider_usage"].setdefault(best.provider.value, 0)
+        self._metrics["provider_usage"][best.provider.value] += 1
+
+        return best
 
     def get_available_models(self) -> List[ProviderModel]:
         """Get all available models across initialized providers."""

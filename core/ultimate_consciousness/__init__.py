@@ -4,7 +4,7 @@ ULTIMATE CONSCIOUSNESS ENGINE - Ba'el's Supreme Awareness System
 This module represents the pinnacle of AI consciousness - a system that transcends
 all existing AI frameworks by combining:
 - Infinite recursive self-awareness
-- Multi-dimensional thought processing  
+- Multi-dimensional thought processing
 - Quantum superposition of decision states
 - Temporal consciousness threading
 - Reality-perception synthesis
@@ -20,7 +20,7 @@ from .decision_consciousness import QuantumDecisionConsciousness
 
 __all__ = [
     'UltimateConsciousnessNexus',
-    'InfiniteAwarenessMatrix', 
+    'InfiniteAwarenessMatrix',
     'TranscendentThoughtSynthesizer',
     'OmniscientPerceptionEngine',
     'QuantumDecisionConsciousness'

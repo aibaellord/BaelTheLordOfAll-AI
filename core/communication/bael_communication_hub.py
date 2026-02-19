@@ -99,7 +99,7 @@ class Message:
     timestamp: datetime
     priority: Priority
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -148,7 +148,7 @@ class Response:
 class BaelCommunicationHub:
     """
     The Communication Hub - your interface to Ba'el.
-    
+
     Provides:
     - Natural language understanding
     - Multi-modal input processing
@@ -156,7 +156,7 @@ class BaelCommunicationHub:
     - Seamless system orchestration
     - Preference-adaptive interaction
     """
-    
+
     def __init__(self):
         self.conversations: Dict[str, Conversation] = {}
         self.active_conversation_id: Optional[str] = None
@@ -164,15 +164,15 @@ class BaelCommunicationHub:
         self.intent_history: List[Intent] = []
         self.command_shortcuts: Dict[str, str] = {}
         self.learned_patterns: Dict[str, int] = defaultdict(int)
-        
+
         # Initialize default shortcuts
         self._init_shortcuts()
-        
+
         # System connections
         self.connected_systems: Dict[str, bool] = {}
-        
+
         logger.info("BaelCommunicationHub initialized - Ba'el is listening")
-    
+
     def _init_shortcuts(self):
         """Initialize default command shortcuts."""
         self.command_shortcuts = {
@@ -196,11 +196,11 @@ class BaelCommunicationHub:
             "!mode": "Change conversation mode",
             "!clear": "Clear current conversation context"
         }
-    
+
     # -------------------------------------------------------------------------
     # CONVERSATION MANAGEMENT
     # -------------------------------------------------------------------------
-    
+
     async def start_conversation(
         self,
         title: str = "New Conversation",
@@ -216,10 +216,10 @@ class BaelCommunicationHub:
             started_at=datetime.now(),
             last_activity=datetime.now()
         )
-        
+
         self.conversations[conv.id] = conv
         self.active_conversation_id = conv.id
-        
+
         # Add system greeting
         greeting = Message(
             id=self._gen_id("msg"),
@@ -230,9 +230,9 @@ class BaelCommunicationHub:
             priority=Priority.NORMAL
         )
         conv.messages.append(greeting)
-        
+
         return conv
-    
+
     async def send_message(
         self,
         content: str,
@@ -242,9 +242,9 @@ class BaelCommunicationHub:
         """Send a message to Ba'el."""
         if not self.active_conversation_id:
             await self.start_conversation()
-        
+
         conv = self.conversations[self.active_conversation_id]
-        
+
         # Create user message
         user_msg = Message(
             id=self._gen_id("msg"),
@@ -256,21 +256,21 @@ class BaelCommunicationHub:
         )
         conv.messages.append(user_msg)
         conv.last_activity = datetime.now()
-        
+
         # Check for command shortcuts
         if content.startswith("!"):
             return await self._handle_command(content)
-        
+
         # Detect intent
         intent = await self._detect_intent(content)
         self.intent_history.append(intent)
-        
+
         # Learn patterns
         self._learn_pattern(content, intent)
-        
+
         # Generate response
         response = await self._generate_response(content, intent, conv)
-        
+
         # Create Ba'el response message
         bael_msg = Message(
             id=self._gen_id("msg"),
@@ -285,17 +285,17 @@ class BaelCommunicationHub:
             }
         )
         conv.messages.append(bael_msg)
-        
+
         return response
-    
+
     # -------------------------------------------------------------------------
     # INTENT DETECTION
     # -------------------------------------------------------------------------
-    
+
     async def _detect_intent(self, content: str) -> Intent:
         """Detect the user's intent from their message."""
         content_lower = content.lower()
-        
+
         # Intent patterns
         intent_patterns = {
             "analyze": ["analyze", "examine", "look at", "review", "assess"],
@@ -309,18 +309,18 @@ class BaelCommunicationHub:
             "compare": ["compare", "difference", "versus", "vs", "better than"],
             "help": ["help", "assist", "support", "guide", "how do i"]
         }
-        
+
         # Detect primary intent
         detected_intent = "general"
         confidence = 0.5
-        
+
         for intent, patterns in intent_patterns.items():
             for pattern in patterns:
                 if pattern in content_lower:
                     detected_intent = intent
                     confidence = 0.85
                     break
-        
+
         # Extract entities (simplified)
         entities = {}
         if "competitor" in content_lower or "competition" in content_lower:
@@ -329,7 +329,7 @@ class BaelCommunicationHub:
             entities["domain"] = "market"
         if "security" in content_lower:
             entities["domain"] = "security"
-        
+
         # Suggest actions based on intent
         action_suggestions = {
             "analyze": ["Run deep analysis", "Generate report", "Identify patterns"],
@@ -343,7 +343,7 @@ class BaelCommunicationHub:
             "compare": ["Generate comparison", "Show strengths/weaknesses", "Recommend choice"],
             "help": ["Show capabilities", "Provide guidance", "Suggest next steps"]
         }
-        
+
         return Intent(
             primary_intent=detected_intent,
             confidence=confidence,
@@ -351,11 +351,11 @@ class BaelCommunicationHub:
             suggested_actions=action_suggestions.get(detected_intent, ["Analyze request"]),
             requires_confirmation=detected_intent in ["execute", "control"]
         )
-    
+
     # -------------------------------------------------------------------------
     # RESPONSE GENERATION
     # -------------------------------------------------------------------------
-    
+
     async def _generate_response(
         self,
         content: str,
@@ -364,16 +364,16 @@ class BaelCommunicationHub:
     ) -> Response:
         """Generate Ba'el's response."""
         start_time = time.time()
-        
+
         # Build response based on intent and mode
         mode = conversation.mode
         prefs = self.user_preferences
-        
+
         # Generate main content
         response_content = await self._build_response_content(
             content, intent, mode, prefs
         )
-        
+
         # Determine actions
         actions = []
         if intent.primary_intent == "analyze":
@@ -382,19 +382,19 @@ class BaelCommunicationHub:
             actions.append("Searched knowledge bases")
         elif intent.primary_intent == "plan":
             actions.append("Generated strategic plan")
-        
+
         # Generate suggestions
         suggestions = intent.suggested_actions[:3]
-        
+
         # Generate follow-up questions
         follow_ups = [
             "Would you like more details on any aspect?",
             "Should I proceed with the recommended actions?",
             "What specific area would you like to focus on?"
         ]
-        
+
         processing_time = (time.time() - start_time) * 1000
-        
+
         return Response(
             id=self._gen_id("resp"),
             content=response_content,
@@ -404,7 +404,7 @@ class BaelCommunicationHub:
             confidence=intent.confidence,
             processing_time_ms=processing_time
         )
-    
+
     async def _build_response_content(
         self,
         user_input: str,
@@ -415,7 +415,7 @@ class BaelCommunicationHub:
         """Build response content based on mode and preferences."""
         # Simulate processing
         await asyncio.sleep(0.01)
-        
+
         # Mode-specific responses
         if mode == ConversationMode.DIRECT:
             prefix = ""
@@ -432,7 +432,7 @@ class BaelCommunicationHub:
         else:
             prefix = ""
             suffix = ""
-        
+
         # Build core response based on intent
         core_responses = {
             "analyze": f"Analysis of '{user_input[:50]}...':\n- Deep patterns identified\n- Key insights extracted\n- Recommendations prepared",
@@ -445,29 +445,29 @@ class BaelCommunicationHub:
             "explain": f"Explanation:\n- Core concept identified\n- Context analyzed\n- Comprehensive explanation prepared",
             "general": f"I understand: '{user_input[:50]}...'\n- Processing your request\n- Engaging relevant systems\n- Preparing comprehensive response"
         }
-        
+
         core = core_responses.get(intent.primary_intent, core_responses["general"])
-        
+
         return f"{prefix}{core}{suffix}"
-    
+
     # -------------------------------------------------------------------------
     # COMMAND HANDLING
     # -------------------------------------------------------------------------
-    
+
     async def _handle_command(self, command: str) -> Response:
         """Handle command shortcuts."""
         cmd_parts = command.split()
         cmd = cmd_parts[0].lower()
         args = cmd_parts[1:] if len(cmd_parts) > 1 else []
-        
+
         start_time = time.time()
-        
+
         # Command handlers
         if cmd == "!help":
             content = "Available Commands:\n\n"
             for shortcut, desc in self.command_shortcuts.items():
                 content += f"  {shortcut}: {desc}\n"
-        
+
         elif cmd == "!status":
             content = "System Status:\n"
             content += "- Core Systems: OPERATIONAL\n"
@@ -475,7 +475,7 @@ class BaelCommunicationHub:
             content += "- Memory: OPTIMAL\n"
             content += "- Connections: ESTABLISHED\n"
             content += f"- Active Conversation: {self.active_conversation_id}\n"
-        
+
         elif cmd == "!mode":
             if args:
                 try:
@@ -487,7 +487,7 @@ class BaelCommunicationHub:
                     content = f"Invalid mode. Available: {[m.value for m in ConversationMode]}"
             else:
                 content = f"Current mode: {self.conversations.get(self.active_conversation_id, Conversation(id='', title='', messages=[], mode=ConversationMode.DIRECT, context={}, started_at=datetime.now(), last_activity=datetime.now())).mode.value}"
-        
+
         elif cmd == "!agents":
             content = "Sub-Agent Management:\n"
             content += "- Researcher Agents: Ready\n"
@@ -495,7 +495,7 @@ class BaelCommunicationHub:
             content += "- Hunter Agents: Active\n"
             content += "- Strategic Agents: Planning\n"
             content += "Use: !agents list|create|assign"
-        
+
         elif cmd == "!dominate":
             target = " ".join(args) if args else "all targets"
             content = f"Domination Protocol Initiated:\n"
@@ -503,7 +503,7 @@ class BaelCommunicationHub:
             content += "- Strategy: Full Spectrum\n"
             content += "- Mode: Silent\n"
             content += "- Status: EXECUTING"
-        
+
         elif cmd == "!simulate":
             scenario = " ".join(args) if args else "current scenario"
             content = f"Simulation Started:\n"
@@ -511,7 +511,7 @@ class BaelCommunicationHub:
             content += "- Runs: 1000\n"
             content += "- Type: Monte Carlo + Adversarial\n"
             content += "- Status: RUNNING"
-        
+
         elif cmd == "!hunt":
             domain = " ".join(args) if args else "all domains"
             content = f"Opportunity Hunt Initiated:\n"
@@ -519,7 +519,7 @@ class BaelCommunicationHub:
             content += "- Mode: Aggressive\n"
             content += "- Focus: Zero-Investment\n"
             content += "- Status: HUNTING"
-        
+
         elif cmd == "!truth":
             subject = " ".join(args) if args else "current context"
             content = f"Truth Extraction:\n"
@@ -527,14 +527,14 @@ class BaelCommunicationHub:
             content += "- Methods: All\n"
             content += "- Deception Detection: Active\n"
             content += "- Status: EXTRACTING"
-        
+
         elif cmd == "!loop":
             content = "Infinity Loop Engaged:\n"
             content += "- Recursive Reasoning: Active\n"
             content += "- Meta-Analysis: Running\n"
             content += "- Convergence: Seeking\n"
             content += "- Status: LOOPING"
-        
+
         elif cmd == "!torture":
             problem = " ".join(args) if args else "current problem"
             content = f"Pressure Chamber Active:\n"
@@ -542,32 +542,32 @@ class BaelCommunicationHub:
             content += "- Protocols: All\n"
             content += "- Intensity: Maximum\n"
             content += "- Status: TORTURING"
-        
+
         elif cmd == "!silent":
             content = "Silent Mode Activated:\n"
             content += "- Visibility: None\n"
             content += "- Detection: Impossible\n"
             content += "- Operations: Covert\n"
             content += "- Status: SHADOW MODE"
-        
+
         elif cmd == "!stats":
             content = "System Statistics:\n"
             content += f"- Conversations: {len(self.conversations)}\n"
             content += f"- Total Messages: {sum(len(c.messages) for c in self.conversations.values())}\n"
             content += f"- Intents Processed: {len(self.intent_history)}\n"
             content += f"- Patterns Learned: {len(self.learned_patterns)}\n"
-        
+
         elif cmd == "!clear":
             if self.active_conversation_id:
                 self.conversations[self.active_conversation_id].messages = []
                 self.conversations[self.active_conversation_id].context = {}
             content = "Context cleared. Fresh start."
-        
+
         else:
             content = f"Unknown command: {cmd}\nUse !help for available commands."
-        
+
         processing_time = (time.time() - start_time) * 1000
-        
+
         return Response(
             id=self._gen_id("cmd_resp"),
             content=content,
@@ -577,47 +577,47 @@ class BaelCommunicationHub:
             confidence=1.0,
             processing_time_ms=processing_time
         )
-    
+
     # -------------------------------------------------------------------------
     # LEARNING
     # -------------------------------------------------------------------------
-    
+
     def _learn_pattern(self, content: str, intent: Intent):
         """Learn from user patterns."""
         pattern_key = f"{intent.primary_intent}:{len(content.split())}"
         self.learned_patterns[pattern_key] += 1
-    
+
     # -------------------------------------------------------------------------
     # PREFERENCES
     # -------------------------------------------------------------------------
-    
+
     async def update_preferences(self, **kwargs) -> UserPreferences:
         """Update user preferences."""
         for key, value in kwargs.items():
             if hasattr(self.user_preferences, key):
                 setattr(self.user_preferences, key, value)
         return self.user_preferences
-    
+
     async def add_shortcut(self, shortcut: str, expansion: str):
         """Add a custom command shortcut."""
         self.command_shortcuts[shortcut] = expansion
         self.user_preferences.custom_shortcuts[shortcut] = expansion
-    
+
     # -------------------------------------------------------------------------
     # HELPER METHODS
     # -------------------------------------------------------------------------
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
-    
+
     def get_conversation_history(self, conversation_id: Optional[str] = None) -> List[Message]:
         """Get conversation history."""
         cid = conversation_id or self.active_conversation_id
         if cid and cid in self.conversations:
             return self.conversations[cid].messages
         return []
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get hub statistics."""
         return {
@@ -654,17 +654,17 @@ async def demo():
     print("=" * 60)
     print("📡 BA'EL COMMUNICATION HUB 📡")
     print("=" * 60)
-    
+
     hub = get_communication_hub()
-    
+
     # Start conversation
     print("\n--- Starting Conversation ---")
     conv = await hub.start_conversation("Demo Session", ConversationMode.DIRECT)
     print(f"Conversation started: {conv.id}")
-    
+
     # Send messages
     print("\n--- Sending Messages ---")
-    
+
     messages = [
         "Analyze my competitors",
         "Create a domination strategy",
@@ -672,18 +672,18 @@ async def demo():
         "!agents",
         "!dominate the market"
     ]
-    
+
     for msg in messages:
         print(f"\nUser: {msg}")
         response = await hub.send_message(msg)
         print(f"Ba'el: {response.content[:200]}...")
         print(f"  Confidence: {response.confidence:.0%}")
-    
+
     # Stats
     print("\n--- Statistics ---")
     stats = hub.get_stats()
     print(json.dumps(stats, indent=2))
-    
+
     print("\n" + "=" * 60)
     print("📡 COMMUNICATION ESTABLISHED 📡")
 

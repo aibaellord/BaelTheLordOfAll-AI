@@ -65,17 +65,17 @@ class UniverseState:
     """State of a parallel universe (execution context)."""
     universe_id: str
     parent_id: Optional[str] = None
-    
+
     # Context
     variables: Dict[str, Any] = field(default_factory=dict)
     memory: Dict[str, Any] = field(default_factory=dict)
     execution_log: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     # Metrics
     created_at: datetime = field(default_factory=datetime.utcnow)
     last_action_at: Optional[datetime] = None
     action_count: int = 0
-    
+
     def copy(self) -> "UniverseState":
         """Create a deep copy of this state."""
         return UniverseState(
@@ -94,24 +94,24 @@ class ExecutionPath:
     path_id: str
     description: str
     approach: str
-    
+
     # State
     universe: UniverseState = field(default_factory=lambda: UniverseState(universe_id="default"))
     state: PathState = PathState.PENDING
-    
+
     # Task function
     task_fn: Optional[Callable] = None
     task_args: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Results
     result: Any = None
     error: Optional[str] = None
-    
+
     # Metrics
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     execution_time_ms: float = 0.0
-    
+
     # Scoring
     quality_score: float = 0.0
     innovation_score: float = 0.0
@@ -124,24 +124,24 @@ class MultiverseResult:
     """Result of multiverse execution."""
     execution_id: str
     task_description: str
-    
+
     # Paths
     total_paths: int = 0
     completed_paths: int = 0
     failed_paths: int = 0
-    
+
     # Winner
     winning_path: Optional[ExecutionPath] = None
     winning_reason: str = ""
-    
+
     # All results
     all_results: Dict[str, Any] = field(default_factory=dict)
     path_rankings: List[Tuple[str, float]] = field(default_factory=list)
-    
+
     # Metrics
     total_time_ms: float = 0.0
     parallel_speedup: float = 1.0
-    
+
     # Insights
     insights: List[str] = field(default_factory=list)
     recommendations: List[str] = field(default_factory=list)
@@ -150,10 +150,10 @@ class MultiverseResult:
 class ParallelUniverseExecutor:
     """
     The Parallel Universe Executor.
-    
+
     Executes multiple solution approaches simultaneously and selects the best.
     This is like having infinite parallel realities to explore.
-    
+
     Features:
     - Spawn multiple execution contexts
     - Run different approaches in parallel
@@ -163,7 +163,7 @@ class ParallelUniverseExecutor:
     - What-if exploration
     - Early termination on clear winner
     """
-    
+
     def __init__(
         self,
         max_parallel_paths: int = 10,
@@ -175,15 +175,15 @@ class ParallelUniverseExecutor:
         self.default_timeout = default_timeout
         self.enable_learning = enable_learning
         self.default_criteria = selection_criteria
-        
+
         # Execution tracking
         self._active_executions: Dict[str, Dict[str, ExecutionPath]] = {}
         self._completed_executions: Dict[str, MultiverseResult] = {}
-        
+
         # Learning from outcomes
         self._approach_scores: Dict[str, List[float]] = {}
         self._path_history: List[Dict[str, Any]] = []
-        
+
         # Statistics
         self._stats = {
             "total_executions": 0,
@@ -191,9 +191,9 @@ class ParallelUniverseExecutor:
             "successful_selections": 0,
             "avg_parallel_speedup": 0.0
         }
-        
+
         logger.info("ParallelUniverseExecutor initialized")
-    
+
     async def execute_parallel(
         self,
         task: str,
@@ -205,7 +205,7 @@ class ParallelUniverseExecutor:
     ) -> MultiverseResult:
         """
         Execute multiple approaches in parallel and select the best.
-        
+
         Each approach should have:
         - name: Approach identifier
         - description: What this approach does
@@ -214,18 +214,18 @@ class ParallelUniverseExecutor:
         """
         execution_id = f"exec_{hashlib.md5(f'{task}{time.time()}'.encode()).hexdigest()[:12]}"
         start_time = time.time()
-        
+
         context = context or {}
         criteria = criteria or self.default_criteria
         timeout = timeout or self.default_timeout
-        
+
         self._stats["total_executions"] += 1
-        
+
         # Create execution paths
         paths = []
         for i, approach in enumerate(approaches[:self.max_parallel]):
             path_id = f"path_{i}_{approach.get('name', 'unknown')}"
-            
+
             path = ExecutionPath(
                 path_id=path_id,
                 description=approach.get("description", ""),
@@ -238,10 +238,10 @@ class ParallelUniverseExecutor:
                 )
             )
             paths.append(path)
-        
+
         self._active_executions[execution_id] = {p.path_id: p for p in paths}
         self._stats["total_paths_explored"] += len(paths)
-        
+
         # Execute based on strategy
         if strategy == ExecutionStrategy.ALL_PATHS:
             await self._execute_all_paths(paths, timeout)
@@ -251,10 +251,10 @@ class ParallelUniverseExecutor:
             await self._execute_early_winner(paths, timeout, criteria)
         else:
             await self._execute_all_paths(paths, timeout)
-        
+
         # Select winner
         winner, reason = self._select_winner(paths, criteria)
-        
+
         # Build result
         result = MultiverseResult(
             execution_id=execution_id,
@@ -268,29 +268,29 @@ class ParallelUniverseExecutor:
             path_rankings=self._rank_paths(paths, criteria),
             total_time_ms=(time.time() - start_time) * 1000
         )
-        
+
         # Calculate speedup
         if winner and winner.execution_time_ms > 0:
             sequential_time = sum(p.execution_time_ms for p in paths if p.state == PathState.COMPLETED)
             result.parallel_speedup = sequential_time / result.total_time_ms if result.total_time_ms > 0 else 1.0
-        
+
         # Generate insights
         result.insights = self._generate_insights(paths, winner)
         result.recommendations = self._generate_recommendations(paths, winner)
-        
+
         # Learn from execution
         if self.enable_learning:
             self._learn_from_execution(paths, winner)
-        
+
         # Store result
         self._completed_executions[execution_id] = result
         del self._active_executions[execution_id]
-        
+
         if winner:
             self._stats["successful_selections"] += 1
-        
+
         return result
-    
+
     async def _execute_all_paths(
         self,
         paths: List[ExecutionPath],
@@ -298,14 +298,14 @@ class ParallelUniverseExecutor:
     ):
         """Execute all paths in parallel."""
         tasks = []
-        
+
         for path in paths:
             task = asyncio.create_task(self._execute_single_path(path, timeout))
             tasks.append(task)
-        
+
         # Wait for all with timeout
         await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     async def _execute_tournament(
         self,
         paths: List[ExecutionPath],
@@ -314,11 +314,11 @@ class ParallelUniverseExecutor:
         """Execute in tournament bracket style."""
         remaining = paths.copy()
         round_num = 0
-        
+
         while len(remaining) > 1:
             round_num += 1
             next_round = []
-            
+
             # Pair up paths
             for i in range(0, len(remaining), 2):
                 if i + 1 < len(remaining):
@@ -327,7 +327,7 @@ class ParallelUniverseExecutor:
                         self._execute_single_path(remaining[i], timeout / round_num),
                         self._execute_single_path(remaining[i + 1], timeout / round_num)
                     )
-                    
+
                     # Compare and advance winner
                     if remaining[i].overall_score >= remaining[i + 1].overall_score:
                         next_round.append(remaining[i])
@@ -336,13 +336,13 @@ class ParallelUniverseExecutor:
                 else:
                     # Odd one out advances automatically
                     next_round.append(remaining[i])
-            
+
             remaining = next_round
-        
+
         # Execute final winner if needed
         if remaining and remaining[0].state == PathState.PENDING:
             await self._execute_single_path(remaining[0], timeout)
-    
+
     async def _execute_early_winner(
         self,
         paths: List[ExecutionPath],
@@ -352,11 +352,11 @@ class ParallelUniverseExecutor:
         """Execute until a clear winner emerges."""
         tasks = []
         completed = []
-        
+
         for path in paths:
             task = asyncio.create_task(self._execute_single_path(path, timeout))
             tasks.append((path, task))
-        
+
         # Check for early winner as paths complete
         while tasks:
             done, pending = await asyncio.wait(
@@ -364,7 +364,7 @@ class ParallelUniverseExecutor:
                 timeout=1.0,
                 return_when=asyncio.FIRST_COMPLETED
             )
-            
+
             # Update tasks list
             new_tasks = []
             for path, task in tasks:
@@ -373,7 +373,7 @@ class ParallelUniverseExecutor:
                 else:
                     new_tasks.append((path, task))
             tasks = new_tasks
-            
+
             # Check for clear winner
             if len(completed) >= 2:
                 winner, _ = self._select_winner(completed, criteria)
@@ -382,7 +382,7 @@ class ParallelUniverseExecutor:
                     for _, task in tasks:
                         task.cancel()
                     break
-    
+
     async def _execute_single_path(
         self,
         path: ExecutionPath,
@@ -391,9 +391,9 @@ class ParallelUniverseExecutor:
         """Execute a single path."""
         path.state = PathState.RUNNING
         path.started_at = datetime.utcnow()
-        
+
         start_time = time.time()
-        
+
         try:
             if path.task_fn:
                 # Execute the task function
@@ -403,7 +403,7 @@ class ParallelUniverseExecutor:
                 )
                 path.result = result
                 path.state = PathState.COMPLETED
-                
+
                 # Score the result
                 path.quality_score = self._score_quality(result)
                 path.reliability_score = 1.0
@@ -414,35 +414,35 @@ class ParallelUniverseExecutor:
                 path.state = PathState.COMPLETED
                 path.quality_score = 0.5
                 path.reliability_score = 1.0
-                
+
         except asyncio.TimeoutError:
             path.state = PathState.TIMEOUT
             path.error = f"Timeout after {timeout}s"
             path.reliability_score = 0.0
-            
+
         except Exception as e:
             path.state = PathState.FAILED
             path.error = str(e)
             path.reliability_score = 0.0
             logger.error(f"Path {path.path_id} failed: {e}")
-        
+
         path.completed_at = datetime.utcnow()
         path.execution_time_ms = (time.time() - start_time) * 1000
-        
+
         # Calculate overall score
         path.overall_score = (
             path.quality_score * 0.5 +
             path.reliability_score * 0.3 +
             path.innovation_score * 0.2
         )
-    
+
     def _score_quality(self, result: Any) -> float:
         """Score the quality of a result."""
         if result is None:
             return 0.0
-        
+
         score = 0.5  # Base score
-        
+
         # Check for richness of result
         if isinstance(result, dict):
             score += min(len(result) * 0.05, 0.3)
@@ -450,9 +450,9 @@ class ParallelUniverseExecutor:
             score += min(len(result) * 0.02, 0.2)
         elif isinstance(result, str) and len(result) > 100:
             score += 0.2
-        
+
         return min(score, 1.0)
-    
+
     def _select_winner(
         self,
         paths: List[ExecutionPath],
@@ -460,30 +460,30 @@ class ParallelUniverseExecutor:
     ) -> Tuple[Optional[ExecutionPath], str]:
         """Select the winning path based on criteria."""
         completed = [p for p in paths if p.state == PathState.COMPLETED]
-        
+
         if not completed:
             return None, "No completed paths"
-        
+
         if criteria == SelectionCriteria.FASTEST:
             winner = min(completed, key=lambda p: p.execution_time_ms)
             return winner, f"Fastest at {winner.execution_time_ms:.1f}ms"
-        
+
         elif criteria == SelectionCriteria.QUALITY:
             winner = max(completed, key=lambda p: p.quality_score)
             return winner, f"Highest quality ({winner.quality_score:.2f})"
-        
+
         elif criteria == SelectionCriteria.RELIABILITY:
             winner = max(completed, key=lambda p: p.reliability_score)
             return winner, f"Most reliable ({winner.reliability_score:.2f})"
-        
+
         elif criteria == SelectionCriteria.INNOVATIVE:
             winner = max(completed, key=lambda p: p.innovation_score)
             return winner, f"Most innovative ({winner.innovation_score:.2f})"
-        
+
         else:  # BALANCED or default
             winner = max(completed, key=lambda p: p.overall_score)
             return winner, f"Best overall ({winner.overall_score:.2f})"
-    
+
     def _rank_paths(
         self,
         paths: List[ExecutionPath],
@@ -496,7 +496,7 @@ class ParallelUniverseExecutor:
         else:
             sorted_paths = sorted(paths, key=lambda p: p.overall_score, reverse=True)
             return [(p.path_id, p.overall_score) for p in sorted_paths]
-    
+
     def _generate_insights(
         self,
         paths: List[ExecutionPath],
@@ -504,29 +504,29 @@ class ParallelUniverseExecutor:
     ) -> List[str]:
         """Generate insights from the parallel execution."""
         insights = []
-        
+
         completed = [p for p in paths if p.state == PathState.COMPLETED]
         failed = [p for p in paths if p.state == PathState.FAILED]
-        
+
         if len(completed) > 1:
             avg_quality = sum(p.quality_score for p in completed) / len(completed)
             insights.append(f"Average quality across {len(completed)} paths: {avg_quality:.2f}")
-        
+
         if failed:
             insights.append(f"{len(failed)} paths failed - consider improving robustness")
-        
+
         if winner:
             # Compare winner to others
             if completed:
                 quality_improvement = winner.quality_score - (
-                    sum(p.quality_score for p in completed if p != winner) / 
+                    sum(p.quality_score for p in completed if p != winner) /
                     max(len(completed) - 1, 1)
                 )
                 if quality_improvement > 0.1:
                     insights.append(f"Winner significantly outperformed alternatives by {quality_improvement:.2f}")
-        
+
         return insights
-    
+
     def _generate_recommendations(
         self,
         paths: List[ExecutionPath],
@@ -534,19 +534,19 @@ class ParallelUniverseExecutor:
     ) -> List[str]:
         """Generate recommendations from execution."""
         recommendations = []
-        
+
         if winner:
             recommendations.append(f"Use approach '{winner.approach}' for similar tasks")
-            
+
             if winner.execution_time_ms > 1000:
                 recommendations.append("Consider optimizing for speed")
-        
+
         failed = [p for p in paths if p.state == PathState.FAILED]
         if len(failed) > len(paths) / 2:
             recommendations.append("Improve approach reliability - many failures")
-        
+
         return recommendations
-    
+
     def _learn_from_execution(
         self,
         paths: List[ExecutionPath],
@@ -556,13 +556,13 @@ class ParallelUniverseExecutor:
         for path in paths:
             if path.approach not in self._approach_scores:
                 self._approach_scores[path.approach] = []
-            
+
             self._approach_scores[path.approach].append(path.overall_score)
-            
+
             # Keep history bounded
             if len(self._approach_scores[path.approach]) > 100:
                 self._approach_scores[path.approach] = self._approach_scores[path.approach][-50:]
-        
+
         # Record for history
         self._path_history.append({
             "timestamp": datetime.utcnow().isoformat(),
@@ -570,7 +570,7 @@ class ParallelUniverseExecutor:
             "winner": winner.approach if winner else None,
             "winner_score": winner.overall_score if winner else 0
         })
-    
+
     def get_approach_ranking(self) -> List[Tuple[str, float]]:
         """Get ranking of approaches based on historical performance."""
         rankings = []
@@ -578,9 +578,9 @@ class ParallelUniverseExecutor:
             if scores:
                 avg_score = sum(scores) / len(scores)
                 rankings.append((approach, avg_score))
-        
+
         return sorted(rankings, key=lambda x: x[1], reverse=True)
-    
+
     async def explore_what_if(
         self,
         base_context: Dict[str, Any],
@@ -589,37 +589,37 @@ class ParallelUniverseExecutor:
     ) -> Dict[str, Any]:
         """
         Explore "what if" scenarios in parallel.
-        
+
         Each variation modifies the base context differently.
         The evaluation function scores each outcome.
         """
         approaches = []
-        
+
         for i, variation in enumerate(variations):
             context = {**base_context, **variation}
-            
+
             async def eval_variation(ctx=context, fn=evaluation_fn):
                 return await fn(ctx)
-            
+
             approaches.append({
                 "name": f"variation_{i}",
                 "description": str(variation),
                 "fn": eval_variation,
                 "args": {}
             })
-        
+
         result = await self.execute_parallel(
             task="What-if exploration",
             approaches=approaches,
             strategy=ExecutionStrategy.ALL_PATHS
         )
-        
+
         return {
             "winning_variation": result.winning_path.approach if result.winning_path else None,
             "all_scores": result.path_rankings,
             "insights": result.insights
         }
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get executor statistics."""
         return {
@@ -645,37 +645,37 @@ def get_parallel_executor() -> ParallelUniverseExecutor:
 async def demo():
     """Demonstrate the parallel universe executor."""
     executor = get_parallel_executor()
-    
+
     print("=== PARALLEL UNIVERSE EXECUTOR DEMO ===\n")
-    
+
     # Define different approaches
     async def approach_fast(**kwargs):
         await asyncio.sleep(0.1)
         return {"method": "fast", "result": "quick result"}
-    
+
     async def approach_thorough(**kwargs):
         await asyncio.sleep(0.5)
         return {"method": "thorough", "result": "detailed result", "details": ["a", "b", "c"]}
-    
+
     async def approach_creative(**kwargs):
         await asyncio.sleep(0.3)
         return {"method": "creative", "result": "innovative result", "innovation": "high"}
-    
+
     async def approach_risky(**kwargs):
         await asyncio.sleep(0.2)
         if random.random() < 0.3:
             raise Exception("Random failure")
         return {"method": "risky", "result": "bold result"}
-    
+
     import random
-    
+
     approaches = [
         {"name": "fast", "description": "Quick execution", "fn": approach_fast},
         {"name": "thorough", "description": "Detailed analysis", "fn": approach_thorough},
         {"name": "creative", "description": "Innovative approach", "fn": approach_creative},
         {"name": "risky", "description": "High risk/reward", "fn": approach_risky},
     ]
-    
+
     print("Executing 4 approaches in parallel...")
     result = await executor.execute_parallel(
         task="Find the best solution",
@@ -683,30 +683,30 @@ async def demo():
         strategy=ExecutionStrategy.ALL_PATHS,
         criteria=SelectionCriteria.BALANCED
     )
-    
+
     print(f"\nExecution completed in {result.total_time_ms:.1f}ms")
     print(f"Completed: {result.completed_paths}/{result.total_paths}")
     print(f"Failed: {result.failed_paths}")
-    
+
     if result.winning_path:
         print(f"\n🏆 Winner: {result.winning_path.approach}")
         print(f"   Reason: {result.winning_reason}")
         print(f"   Score: {result.winning_path.overall_score:.2f}")
-    
+
     print("\nRankings:")
     for path_id, score in result.path_rankings:
         print(f"  {path_id}: {score:.3f}")
-    
+
     if result.insights:
         print("\nInsights:")
         for insight in result.insights:
             print(f"  ✨ {insight}")
-    
+
     if result.recommendations:
         print("\nRecommendations:")
         for rec in result.recommendations:
             print(f"  → {rec}")
-    
+
     print("\n=== STATS ===")
     for key, value in executor.get_stats().items():
         print(f"  {key}: {value}")

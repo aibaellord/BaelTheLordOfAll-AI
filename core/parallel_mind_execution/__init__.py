@@ -59,21 +59,21 @@ class ParallelPerspective:
 
 class ParallelMindExecutor:
     """Executes multiple cognitive processes in parallel."""
-    
+
     def __init__(self, max_workers: int = None):
         self.max_workers = max_workers or multiprocessing.cpu_count() * 2
         self._executor = ThreadPoolExecutor(max_workers=self.max_workers)
         self._active_tasks: Dict[str, asyncio.Task] = {}
-        
+
         logger.info(f"ParallelMindExecutor initialized with {self.max_workers} workers")
-    
+
     async def execute_parallel(
         self,
         tasks: List[ParallelTask]
     ) -> List[ParallelResult]:
         """Execute multiple tasks in parallel."""
         results = []
-        
+
         # Create async tasks
         async_tasks = []
         for task in tasks:
@@ -81,7 +81,7 @@ class ParallelMindExecutor:
                 self._execute_task(task)
             )
             async_tasks.append((task.task_id, async_task))
-        
+
         # Gather results
         for task_id, async_task in async_tasks:
             try:
@@ -99,13 +99,13 @@ class ParallelMindExecutor:
                     success=False,
                     error=str(e)
                 ))
-        
+
         return results
-    
+
     async def _execute_task(self, task: ParallelTask) -> ParallelResult:
         """Execute a single task."""
         start_time = datetime.utcnow()
-        
+
         try:
             if asyncio.iscoroutinefunction(task.executor):
                 result = await task.executor(*task.args, **task.kwargs)
@@ -115,7 +115,7 @@ class ParallelMindExecutor:
                     self._executor,
                     lambda: task.executor(*task.args, **task.kwargs)
                 )
-            
+
             return ParallelResult(
                 task_id=task.task_id,
                 success=True,
@@ -129,7 +129,7 @@ class ParallelMindExecutor:
                 error=str(e),
                 duration_seconds=(datetime.utcnow() - start_time).total_seconds()
             )
-    
+
     async def analyze_multi_perspective(
         self,
         topic: str,
@@ -139,19 +139,19 @@ class ParallelMindExecutor:
         if perspectives is None:
             perspectives = [
                 "analytical",
-                "creative", 
+                "creative",
                 "critical",
                 "optimistic",
                 "pessimistic",
                 "practical",
                 "visionary"
             ]
-        
+
         async def analyze_perspective(perspective: str) -> tuple:
             # In practice, this would call an LLM
             analysis = f"[{perspective.upper()}] Analysis of '{topic}': Consider the {perspective} aspects..."
             return perspective, analysis
-        
+
         tasks = [
             ParallelTask(
                 task_id=f"perspective_{p}",
@@ -162,17 +162,17 @@ class ParallelMindExecutor:
             )
             for p in perspectives
         ]
-        
+
         results = await self.execute_parallel(tasks)
-        
+
         analyses = {}
         for result in results:
             if result.success and result.result:
                 perspective, analysis = result.result
                 analyses[perspective] = analysis
-        
+
         return analyses
-    
+
     async def brainstorm_parallel(
         self,
         topic: str,
@@ -189,7 +189,7 @@ class ParallelMindExecutor:
                 f"Stream {stream_id}: Breaking all rules about {topic}..."
             ]
             return [approaches[stream_id % len(approaches)]]
-        
+
         tasks = [
             ParallelTask(
                 task_id=f"brainstorm_{i}",
@@ -200,16 +200,16 @@ class ParallelMindExecutor:
             )
             for i in range(num_streams)
         ]
-        
+
         results = await self.execute_parallel(tasks)
-        
+
         all_ideas = []
         for result in results:
             if result.success and result.result:
                 all_ideas.extend(result.result)
-        
+
         return all_ideas
-    
+
     def shutdown(self):
         """Shutdown the executor."""
         self._executor.shutdown(wait=True)

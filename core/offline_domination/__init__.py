@@ -51,11 +51,11 @@ class CachedResource:
 
 class LocalLLMProvider:
     """Provider for local LLM execution."""
-    
+
     def __init__(self):
         self._available_models: Dict[str, LocalModel] = {}
         self._detect_local_models()
-    
+
     def _detect_local_models(self):
         """Detect available local models."""
         # Check for Ollama
@@ -80,7 +80,7 @@ class LocalLLMProvider:
                         )
         except:
             pass
-        
+
         # Check for common local model paths
         common_paths = [
             Path.home() / ".ollama" / "models",
@@ -88,7 +88,7 @@ class LocalLLMProvider:
             Path("/usr/local/share/models"),
             Path.home() / ".local" / "share" / "models"
         ]
-        
+
         for path in common_paths:
             if path.exists():
                 for model_file in path.glob("*.gguf"):
@@ -100,7 +100,7 @@ class LocalLLMProvider:
                         path=str(model_file),
                         is_available=True
                     )
-    
+
     async def generate(
         self,
         prompt: str,
@@ -115,14 +115,14 @@ class LocalLLMProvider:
             model = list(self._available_models.values())[0]
         else:
             return "[No local model available. Install Ollama or download a GGUF model.]"
-        
+
         if model.provider == "ollama":
             return await self._generate_ollama(prompt, model.name, max_tokens)
         elif model.provider == "llamacpp":
             return await self._generate_llamacpp(prompt, model.path, max_tokens)
-        
+
         return "[Model provider not supported]"
-    
+
     async def _generate_ollama(
         self,
         prompt: str,
@@ -144,7 +144,7 @@ class LocalLLMProvider:
             return "[Ollama generation timed out]"
         except Exception as e:
             return f"[Ollama error: {e}]"
-    
+
     async def _generate_llamacpp(
         self,
         prompt: str,
@@ -154,7 +154,7 @@ class LocalLLMProvider:
         """Generate using llama.cpp."""
         # This would use llama-cpp-python in practice
         return f"[llama.cpp generation with {model_path} - implement with llama-cpp-python]"
-    
+
     def list_models(self) -> List[Dict[str, Any]]:
         """List available local models."""
         return [
@@ -170,16 +170,16 @@ class LocalLLMProvider:
 
 class OfflineKnowledgeBase:
     """Local knowledge base for offline access."""
-    
+
     def __init__(self, storage_path: str = "./data/offline_kb"):
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        
+
         self._knowledge: Dict[str, Any] = {}
         self._index: Dict[str, List[str]] = {}  # keyword -> doc_ids
-        
+
         self._load_knowledge()
-    
+
     def _load_knowledge(self):
         """Load knowledge base from disk."""
         kb_file = self.storage_path / "knowledge.pkl"
@@ -191,7 +191,7 @@ class OfflineKnowledgeBase:
                     self._index = data.get("index", {})
             except:
                 pass
-    
+
     def _save_knowledge(self):
         """Save knowledge base to disk."""
         kb_file = self.storage_path / "knowledge.pkl"
@@ -200,7 +200,7 @@ class OfflineKnowledgeBase:
                 "knowledge": self._knowledge,
                 "index": self._index
             }, f)
-    
+
     def add(self, doc_id: str, content: str, metadata: Dict[str, Any] = None):
         """Add document to knowledge base."""
         self._knowledge[doc_id] = {
@@ -208,7 +208,7 @@ class OfflineKnowledgeBase:
             "metadata": metadata or {},
             "added_at": datetime.utcnow().isoformat()
         }
-        
+
         # Index keywords
         words = set(content.lower().split())
         for word in words:
@@ -217,23 +217,23 @@ class OfflineKnowledgeBase:
                     self._index[word] = []
                 if doc_id not in self._index[word]:
                     self._index[word].append(doc_id)
-        
+
         self._save_knowledge()
-    
+
     def search(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Search knowledge base."""
         query_words = set(query.lower().split())
-        
+
         # Find matching documents
         doc_scores: Dict[str, int] = {}
         for word in query_words:
             if word in self._index:
                 for doc_id in self._index[word]:
                     doc_scores[doc_id] = doc_scores.get(doc_id, 0) + 1
-        
+
         # Sort by score
         sorted_docs = sorted(doc_scores.items(), key=lambda x: x[1], reverse=True)
-        
+
         results = []
         for doc_id, score in sorted_docs[:limit]:
             if doc_id in self._knowledge:
@@ -242,9 +242,9 @@ class OfflineKnowledgeBase:
                     "score": score,
                     **self._knowledge[doc_id]
                 })
-        
+
         return results
-    
+
     def get(self, doc_id: str) -> Optional[Dict[str, Any]]:
         """Get specific document."""
         return self._knowledge.get(doc_id)
@@ -252,14 +252,14 @@ class OfflineKnowledgeBase:
 
 class ResourceCache:
     """Cache for offline resource access."""
-    
+
     def __init__(self, storage_path: str = "./data/cache"):
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        
+
         self._cache: Dict[str, CachedResource] = {}
         self._load_cache()
-    
+
     def _load_cache(self):
         """Load cache from disk."""
         cache_file = self.storage_path / "cache.pkl"
@@ -269,13 +269,13 @@ class ResourceCache:
                     self._cache = pickle.load(f)
             except:
                 pass
-    
+
     def _save_cache(self):
         """Save cache to disk."""
         cache_file = self.storage_path / "cache.pkl"
         with open(cache_file, "wb") as f:
             pickle.dump(self._cache, f)
-    
+
     def cache(self, url: str, content: str, content_type: str = "text/plain"):
         """Cache a resource."""
         resource_id = hashlib.md5(url.encode()).hexdigest()
@@ -286,14 +286,14 @@ class ResourceCache:
             content_type=content_type
         )
         self._save_cache()
-    
+
     def get(self, url: str) -> Optional[str]:
         """Get cached resource."""
         resource_id = hashlib.md5(url.encode()).hexdigest()
         if resource_id in self._cache:
             return self._cache[resource_id].content
         return None
-    
+
     def has(self, url: str) -> bool:
         """Check if resource is cached."""
         resource_id = hashlib.md5(url.encode()).hexdigest()
@@ -303,23 +303,23 @@ class ResourceCache:
 class OfflineDominationSystem:
     """
     Complete offline capabilities.
-    
+
     Features:
     - Local LLM execution
     - Offline knowledge base
     - Resource caching
     - Full functionality without internet
     """
-    
+
     def __init__(self):
         self.llm = LocalLLMProvider()
         self.knowledge = OfflineKnowledgeBase()
         self.cache = ResourceCache()
-        
+
         self._is_online = self._check_connectivity()
-        
+
         logger.info(f"OfflineDominationSystem initialized. Online: {self._is_online}")
-    
+
     def _check_connectivity(self) -> bool:
         """Check internet connectivity."""
         try:
@@ -331,32 +331,32 @@ class OfflineDominationSystem:
             return result.returncode == 0
         except:
             return False
-    
+
     @property
     def is_online(self) -> bool:
         """Check if currently online."""
         return self._check_connectivity()
-    
+
     async def generate(self, prompt: str) -> str:
         """Generate text, using local or online LLM."""
         return await self.llm.generate(prompt)
-    
+
     def search_knowledge(self, query: str) -> List[Dict[str, Any]]:
         """Search local knowledge base."""
         return self.knowledge.search(query)
-    
+
     def add_knowledge(self, doc_id: str, content: str, metadata: Dict[str, Any] = None):
         """Add to local knowledge base."""
         self.knowledge.add(doc_id, content, metadata)
-    
+
     def get_cached(self, url: str) -> Optional[str]:
         """Get cached resource."""
         return self.cache.get(url)
-    
+
     def list_local_models(self) -> List[Dict[str, Any]]:
         """List available local models."""
         return self.llm.list_models()
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Get offline system status."""
         return {

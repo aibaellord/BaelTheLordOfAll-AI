@@ -108,15 +108,15 @@ class IntentionPredictor:
             (r"repetitive", "Create workflow"),
         ]
     }
-    
+
     def __init__(self):
         self.prediction_history: List[IntentPrediction] = []
         self.accuracy_score = 0.8
-    
+
     def predict(self, user_input: str, context: Optional[Dict] = None) -> List[IntentPrediction]:
         predictions = []
         input_lower = user_input.lower()
-        
+
         for category, patterns in self.COMMON_PATTERNS.items():
             for pattern, response in patterns:
                 if re.search(pattern, input_lower):
@@ -132,7 +132,7 @@ class IntentionPredictor:
                         )
                     )
                     predictions.append(prediction)
-        
+
         predictions.sort(key=lambda p: p.confidence, reverse=True)
         return predictions[:5]
 
@@ -160,23 +160,23 @@ class OneClickSolutionEngine:
             "parameters": ["topic", "depth"]
         }
     }
-    
+
     def __init__(self):
         self.executed_solutions: List[Dict] = []
-    
+
     async def execute_solution(self, solution_name: str, parameters: Dict) -> Dict:
         if solution_name not in self.SOLUTION_TEMPLATES:
             return {"error": f"Unknown solution: {solution_name}", "success": False}
-        
+
         template = self.SOLUTION_TEMPLATES[solution_name]
         result = {"solution": solution_name, "steps_completed": [], "success": True}
-        
+
         for step in template["steps"]:
             result["steps_completed"].append(step)
-        
+
         self.executed_solutions.append(result)
         return result
-    
+
     def get_available_solutions(self) -> List[Dict]:
         return [{"name": k, **v} for k, v in self.SOLUTION_TEMPLATES.items()]
 
@@ -193,10 +193,10 @@ class ErrorPrevention:
             (r"chmod\s+777", "chmod 777 is a security risk", "medium"),
         ]
     }
-    
+
     def __init__(self):
         self.prevented_errors: List[Dict] = []
-    
+
     def check_input(self, input_text: str) -> List[Dict]:
         warnings = []
         for category, patterns in self.COMMON_MISTAKES.items():
@@ -215,30 +215,30 @@ class ErrorPrevention:
 class ProactiveAssistant:
     def __init__(self):
         self.suggestions_made: List[Dict] = []
-    
+
     async def check_for_assistance(self, context: Dict) -> List[Dict]:
         suggestions = []
-        
+
         if context.get("session_minutes", 0) > 60:
             suggestions.append({
                 "trigger": "long_session",
                 "message": "Take a break?",
                 "priority": 0.4
             })
-        
+
         if context.get("error_count", 0) >= 3:
             suggestions.append({
                 "trigger": "repeated_error",
                 "message": "Let me help troubleshoot",
                 "priority": 0.9
             })
-        
+
         return suggestions
 
 
 class UltimateUserComfort:
     """The ultimate user comfort system."""
-    
+
     def __init__(self):
         self.intention_predictor = IntentionPredictor()
         self.one_click = OneClickSolutionEngine()
@@ -248,7 +248,7 @@ class UltimateUserComfort:
         self.comfort_level = ComfortLevel.ULTIMATE
         self.session_start = time.time()
         self.interactions: List[Dict] = []
-    
+
     async def process_input(self, user_input: str, context: Optional[Dict] = None) -> Dict:
         context = context or {}
         result = {
@@ -257,25 +257,25 @@ class UltimateUserComfort:
             "warnings": [],
             "suggestions": []
         }
-        
+
         result["warnings"] = self.error_prevention.check_input(user_input)
         predictions = self.intention_predictor.predict(user_input, context)
         result["predictions"] = [{"intent": p.intent, "confidence": p.confidence} for p in predictions]
         result["suggestions"] = await self.proactive_assistant.check_for_assistance(context)
-        
+
         self.interactions.append({"input": user_input, "timestamp": time.time()})
         return result
-    
+
     async def execute_one_click(self, solution_name: str, parameters: Dict) -> Dict:
         return await self.one_click.execute_solution(solution_name, parameters)
-    
+
     def set_user_profile(self, profile: UserProfile):
         self.active_user = profile
         self.comfort_level = profile.comfort_level
-    
+
     def get_available_solutions(self) -> List[Dict]:
         return self.one_click.get_available_solutions()
-    
+
     def get_status(self) -> Dict:
         return {
             "comfort_level": self.comfort_level.name,
@@ -294,5 +294,5 @@ if __name__ == "__main__":
         comfort = await create_comfort_system()
         print("Ultimate User Comfort System Ready")
         print(f"Status: {comfort.get_status()}")
-    
+
     asyncio.run(demo())

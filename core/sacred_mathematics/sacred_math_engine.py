@@ -63,13 +63,13 @@ class GoldenProportions:
     total: float
     major: float  # PHI portion
     minor: float  # 1/PHI portion
-    
+
     @classmethod
     def from_total(cls, total: float) -> 'GoldenProportions':
         major = total / PHI
         minor = total - major
         return cls(total=total, major=major, minor=minor)
-    
+
     @classmethod
     def from_major(cls, major: float) -> 'GoldenProportions':
         total = major * PHI
@@ -87,7 +87,7 @@ class FibonacciLevel:
     level_618: float   # 61.8% (Golden Ratio)
     level_786: float   # 78.6%
     level_1000: float  # 100%
-    
+
     @classmethod
     def calculate(cls, start: float, end: float) -> 'FibonacciLevel':
         diff = end - start
@@ -104,23 +104,23 @@ class FibonacciLevel:
 
 class FibonacciGenerator:
     """Generate Fibonacci sequences"""
-    
+
     def __init__(self):
         self._cache = {0: 0, 1: 1}
-    
+
     def get(self, n: int) -> int:
         """Get the nth Fibonacci number"""
         if n in self._cache:
             return self._cache[n]
-        
+
         result = self.get(n - 1) + self.get(n - 2)
         self._cache[n] = result
         return result
-    
+
     def sequence(self, length: int) -> List[int]:
         """Get a sequence of Fibonacci numbers"""
         return [self.get(i) for i in range(length)]
-    
+
     def ratios(self, length: int) -> List[float]:
         """Get ratios between consecutive Fibonacci numbers (approaches PHI)"""
         seq = self.sequence(length + 1)
@@ -133,10 +133,10 @@ class FibonacciGenerator:
 
 class GoldenSpiralGenerator:
     """Generate golden spiral coordinates"""
-    
+
     def generate_points(
-        self, 
-        num_points: int, 
+        self,
+        num_points: int,
         scale: float = 1.0
     ) -> List[Tuple[float, float]]:
         """Generate points along a golden spiral"""
@@ -148,10 +148,10 @@ class GoldenSpiralGenerator:
             y = r * math.sin(theta)
             points.append((x, y))
         return points
-    
+
     def sunflower_pattern(
-        self, 
-        num_seeds: int, 
+        self,
+        num_seeds: int,
         scale: float = 1.0
     ) -> List[Tuple[float, float]]:
         """Generate sunflower seed pattern (optimal packing)"""
@@ -168,26 +168,26 @@ class GoldenSpiralGenerator:
 
 class SacredGeometryTemplates:
     """Templates based on sacred geometry"""
-    
+
     def flower_of_life_centers(
-        self, 
-        radius: float, 
+        self,
+        radius: float,
         layers: int = 3
     ) -> List[Tuple[float, float]]:
         """Generate centers of circles in Flower of Life pattern"""
         centers = [(0, 0)]  # Center circle
-        
+
         for layer in range(1, layers + 1):
             for i in range(6 * layer):
                 angle = (i / (6 * layer)) * 2 * PI
                 x = layer * radius * math.cos(angle)
                 y = layer * radius * math.sin(angle)
                 centers.append((x, y))
-        
+
         return centers
-    
+
     def vesica_piscis(
-        self, 
+        self,
         radius: float
     ) -> Dict[str, Any]:
         """Generate vesica piscis parameters"""
@@ -200,10 +200,10 @@ class SacredGeometryTemplates:
             "intersection_height": radius,
             "aspect_ratio": math.sqrt(3)  # Height/Width of intersection
         }
-    
+
     def platonic_solid_vertices(
-        self, 
-        solid: str, 
+        self,
+        solid: str,
         scale: float = 1.0
     ) -> List[Tuple[float, float, float]]:
         """Generate vertices of Platonic solids"""
@@ -231,29 +231,29 @@ class SacredGeometryTemplates:
                 (PHI, 1/PHI, 0), (PHI, -1/PHI, 0), (-PHI, 1/PHI, 0), (-PHI, -1/PHI, 0)
             ]
         }
-        
+
         solid_vertices = vertices.get(solid, [])
         return [(x * scale, y * scale, z * scale) for x, y, z in solid_vertices]
 
 
 class HarmonicCalculator:
     """Calculate harmonic relationships"""
-    
+
     def calculate_harmonics(
-        self, 
-        fundamental: float, 
+        self,
+        fundamental: float,
         num_harmonics: int = 8
     ) -> List[float]:
         """Calculate harmonic series from fundamental frequency"""
         return [fundamental * (i + 1) for i in range(num_harmonics)]
-    
+
     def find_resonance(
-        self, 
+        self,
         frequencies: List[float]
     ) -> List[Tuple[float, float, str]]:
         """Find harmonic resonances between frequencies"""
         resonances = []
-        
+
         harmonic_ratios = [
             ((1, 1), "unison"),
             ((2, 1), "octave"),
@@ -263,21 +263,21 @@ class HarmonicCalculator:
             ((5, 3), "major_sixth"),
             ((PHI, 1), "golden_ratio")
         ]
-        
+
         for i, f1 in enumerate(frequencies):
             for f2 in frequencies[i+1:]:
                 ratio = max(f1, f2) / min(f1, f2)
-                
+
                 for (num, den), name in harmonic_ratios:
                     target_ratio = num / den if isinstance(num, int) else num
                     if abs(ratio - target_ratio) < 0.01:
                         resonances.append((f1, f2, name))
-        
+
         return resonances
-    
+
     def golden_frequency_series(
-        self, 
-        base: float, 
+        self,
+        base: float,
         length: int
     ) -> List[float]:
         """Generate frequency series based on golden ratio"""
@@ -289,19 +289,19 @@ class HarmonicCalculator:
 
 class SuccessPatternOptimizer:
     """Optimize for success using sacred mathematics"""
-    
+
     def __init__(self):
         self.fibonacci = FibonacciGenerator()
         self.geometry = SacredGeometryTemplates()
         self.harmonics = HarmonicCalculator()
-    
+
     def optimize_timing(
-        self, 
+        self,
         total_duration: float
     ) -> Dict[str, float]:
         """Optimize timing using golden ratio phases"""
         props = GoldenProportions.from_total(total_duration)
-        
+
         return {
             "preparation_phase": props.minor * PHI_INVERSE,
             "action_phase": props.minor,
@@ -309,16 +309,16 @@ class SuccessPatternOptimizer:
             "expansion_phase": props.major - (props.major * PHI_INVERSE),
             "total": total_duration
         }
-    
+
     def optimize_resource_allocation(
-        self, 
+        self,
         total_resources: float
     ) -> Dict[str, float]:
         """Optimize resource allocation using Fibonacci"""
         # Use Fibonacci ratios for natural distribution
         fib = self.fibonacci.sequence(8)
         total_fib = sum(fib[2:7])  # Use middle Fibonacci numbers
-        
+
         return {
             "core_investment": total_resources * (fib[6] / total_fib),
             "growth_investment": total_resources * (fib[5] / total_fib),
@@ -326,9 +326,9 @@ class SuccessPatternOptimizer:
             "innovation_fund": total_resources * (fib[3] / total_fib),
             "opportunity_buffer": total_resources * (fib[2] / total_fib)
         }
-    
+
     def calculate_success_probability(
-        self, 
+        self,
         factors: Dict[str, float]
     ) -> float:
         """
@@ -337,28 +337,28 @@ class SuccessPatternOptimizer:
         """
         if not factors:
             return 0.5
-        
+
         # Convert to frequencies
         base_freq = 432  # Hz (harmonic base)
         factor_freqs = [base_freq * (1 + v) for v in factors.values()]
-        
+
         # Find resonances
         resonances = self.harmonics.find_resonance(factor_freqs)
-        
+
         # More resonances = higher success probability
         resonance_bonus = len(resonances) * 0.05
-        
+
         # Base probability from factor average
         base_prob = sum(factors.values()) / len(factors)
-        
+
         # Golden ratio adjustment
         golden_adjusted = base_prob * PHI_INVERSE + resonance_bonus
-        
+
         return min(1.0, golden_adjusted)
-    
+
     def optimize_growth_curve(
-        self, 
-        start_value: float, 
+        self,
+        start_value: float,
         target_value: float,
         num_steps: int
     ) -> List[float]:
@@ -366,38 +366,38 @@ class SuccessPatternOptimizer:
         # Fibonacci growth pattern
         fib = self.fibonacci.sequence(num_steps + 1)
         fib_ratios = [f / fib[-1] for f in fib]
-        
+
         value_range = target_value - start_value
         curve = [start_value + (ratio * value_range) for ratio in fib_ratios]
-        
+
         return curve
 
 
 class SacredMathematicsEngine:
     """
     THE SACRED MATHEMATICS ENGINE
-    
+
     Apply universal mathematical principles for success.
     Golden ratio, Fibonacci, sacred geometry - all working together.
     """
-    
+
     def __init__(self):
         self.fibonacci = FibonacciGenerator()
         self.spiral = GoldenSpiralGenerator()
         self.geometry = SacredGeometryTemplates()
         self.harmonics = HarmonicCalculator()
         self.optimizer = SuccessPatternOptimizer()
-    
+
     def golden_proportions(self, total: float) -> GoldenProportions:
         """Get golden ratio proportions"""
         return GoldenProportions.from_total(total)
-    
+
     def fibonacci_levels(self, start: float, end: float) -> FibonacciLevel:
         """Get Fibonacci retracement levels"""
         return FibonacciLevel.calculate(start, end)
-    
+
     def optimize_for_success(
-        self, 
+        self,
         parameters: Dict[str, float]
     ) -> Dict[str, Any]:
         """
@@ -415,14 +415,14 @@ class SacredMathematicsEngine:
             "golden_ratio": PHI,
             "sacred_pattern": SacredPattern.GOLDEN_SPIRAL.name
         }
-    
+
     def apply_to_structure(
-        self, 
+        self,
         elements: List[Any]
     ) -> Dict[str, Any]:
         """Apply sacred proportions to a structure"""
         n = len(elements)
-        
+
         return {
             "total_elements": n,
             "golden_division": {
@@ -432,33 +432,33 @@ class SacredMathematicsEngine:
             "fibonacci_grouping": self._fibonacci_grouping(elements),
             "spiral_order": self._spiral_order(elements)
         }
-    
+
     def _fibonacci_grouping(self, elements: List[Any]) -> List[List[Any]]:
         """Group elements using Fibonacci numbers"""
         groups = []
         fib = self.fibonacci.sequence(10)
         idx = 0
         fib_idx = 1
-        
+
         while idx < len(elements) and fib_idx < len(fib):
             group_size = min(fib[fib_idx], len(elements) - idx)
             groups.append(elements[idx:idx + group_size])
             idx += group_size
             fib_idx += 1
-        
+
         return groups
-    
+
     def _spiral_order(self, elements: List[Any]) -> List[Any]:
         """Reorder elements in golden spiral pattern"""
         n = len(elements)
         points = self.spiral.sunflower_pattern(n)
-        
+
         # Sort by distance from center
         indexed = list(zip(range(n), points))
         indexed.sort(key=lambda x: math.sqrt(x[1][0]**2 + x[1][1]**2))
-        
+
         return [elements[i] for i, _ in indexed]
-    
+
     def get_constants(self) -> Dict[str, float]:
         """Get all sacred mathematical constants"""
         return {

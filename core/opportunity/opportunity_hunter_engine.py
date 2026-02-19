@@ -102,14 +102,14 @@ class Opportunity:
     action_steps: List[str] = field(default_factory=list)
     related_opportunities: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     @property
     def roi(self) -> float:
         """Calculate return on investment."""
         if self.required_investment == 0:
             return float('inf')  # Infinite ROI for zero investment
         return self.potential_value / self.required_investment
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -133,7 +133,7 @@ class ScanResult:
     best_opportunity: Optional[Opportunity]
 
 
-@dataclass 
+@dataclass
 class ZeroInvestmentStrategy:
     """Strategy for creating value from nothing."""
     id: str
@@ -148,7 +148,7 @@ class ZeroInvestmentStrategy:
 class OpportunityHunterEngine:
     """
     The Opportunity Hunter - finds EVERYTHING.
-    
+
     Scans all domains for:
     - Exploitable weaknesses
     - Market gaps
@@ -157,13 +157,13 @@ class OpportunityHunterEngine:
     - Zero-investment paths to value
     - Hidden patterns others miss
     """
-    
+
     def __init__(self):
         self.discovered_opportunities: Dict[str, Opportunity] = {}
         self.scan_history: List[ScanResult] = []
         self.zero_investment_strategies: List[ZeroInvestmentStrategy] = []
         self.active_hunts: Set[str] = set()
-        
+
         # Pattern detectors for each domain
         self.domain_scanners = {
             OpportunityDomain.FINANCIAL: self._scan_financial,
@@ -177,7 +177,7 @@ class OpportunityHunterEngine:
             OpportunityDomain.STRATEGIC: self._scan_strategic,
             OpportunityDomain.CREATIVE: self._scan_creative
         }
-        
+
         # Zero-investment approaches
         self.zero_investment_approaches = [
             "Leverage existing free platforms",
@@ -191,13 +191,13 @@ class OpportunityHunterEngine:
             "Provide matchmaking services",
             "Create derivative works"
         ]
-        
+
         logger.info("OpportunityHunterEngine initialized - hunting begins")
-    
+
     # -------------------------------------------------------------------------
     # FULL SPECTRUM HUNTING
     # -------------------------------------------------------------------------
-    
+
     async def hunt_all_domains(
         self,
         context: Dict[str, Any],
@@ -206,34 +206,34 @@ class OpportunityHunterEngine:
     ) -> List[Opportunity]:
         """Hunt for opportunities across ALL domains."""
         all_opportunities = []
-        
+
         # Scan each domain in parallel
         tasks = []
         for domain, scanner in self.domain_scanners.items():
             tasks.append(scanner(context))
-        
+
         results = await asyncio.gather(*tasks)
-        
+
         for result in results:
             all_opportunities.extend(result.opportunities_found)
-        
+
         # Filter by confidence
         all_opportunities = [o for o in all_opportunities if o.confidence >= min_confidence]
-        
+
         # If requested, find zero-investment specifically
         if include_zero_investment:
             zero_opps = await self._find_zero_investment_opportunities(context)
             all_opportunities.extend(zero_opps)
-        
+
         # Store all discovered
         for opp in all_opportunities:
             self.discovered_opportunities[opp.id] = opp
-        
+
         # Sort by priority and value
         all_opportunities.sort(key=lambda o: (o.priority.value, -o.potential_value))
-        
+
         return all_opportunities
-    
+
     async def focused_hunt(
         self,
         domain: OpportunityDomain,
@@ -250,13 +250,13 @@ class OpportunityHunterEngine:
                 total_value=0.0,
                 best_opportunity=None
             )
-        
+
         # Multiple scan passes for depth
         all_found = []
         for _ in range(depth):
             result = await scanner(context)
             all_found.extend(result.opportunities_found)
-        
+
         # Deduplicate
         seen_ids = set()
         unique = []
@@ -264,13 +264,13 @@ class OpportunityHunterEngine:
             if opp.id not in seen_ids:
                 seen_ids.add(opp.id)
                 unique.append(opp)
-        
+
         # Calculate total value
         total_value = sum(o.potential_value for o in unique)
-        
+
         # Find best
         best = max(unique, key=lambda o: o.potential_value) if unique else None
-        
+
         result = ScanResult(
             domain=domain,
             scan_time=datetime.now(),
@@ -278,18 +278,18 @@ class OpportunityHunterEngine:
             total_value=total_value,
             best_opportunity=best
         )
-        
+
         self.scan_history.append(result)
         return result
-    
+
     # -------------------------------------------------------------------------
     # DOMAIN SCANNERS
     # -------------------------------------------------------------------------
-    
+
     async def _scan_financial(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for financial opportunities."""
         opportunities = []
-        
+
         # Arbitrage opportunities
         opportunities.append(Opportunity(
             id=self._gen_id("fin"),
@@ -310,7 +310,7 @@ class OpportunityHunterEngine:
                 "Capture spread"
             ]
         ))
-        
+
         # Information advantage
         opportunities.append(Opportunity(
             id=self._gen_id("fin"),
@@ -326,7 +326,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.6, 0.85)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.FINANCIAL,
             scan_time=datetime.now(),
@@ -334,11 +334,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_technological(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for technological opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("tech"),
             title="Emerging Tech Integration",
@@ -358,7 +358,7 @@ class OpportunityHunterEngine:
                 "Deploy and iterate"
             ]
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("tech"),
             title="Automation Opportunity",
@@ -373,7 +373,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.75, 0.95)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.TECHNOLOGICAL,
             scan_time=datetime.now(),
@@ -381,11 +381,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_social(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for social/network opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("soc"),
             title="Network Effect Leverage",
@@ -405,7 +405,7 @@ class OpportunityHunterEngine:
                 "Activate network cascade"
             ]
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("soc"),
             title="Viral Content Opportunity",
@@ -420,7 +420,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.5, 0.75)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.SOCIAL,
             scan_time=datetime.now(),
@@ -428,11 +428,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_market(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for market opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("mkt"),
             title="Underserved Market Segment",
@@ -447,7 +447,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.7, 0.9)
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("mkt"),
             title="Competitor Vulnerability",
@@ -462,7 +462,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.65, 0.85)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.MARKET,
             scan_time=datetime.now(),
@@ -470,11 +470,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_security(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for security-related opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("sec"),
             title="Vulnerability Discovery",
@@ -489,7 +489,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.7, 0.95)
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("sec"),
             title="Access Path Discovery",
@@ -504,7 +504,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.5, 0.8)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.SECURITY,
             scan_time=datetime.now(),
@@ -512,11 +512,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_informational(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for information-based opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("info"),
             title="Data Aggregation Value",
@@ -531,7 +531,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.7, 0.9)
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("info"),
             title="Knowledge Asymmetry",
@@ -546,7 +546,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.6, 0.85)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.INFORMATIONAL,
             scan_time=datetime.now(),
@@ -554,11 +554,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_network(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for network/connection opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("net"),
             title="Bridge Position",
@@ -573,7 +573,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.6, 0.8)
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("net"),
             title="Influence Node Access",
@@ -588,7 +588,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.65, 0.85)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.NETWORK,
             scan_time=datetime.now(),
@@ -596,11 +596,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_psychological(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for psychological leverage opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("psy"),
             title="Motivation Leverage Point",
@@ -615,7 +615,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.6, 0.85)
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("psy"),
             title="Persuasion Framework",
@@ -630,7 +630,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.7, 0.9)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.PSYCHOLOGICAL,
             scan_time=datetime.now(),
@@ -638,11 +638,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_strategic(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for strategic opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("str"),
             title="First Mover Advantage",
@@ -657,7 +657,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.5, 0.75)
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("str"),
             title="Disruption Window",
@@ -672,7 +672,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.4, 0.7)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.STRATEGIC,
             scan_time=datetime.now(),
@@ -680,11 +680,11 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     async def _scan_creative(self, context: Dict[str, Any]) -> ScanResult:
         """Scan for creative/innovation opportunities."""
         opportunities = []
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("cre"),
             title="Novel Combination",
@@ -699,7 +699,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.7, 0.9)
         ))
-        
+
         opportunities.append(Opportunity(
             id=self._gen_id("cre"),
             title="Paradigm Shift Opportunity",
@@ -714,7 +714,7 @@ class OpportunityHunterEngine:
             discovery_time=datetime.now(),
             confidence=random.uniform(0.5, 0.75)
         ))
-        
+
         return ScanResult(
             domain=OpportunityDomain.CREATIVE,
             scan_time=datetime.now(),
@@ -722,18 +722,18 @@ class OpportunityHunterEngine:
             total_value=sum(o.potential_value for o in opportunities),
             best_opportunity=max(opportunities, key=lambda o: o.potential_value) if opportunities else None
         )
-    
+
     # -------------------------------------------------------------------------
     # ZERO-INVESTMENT STRATEGIES
     # -------------------------------------------------------------------------
-    
+
     async def _find_zero_investment_opportunities(
         self,
         context: Dict[str, Any]
     ) -> List[Opportunity]:
         """Find opportunities requiring zero financial investment."""
         zero_opps = []
-        
+
         for approach in self.zero_investment_approaches:
             zero_opps.append(Opportunity(
                 id=self._gen_id("zero"),
@@ -754,9 +754,9 @@ class OpportunityHunterEngine:
                     "Execute with zero capital"
                 ]
             ))
-        
+
         return zero_opps
-    
+
     async def generate_zero_investment_strategy(
         self,
         goal: str
@@ -783,21 +783,21 @@ class OpportunityHunterEngine:
                 "Scale through automation"
             ]
         )
-        
+
         self.zero_investment_strategies.append(strategy)
         return strategy
-    
+
     # -------------------------------------------------------------------------
     # PATTERN ANALYSIS
     # -------------------------------------------------------------------------
-    
+
     async def find_hidden_patterns(
         self,
         data: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """Find hidden patterns in data that reveal opportunities."""
         patterns = []
-        
+
         # Correlation patterns
         patterns.append({
             "type": "correlation",
@@ -805,7 +805,7 @@ class OpportunityHunterEngine:
             "opportunity_type": OpportunityType.KNOWLEDGE.value,
             "confidence": random.uniform(0.6, 0.9)
         })
-        
+
         # Trend patterns
         patterns.append({
             "type": "trend",
@@ -813,7 +813,7 @@ class OpportunityHunterEngine:
             "opportunity_type": OpportunityType.TREND.value,
             "confidence": random.uniform(0.5, 0.8)
         })
-        
+
         # Anomaly patterns
         patterns.append({
             "type": "anomaly",
@@ -821,7 +821,7 @@ class OpportunityHunterEngine:
             "opportunity_type": OpportunityType.ARBITRAGE.value,
             "confidence": random.uniform(0.7, 0.95)
         })
-        
+
         # Gap patterns
         patterns.append({
             "type": "gap",
@@ -829,27 +829,27 @@ class OpportunityHunterEngine:
             "opportunity_type": OpportunityType.GAP.value,
             "confidence": random.uniform(0.65, 0.85)
         })
-        
+
         return patterns
-    
+
     # -------------------------------------------------------------------------
     # HELPER METHODS
     # -------------------------------------------------------------------------
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
-    
+
     def get_best_opportunities(self, limit: int = 10) -> List[Opportunity]:
         """Get the best opportunities discovered."""
         all_opps = list(self.discovered_opportunities.values())
         all_opps.sort(key=lambda o: (-o.roi if o.roi != float('inf') else 999999999, o.priority.value))
         return all_opps[:limit]
-    
+
     def get_zero_investment_only(self) -> List[Opportunity]:
         """Get only zero-investment opportunities."""
         return [o for o in self.discovered_opportunities.values() if o.required_investment == 0]
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get hunting statistics."""
         all_opps = list(self.discovered_opportunities.values())
@@ -888,16 +888,16 @@ async def demo():
     print("=" * 60)
     print("🎯 OPPORTUNITY HUNTER ENGINE 🎯")
     print("=" * 60)
-    
+
     hunter = get_opportunity_hunter()
-    
+
     # Hunt all domains
     print("\n--- Hunting All Domains ---")
     context = {"goal": "world domination", "resources": "creativity only"}
     opportunities = await hunter.hunt_all_domains(context, min_confidence=0.5)
-    
+
     print(f"\nFound {len(opportunities)} opportunities!")
-    
+
     # Show top opportunities
     print("\n--- Top Opportunities ---")
     for opp in opportunities[:5]:
@@ -906,19 +906,19 @@ async def demo():
         print(f"  Value: ${opp.potential_value:,.0f}")
         print(f"  ROI: {'∞' if opp.required_investment == 0 else f'{opp.roi:.1f}x'}")
         print(f"  Confidence: {opp.confidence:.0%}")
-    
+
     # Zero-investment strategy
     print("\n--- Zero-Investment Strategy ---")
     strategy = await hunter.generate_zero_investment_strategy("Build a billion dollar company")
     print(f"Strategy: {strategy.name}")
     print(f"Approach: {strategy.approach}")
     print(f"Value: ${strategy.value_created:,.0f}")
-    
+
     # Stats
     print("\n--- Hunting Statistics ---")
     stats = hunter.get_stats()
     print(json.dumps(stats, indent=2))
-    
+
     print("\n" + "=" * 60)
     print("🎯 HUNTING COMPLETE 🎯")
 

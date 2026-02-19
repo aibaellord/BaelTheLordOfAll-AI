@@ -90,10 +90,10 @@ class ZeroInvestStrategy:
 
 class OpportunityFinder:
     """Finds hidden opportunities everywhere."""
-    
+
     def __init__(self):
         self._opportunity_patterns = self._load_patterns()
-    
+
     def _load_patterns(self) -> List[Dict[str, Any]]:
         """Load opportunity recognition patterns."""
         return [
@@ -138,7 +138,7 @@ class OpportunityFinder:
                 "value": 90
             }
         ]
-    
+
     async def find_opportunities(
         self,
         context: str,
@@ -147,7 +147,7 @@ class OpportunityFinder:
         """Find opportunities in a given context."""
         opportunities = []
         context_lower = context.lower()
-        
+
         for pattern in self._opportunity_patterns:
             if pattern["trigger"] in context_lower:
                 opp = Opportunity(
@@ -161,7 +161,7 @@ class OpportunityFinder:
                 )
                 opp.roi_score = opp.value_potential / max(opp.effort_required, 1)
                 opportunities.append(opp)
-        
+
         # Always find at least one opportunity
         if not opportunities:
             opportunities.append(Opportunity(
@@ -174,12 +174,12 @@ class OpportunityFinder:
                 free_alternatives=["Use open source", "Leverage free APIs", "Build on existing platforms"],
                 roi_score=1.5
             ))
-        
+
         # Sort by ROI
         opportunities.sort(key=lambda x: x.roi_score, reverse=True)
-        
+
         return opportunities
-    
+
     def _suggest_free_alternatives(self, trigger: str) -> List[str]:
         """Suggest free alternatives based on trigger."""
         alternatives = {
@@ -195,7 +195,7 @@ class OpportunityFinder:
 
 class ContrarianThinking:
     """Generates contrarian perspectives."""
-    
+
     async def generate_contrarian_view(self, topic: str) -> Dict[str, Any]:
         """Generate contrarian view on a topic."""
         mainstream_assumptions = [
@@ -203,7 +203,7 @@ class ContrarianThinking:
             f"Conventional wisdom says {topic} is hard",
             f"Traditional approaches to {topic} are slow"
         ]
-        
+
         contrarian_views = [
             f"What if {topic} could be done with zero resources?",
             f"What if the opposite approach to {topic} works better?",
@@ -211,7 +211,7 @@ class ContrarianThinking:
             f"What if constraints on {topic} are actually advantages?",
             f"What if {topic} is simpler than everyone thinks?"
         ]
-        
+
         return {
             "topic": topic,
             "mainstream_assumptions": mainstream_assumptions,
@@ -223,10 +223,10 @@ class ContrarianThinking:
 
 class ResourceMaximizer:
     """Maximizes value from available resources."""
-    
+
     def __init__(self):
         self._free_resources = self._catalog_free_resources()
-    
+
     def _catalog_free_resources(self) -> Dict[str, List[str]]:
         """Catalog all available free resources."""
         return {
@@ -261,21 +261,21 @@ class ResourceMaximizer:
                 "Hacker News", "Dev.to"
             ]
         }
-    
+
     def find_free_solution(
         self,
         need: str
     ) -> Dict[str, Any]:
         """Find free solution for a need."""
         need_lower = need.lower()
-        
+
         relevant_resources = []
-        
+
         for category, resources in self._free_resources.items():
             for resource in resources:
                 if any(word in need_lower for word in resource.lower().split()):
                     relevant_resources.append({"category": category, "resource": resource})
-        
+
         # If no exact match, suggest general resources
         if not relevant_resources:
             for category in ["knowledge", "tools", "community"]:
@@ -283,21 +283,21 @@ class ResourceMaximizer:
                     {"category": category, "resource": r}
                     for r in self._free_resources[category][:2]
                 ])
-        
+
         return {
             "need": need,
             "free_solutions": relevant_resources,
             "strategy": "Combine multiple free resources for maximum impact",
             "zero_cost_approach": True
         }
-    
+
     def maximize_existing(
         self,
         available_resources: List[str]
     ) -> Dict[str, Any]:
         """Maximize value from existing resources."""
         strategies = []
-        
+
         for resource in available_resources:
             strategies.append({
                 "resource": resource,
@@ -308,7 +308,7 @@ class ResourceMaximizer:
                     f"Teach others about {resource} to build authority"
                 ]
             })
-        
+
         return {
             "resources": available_resources,
             "strategies": strategies,
@@ -318,31 +318,31 @@ class ResourceMaximizer:
 
 class GeniusMindstateEngine:
     """Engine for genius-level thinking."""
-    
+
     def __init__(self):
         self.opportunity_finder = OpportunityFinder()
         self.contrarian = ContrarianThinking()
         self.resource_maximizer = ResourceMaximizer()
-    
+
     async def think(
         self,
         problem: str,
         mode: MindstateMode = MindstateMode.CREATIVE
     ) -> GeniusInsight:
         """Think about a problem with genius mindstate."""
-        
+
         # Generate base insight
         insight_text = await self._generate_insight(problem, mode)
-        
+
         # Add contrarian angle
         contrarian = await self.contrarian.generate_contrarian_view(problem)
-        
+
         # Find exponential potential
         exponential = self._find_exponential_potential(problem)
-        
+
         # Generate applications
         applications = self._generate_applications(problem, mode)
-        
+
         return GeniusInsight(
             insight_id=f"insight_{hashlib.md5(f'{problem}{mode.value}'.encode()).hexdigest()[:8]}",
             insight=insight_text,
@@ -351,7 +351,7 @@ class GeniusMindstateEngine:
             contrarian_angle=contrarian["reframing"],
             exponential_potential=exponential
         )
-    
+
     async def _generate_insight(self, problem: str, mode: MindstateMode) -> str:
         """Generate insight based on mindstate."""
         mode_insights = {
@@ -364,9 +364,9 @@ class GeniusMindstateEngine:
             MindstateMode.UNCONVENTIONAL: f"Unconventional path: Break every rule about how {problem} should be solved",
             MindstateMode.SYNTHESIS: f"Synthesis approach: Combine solutions from unrelated domains to create breakthrough for {problem}"
         }
-        
+
         return mode_insights.get(mode, f"Genius insight for {problem}: Think different, act bold, iterate fast")
-    
+
     def _find_exponential_potential(self, problem: str) -> str:
         """Find exponential potential in a problem."""
         potentials = [
@@ -378,7 +378,7 @@ class GeniusMindstateEngine:
             "Zero marginal cost: Once built, scales infinitely"
         ]
         return random.choice(potentials)
-    
+
     def _generate_applications(self, problem: str, mode: MindstateMode) -> List[str]:
         """Generate practical applications."""
         return [
@@ -393,7 +393,7 @@ class GeniusMindstateEngine:
 class ZeroInvestGeniusSystem:
     """
     The ultimate zero-investment genius thinking system.
-    
+
     Philosophy:
     - No budget is not a limitation, it's a liberation
     - Constraints breed creativity
@@ -401,20 +401,20 @@ class ZeroInvestGeniusSystem:
     - Think 10x, not 10%
     - Speed beats perfection
     """
-    
+
     def __init__(self, llm_provider: Callable = None):
         self.llm_provider = llm_provider
-        
+
         self.genius_engine = GeniusMindstateEngine()
         self.opportunity_finder = OpportunityFinder()
         self.resource_maximizer = ResourceMaximizer()
-        
+
         # Insights database
         self._insights: List[GeniusInsight] = []
         self._strategies: List[ZeroInvestStrategy] = []
-        
+
         logger.info("ZeroInvestGeniusSystem initialized - Constraints are our superpower!")
-    
+
     async def ideate(
         self,
         challenge: str,
@@ -423,29 +423,29 @@ class ZeroInvestGeniusSystem:
         """Generate genius-level ideas for a challenge."""
         if modes is None:
             modes = list(MindstateMode)
-        
+
         insights = []
         for mode in modes:
             insight = await self.genius_engine.think(challenge, mode)
             insights.append(insight)
             self._insights.append(insight)
-        
+
         return insights
-    
+
     async def find_opportunities(
         self,
         context: str
     ) -> List[Opportunity]:
         """Find zero-investment opportunities."""
         return await self.opportunity_finder.find_opportunities(context)
-    
+
     def find_free_solution(
         self,
         need: str
     ) -> Dict[str, Any]:
         """Find a free solution for any need."""
         return self.resource_maximizer.find_free_solution(need)
-    
+
     async def create_strategy(
         self,
         goal: str,
@@ -453,13 +453,13 @@ class ZeroInvestGeniusSystem:
     ) -> ZeroInvestStrategy:
         """Create a zero-investment strategy to achieve a goal."""
         available_resources = available_resources or ["time", "creativity", "internet access"]
-        
+
         # Maximize available resources
         maximization = self.resource_maximizer.maximize_existing(available_resources)
-        
+
         # Find opportunities
         opportunities = await self.find_opportunities(goal)
-        
+
         # Create strategy
         strategy = ZeroInvestStrategy(
             strategy_id=f"strategy_{hashlib.md5(goal.encode()).hexdigest()[:8]}",
@@ -479,18 +479,18 @@ class ZeroInvestGeniusSystem:
             expected_outcome=f"Achieve {goal} without spending money, only time and creativity",
             risk_level="low"
         )
-        
+
         self._strategies.append(strategy)
-        
+
         return strategy
-    
+
     async def reframe_problem(
         self,
         problem: str
     ) -> Dict[str, Any]:
         """Reframe a problem using genius mindstate."""
         contrarian = await self.genius_engine.contrarian.generate_contrarian_view(problem)
-        
+
         return {
             "original_problem": problem,
             "reframes": [
@@ -517,14 +517,14 @@ class ZeroInvestGeniusSystem:
             ],
             "key_insight": "Every constraint is an opportunity in disguise"
         }
-    
+
     def get_free_resources(self, category: str = None) -> Dict[str, List[str]]:
         """Get catalog of free resources."""
         all_resources = self.resource_maximizer._free_resources
         if category:
             return {category: all_resources.get(category, [])}
         return all_resources
-    
+
     def get_statistics(self) -> Dict[str, Any]:
         """Get system statistics."""
         return {
@@ -550,37 +550,37 @@ def get_zero_invest_system() -> ZeroInvestGeniusSystem:
 async def demo():
     """Demonstrate zero-invest genius thinking."""
     system = get_zero_invest_system()
-    
+
     print("Zero Investment Genius Mindstate System")
     print("=" * 50)
     print("Constraints are our superpower!\n")
-    
+
     # Generate insights
     print("Generating genius insights for: 'Build a successful AI startup'")
     insights = await system.ideate(
         "Build a successful AI startup",
         modes=[MindstateMode.CREATIVE, MindstateMode.EXPONENTIAL, MindstateMode.RESOURCEFUL]
     )
-    
+
     for insight in insights:
         print(f"\n[{insight.mindstate.value.upper()}]")
         print(f"  {insight.insight}")
         print(f"  Exponential: {insight.exponential_potential}")
-    
+
     # Find opportunities
     print("\n\nFinding opportunities in: 'expensive enterprise software market'")
     opportunities = await system.find_opportunities("expensive enterprise software market")
-    
+
     for opp in opportunities[:3]:
         print(f"  - {opp.description} (ROI: {opp.roi_score:.1f})")
-    
+
     # Create strategy
     print("\n\nCreating zero-invest strategy:")
     strategy = await system.create_strategy("Launch a SaaS product", ["programming skills", "domain knowledge"])
     print(f"  Strategy: {strategy.name}")
     print(f"  Steps: {strategy.steps[:3]}...")
     print(f"  Free resources: {strategy.free_resources_used[:3]}")
-    
+
     # Reframe problem
     print("\n\nReframing: 'No budget for marketing'")
     reframes = await system.reframe_problem("No budget for marketing")

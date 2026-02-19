@@ -199,7 +199,7 @@ class NanoStructure:
 class MolecularEngineeringEngine:
     """
     Engine for molecular-level matter control.
-    
+
     Features:
     - Complete periodic table
     - Molecule design and analysis
@@ -207,22 +207,22 @@ class MolecularEngineeringEngine:
     - Material synthesis
     - Nanotechnology
     """
-    
+
     def __init__(self):
         self.elements: Dict[str, Element] = {}
         self.molecules: Dict[str, Molecule] = {}
         self.reactions: Dict[str, ChemicalReaction] = {}
         self.materials: Dict[str, Material] = {}
         self.nanostructures: Dict[str, NanoStructure] = {}
-        
+
         self._init_periodic_table()
         self._init_common_molecules()
         self._init_important_reactions()
         self._init_advanced_materials()
         self._init_nanostructures()
-        
+
         logger.info("MolecularEngineeringEngine initialized")
-    
+
     def _init_periodic_table(self):
         """Initialize the periodic table."""
         # Key elements with full data
@@ -248,7 +248,7 @@ class MolecularEngineeringEngine:
             ("Ar", "Argon", 18, 39.95, ElementCategory.NOBLE_GAS, 0, "[Ne]3s²3p⁶", 8, [0]),
             ("K", "Potassium", 19, 39.10, ElementCategory.ALKALI_METAL, 0.82, "[Ar]4s¹", 1, [1]),
             ("Ca", "Calcium", 20, 40.08, ElementCategory.ALKALINE_EARTH, 1.00, "[Ar]4s²", 2, [2]),
-            
+
             # Transition metals
             ("Fe", "Iron", 26, 55.85, ElementCategory.TRANSITION_METAL, 1.83, "[Ar]3d⁶4s²", 2, [2, 3]),
             ("Co", "Cobalt", 27, 58.93, ElementCategory.TRANSITION_METAL, 1.88, "[Ar]3d⁷4s²", 2, [2, 3]),
@@ -258,13 +258,13 @@ class MolecularEngineeringEngine:
             ("Ag", "Silver", 47, 107.87, ElementCategory.TRANSITION_METAL, 1.93, "[Kr]4d¹⁰5s¹", 1, [1]),
             ("Au", "Gold", 79, 196.97, ElementCategory.TRANSITION_METAL, 2.54, "[Xe]4f¹⁴5d¹⁰6s¹", 1, [1, 3]),
             ("Pt", "Platinum", 78, 195.08, ElementCategory.TRANSITION_METAL, 2.28, "[Xe]4f¹⁴5d⁹6s¹", 1, [2, 4]),
-            
+
             # Heavy elements
             ("Pb", "Lead", 82, 207.2, ElementCategory.POST_TRANSITION, 2.33, "[Xe]4f¹⁴5d¹⁰6s²6p²", 4, [2, 4]),
             ("U", "Uranium", 92, 238.03, ElementCategory.ACTINIDE, 1.38, "[Rn]5f³6d¹7s²", 2, [3, 4, 5, 6]),
             ("Pu", "Plutonium", 94, 244, ElementCategory.ACTINIDE, 1.28, "[Rn]5f⁶7s²", 2, [3, 4, 5, 6]),
         ]
-        
+
         for symbol, name, num, mass, cat, en, config, val, ox in elements_data:
             element = Element(
                 symbol=symbol,
@@ -278,7 +278,7 @@ class MolecularEngineeringEngine:
                 common_oxidation_states=ox
             )
             self.elements[symbol] = element
-    
+
     def _init_common_molecules(self):
         """Initialize common molecules."""
         molecules_data = [
@@ -299,20 +299,20 @@ class MolecularEngineeringEngine:
              {"strong_acid": True, "industrial": True}),
             ("sodium_chloride", "NaCl", MolecularGeometry.LINEAR, CompoundClass.INORGANIC, 58.44,
              {"ionic": True, "soluble": True}),
-            
+
             # Pharmaceuticals
             ("aspirin", "C9H8O4", MolecularGeometry.TRIGONAL_PLANAR, CompoundClass.PHARMACEUTICAL, 180.16,
              {"analgesic": True, "antipyretic": True}),
             ("caffeine", "C8H10N4O2", MolecularGeometry.TRIGONAL_PLANAR, CompoundClass.PHARMACEUTICAL, 194.19,
              {"stimulant": True, "adenosine_antagonist": True}),
-            
+
             # Advanced
             ("fullerene_c60", "C60", MolecularGeometry.OCTAHEDRAL, CompoundClass.ORGANIC, 720.66,
              {"nanomaterial": True, "spherical": True}),
             ("graphene", "C", MolecularGeometry.TRIGONAL_PLANAR, CompoundClass.ORGANIC, 12.01,
              {"2d_material": True, "conductor": True}),
         ]
-        
+
         for name, formula, geom, comp_class, weight, props in molecules_data:
             molecule = Molecule(
                 id=self._gen_id("mol"),
@@ -326,7 +326,7 @@ class MolecularEngineeringEngine:
                 properties=props
             )
             self.molecules[name] = molecule
-    
+
     def _init_important_reactions(self):
         """Initialize important chemical reactions."""
         reactions_data = [
@@ -335,28 +335,28 @@ class MolecularEngineeringEngine:
              -890.4, 50, None, {"temperature": 600}),
             ("hydrogen_combustion", ReactionType.COMBUSTION, ["2H2", "O2"], ["2H2O"],
              -572, 30, None, {"explosive_limit": "4-75%"}),
-            
+
             # Industrial
             ("haber_process", ReactionType.SYNTHESIS, ["N2", "3H2"], ["2NH3"],
              -92.4, 150, "Fe", {"pressure": "150-300 atm", "temperature": "400-500°C"}),
             ("contact_process", ReactionType.CATALYTIC, ["2SO2", "O2"], ["2SO3"],
              -198, 100, "V2O5", {"temperature": "450°C"}),
-            
+
             # Acid-Base
             ("neutralization", ReactionType.ACID_BASE, ["HCl", "NaOH"], ["NaCl", "H2O"],
              -57.3, 10, None, {}),
-            
+
             # Polymerization
             ("ethylene_polymerization", ReactionType.POLYMERIZATION, ["nC2H4"], ["(C2H4)n"],
              -95, 80, "TiCl4/Al(C2H5)3", {"type": "Ziegler-Natta"}),
-            
+
             # Nuclear
             ("uranium_fission", ReactionType.NUCLEAR, ["U-235", "n"], ["Ba-141", "Kr-92", "3n"],
              -200000000, 0, None, {"type": "fission", "critical_mass": "52kg"}),
             ("deuterium_fusion", ReactionType.NUCLEAR, ["D", "D"], ["He-3", "n"],
              -17600000, 100000, None, {"type": "fusion", "temperature": "100M K"}),
         ]
-        
+
         for name, r_type, reactants, products, dh, ea, cat, cond in reactions_data:
             reaction = ChemicalReaction(
                 id=self._gen_id("rxn"),
@@ -370,11 +370,11 @@ class MolecularEngineeringEngine:
                 conditions=cond
             )
             self.reactions[name] = reaction
-    
+
     def _init_advanced_materials(self):
         """Initialize advanced materials."""
         materials_data = [
-            ("steel", MaterialType.METAL, {"Fe": 98, "C": 2}, 
+            ("steel", MaterialType.METAL, {"Fe": 98, "C": 2},
              {"tensile_strength": "500 MPa", "density": 7.85}, ["construction", "machinery"]),
             ("silicon_wafer", MaterialType.SEMICONDUCTOR,{"Si": 100},
              {"bandgap": "1.1 eV", "purity": "99.9999999%"}, ["chips", "solar_cells"]),
@@ -391,7 +391,7 @@ class MolecularEngineeringEngine:
             ("titanium_alloy", MaterialType.METAL, {"Ti": 90, "Al": 6, "V": 4},
              {"tensile_strength": "900 MPa", "biocompatible": True}, ["implants", "aerospace"]),
         ]
-        
+
         for name, m_type, comp, props, apps in materials_data:
             material = Material(
                 id=self._gen_id("mat"),
@@ -403,7 +403,7 @@ class MolecularEngineeringEngine:
                 synthesis_method="industrial"
             )
             self.materials[name] = material
-    
+
     def _init_nanostructures(self):
         """Initialize nanostructures."""
         nanostructures_data = [
@@ -420,7 +420,7 @@ class MolecularEngineeringEngine:
             ("dendrimer", "dendrimer", (4.0, 4.0, 4.0),
              {"branched": True, "drug_carrier": True}, ["drug_delivery", "catalysis"]),
         ]
-        
+
         for name, s_type, dims, props, apps in nanostructures_data:
             nano = NanoStructure(
                 id=self._gen_id("nano"),
@@ -431,19 +431,19 @@ class MolecularEngineeringEngine:
                 applications=apps
             )
             self.nanostructures[name] = nano
-    
+
     # -------------------------------------------------------------------------
     # ELEMENT OPERATIONS
     # -------------------------------------------------------------------------
-    
+
     def get_element(self, symbol: str) -> Optional[Element]:
         """Get element by symbol."""
         return self.elements.get(symbol)
-    
+
     def get_elements_by_category(self, category: ElementCategory) -> List[Element]:
         """Get all elements in a category."""
         return [e for e in self.elements.values() if e.category == category]
-    
+
     def calculate_electronegativity_difference(self, symbol1: str, symbol2: str) -> Optional[float]:
         """Calculate electronegativity difference between two elements."""
         e1 = self.elements.get(symbol1)
@@ -451,28 +451,28 @@ class MolecularEngineeringEngine:
         if e1 and e2:
             return abs(e1.electronegativity - e2.electronegativity)
         return None
-    
+
     def predict_bond_type(self, symbol1: str, symbol2: str) -> Optional[BondType]:
         """Predict bond type between two elements."""
         diff = self.calculate_electronegativity_difference(symbol1, symbol2)
         if diff is None:
             return None
-        
+
         if diff > 1.7:
             return BondType.IONIC
         elif diff > 0.4:
             return BondType.POLAR_COVALENT
         else:
             return BondType.COVALENT
-    
+
     # -------------------------------------------------------------------------
     # MOLECULE OPERATIONS
     # -------------------------------------------------------------------------
-    
+
     def get_molecule(self, name: str) -> Optional[Molecule]:
         """Get molecule by name."""
         return self.molecules.get(name)
-    
+
     async def design_molecule(
         self,
         formula: str,
@@ -492,7 +492,7 @@ class MolecularEngineeringEngine:
         )
         self.molecules[molecule.name] = molecule
         return molecule
-    
+
     def _estimate_molecular_weight(self, formula: str) -> float:
         """Estimate molecular weight from formula."""
         # Simplified - real implementation would parse formula
@@ -501,33 +501,33 @@ class MolecularEngineeringEngine:
             if symbol in formula:
                 total += element.atomic_mass
         return total if total > 0 else 100.0
-    
+
     # -------------------------------------------------------------------------
     # REACTION OPERATIONS
     # -------------------------------------------------------------------------
-    
+
     def get_reaction(self, name: str) -> Optional[ChemicalReaction]:
         """Get reaction by name."""
         return self.reactions.get(name)
-    
+
     def predict_reaction_spontaneity(self, reaction: ChemicalReaction) -> bool:
         """Predict if reaction is spontaneous (simplified)."""
         # Simplified Gibbs free energy estimation
         # ΔG = ΔH - TΔS, if ΔG < 0, spontaneous
         return reaction.delta_h < 0
-    
+
     def calculate_energy_release(self, reaction: ChemicalReaction, moles: float) -> float:
         """Calculate energy release in kJ."""
         return abs(reaction.delta_h) * moles
-    
+
     # -------------------------------------------------------------------------
     # MATERIAL OPERATIONS
     # -------------------------------------------------------------------------
-    
+
     def get_material(self, name: str) -> Optional[Material]:
         """Get material by name."""
         return self.materials.get(name)
-    
+
     async def synthesize_material(
         self,
         composition: Dict[str, float],
@@ -546,15 +546,15 @@ class MolecularEngineeringEngine:
         )
         self.materials[material.name] = material
         return material
-    
+
     # -------------------------------------------------------------------------
     # NANO OPERATIONS
     # -------------------------------------------------------------------------
-    
+
     def get_nanostructure(self, name: str) -> Optional[NanoStructure]:
         """Get nanostructure by name."""
         return self.nanostructures.get(name)
-    
+
     async def design_nanostructure(
         self,
         structure_type: str,
@@ -572,11 +572,11 @@ class MolecularEngineeringEngine:
         )
         self.nanostructures[nano.name] = nano
         return nano
-    
+
     # -------------------------------------------------------------------------
     # STATISTICS
     # -------------------------------------------------------------------------
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get engine statistics."""
         return {
@@ -590,7 +590,7 @@ class MolecularEngineeringEngine:
                 for cat in ElementCategory
             }
         }
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
@@ -620,9 +620,9 @@ async def demo():
     print("=" * 60)
     print("🔬 MOLECULAR ENGINEERING ENGINE 🔬")
     print("=" * 60)
-    
+
     engine = get_molecular_engine()
-    
+
     # Stats
     print("\n--- Engine Statistics ---")
     stats = engine.get_stats()
@@ -631,14 +631,14 @@ async def demo():
     print(f"Reactions: {stats['total_reactions']}")
     print(f"Materials: {stats['total_materials']}")
     print(f"Nanostructures: {stats['total_nanostructures']}")
-    
+
     # Elements
     print("\n--- Key Elements ---")
     for symbol in ["C", "Fe", "Au", "U"]:
         elem = engine.get_element(symbol)
         if elem:
             print(f"  {symbol} - {elem.name}: Mass={elem.atomic_mass}, EN={elem.electronegativity}")
-    
+
     # Bond prediction
     print("\n--- Bond Predictions ---")
     pairs = [("Na", "Cl"), ("C", "H"), ("C", "O")]
@@ -646,33 +646,33 @@ async def demo():
         bond = engine.predict_bond_type(s1, s2)
         if bond:
             print(f"  {s1}-{s2}: {bond.value}")
-    
+
     # Molecules
     print("\n--- Key Molecules ---")
     for name in ["water", "caffeine", "graphene"]:
         mol = engine.get_molecule(name)
         if mol:
             print(f"  {mol.formula} ({mol.name}): MW={mol.molecular_weight}")
-    
+
     # Reactions
     print("\n--- Powerful Reactions ---")
     for name in ["uranium_fission", "deuterium_fusion"]:
         rxn = engine.get_reaction(name)
         if rxn:
             print(f"  {rxn.name}: ΔH={rxn.delta_h:,} kJ/mol")
-    
+
     # Materials
     print("\n--- Advanced Materials ---")
     for name in ["graphene", "ybco", "aerogel"]:
         mat = engine.get_material(name)
         if mat:
             print(f"  {mat.name} ({mat.material_type.value})")
-    
+
     # Nanostructures
     print("\n--- Nanostructures ---")
     for nano in engine.nanostructures.values():
         print(f"  {nano.name}: {nano.structure_type}")
-    
+
     print("\n" + "=" * 60)
     print("🔬 MATTER MASTERY COMPLETE 🔬")
 

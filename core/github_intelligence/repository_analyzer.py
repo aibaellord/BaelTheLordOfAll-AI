@@ -138,7 +138,7 @@ class CompetitorComparison:
 
 class RepositoryQualityScorer:
     """Scores repository quality across multiple dimensions"""
-    
+
     def __init__(self):
         self.dimension_weights: Dict[QualityDimension, float] = {
             QualityDimension.CODE_QUALITY: 0.15,
@@ -152,19 +152,19 @@ class RepositoryQualityScorer:
             QualityDimension.EXTENSIBILITY: 0.05,
             QualityDimension.USABILITY: 0.05,
         }
-    
+
     def score_repository(self, metadata: RepositoryMetadata) -> QualityScore:
         """Score a repository across all dimensions"""
         dimensions = {}
         factors = {}
-        
+
         # Community dimension
         star_score = min(1.0, metadata.stars / 50000) if metadata.stars else 0
         fork_score = min(1.0, metadata.forks / 10000) if metadata.forks else 0
         dimensions[QualityDimension.COMMUNITY] = (star_score * 0.6 + fork_score * 0.4)
         factors["stars"] = star_score
         factors["forks"] = fork_score
-        
+
         # Maintenance dimension
         if metadata.updated_at:
             days_since_update = (datetime.now() - metadata.updated_at).days
@@ -173,7 +173,7 @@ class RepositoryQualityScorer:
             maintenance_score = 0.5
         dimensions[QualityDimension.MAINTENANCE] = maintenance_score
         factors["recency"] = maintenance_score
-        
+
         # Documentation dimension
         doc_score = 0.5  # Base score
         if metadata.has_wiki:
@@ -183,7 +183,7 @@ class RepositoryQualityScorer:
         if len(metadata.topics) > 3:
             doc_score += 0.2
         dimensions[QualityDimension.DOCUMENTATION] = min(1.0, doc_score)
-        
+
         # Issue health
         if metadata.stars > 0:
             issue_ratio = metadata.open_issues / metadata.stars
@@ -191,7 +191,7 @@ class RepositoryQualityScorer:
         else:
             issue_health = 0.5
         factors["issue_health"] = issue_health
-        
+
         # Size factor
         if metadata.size_kb > 0:
             # Moderate size is ideal (not too small, not too large)
@@ -200,22 +200,22 @@ class RepositoryQualityScorer:
         else:
             size_score = 0.5
         factors["size_appropriateness"] = size_score
-        
+
         # Fill remaining dimensions with estimates
         for dim in QualityDimension:
             if dim not in dimensions:
                 # Estimate based on community metrics
                 dimensions[dim] = (star_score + maintenance_score) / 2
-        
+
         # Calculate overall score with golden ratio weighting
         overall = 0.0
         for dim, weight in self.dimension_weights.items():
             overall += dimensions.get(dim, 0.5) * weight
-        
+
         # Apply golden ratio boost for exceptional repos
         if overall > 0.7:
             overall = min(1.0, overall * (1 + (PHI - 1) * 0.1))
-        
+
         recommendations = []
         if maintenance_score < 0.5:
             recommendations.append("Repository may be unmaintained")
@@ -223,7 +223,7 @@ class RepositoryQualityScorer:
             recommendations.append("Lower community adoption")
         if issue_health < 0.3:
             recommendations.append("High issue-to-star ratio may indicate problems")
-        
+
         return QualityScore(
             overall=overall,
             dimensions=dimensions,
@@ -236,7 +236,7 @@ class RepositoryQualityScorer:
 
 class CategoryDetector:
     """Detects the category of a repository"""
-    
+
     def __init__(self):
         self.category_keywords: Dict[RepositoryCategory, List[str]] = {
             RepositoryCategory.AI_AGENT: [
@@ -266,27 +266,27 @@ class CategoryDetector:
                 "codegen", "code-generation", "copilot", "autocomplete",
             ],
         }
-    
+
     def detect_category(self, metadata: RepositoryMetadata) -> RepositoryCategory:
         """Detect the category of a repository"""
         text = f"{metadata.name} {metadata.description} {' '.join(metadata.topics)}".lower()
-        
+
         category_scores: Dict[RepositoryCategory, int] = defaultdict(int)
-        
+
         for category, keywords in self.category_keywords.items():
             for keyword in keywords:
                 if keyword in text:
                     category_scores[category] += 1
-        
+
         if not category_scores:
             return RepositoryCategory.UNKNOWN
-        
+
         return max(category_scores, key=category_scores.get)
 
 
 class CompetitorFinder:
     """Finds competitors and alternatives to repositories"""
-    
+
     def __init__(self):
         self.known_competitors: Dict[str, List[str]] = {
             "langchain": ["llamaindex", "haystack", "semantic-kernel", "autogen"],
@@ -296,24 +296,24 @@ class CompetitorFinder:
             "opendevin": ["devin", "aider", "gpt-engineer", "sweep"],
             "mcp": ["openai-assistants", "function-calling", "tool-use"],
         }
-    
-    def find_competitors(self, 
-                        repo_name: str, 
+
+    def find_competitors(self,
+                        repo_name: str,
                         category: RepositoryCategory,
                         topics: List[str]) -> List[str]:
         """Find competitors for a repository"""
         competitors = []
-        
+
         # Check known competitors
         repo_lower = repo_name.lower()
         for key, comps in self.known_competitors.items():
             if key in repo_lower:
                 competitors.extend(comps)
-        
+
         # Infer from category
         category_competitors = {
             RepositoryCategory.AI_AGENT: [
-                "autogpt/autogpt", "langchain-ai/langchain", 
+                "autogpt/autogpt", "langchain-ai/langchain",
                 "microsoft/autogen", "joaomdmoura/crewai",
             ],
             RepositoryCategory.LLM_FRAMEWORK: [
@@ -324,16 +324,16 @@ class CompetitorFinder:
                 "prefecthq/prefect", "apache/airflow", "dagster-io/dagster",
             ],
         }
-        
+
         if category in category_competitors:
             competitors.extend(category_competitors[category])
-        
+
         return list(set(competitors))
 
 
 class CombinationEngine:
     """Creates advanced combinations of best repository features"""
-    
+
     def __init__(self):
         self.combination_strategies: List[Dict[str, Any]] = [
             {
@@ -357,49 +357,49 @@ class CombinationEngine:
                 "applicability": ["different_category"],
             },
         ]
-    
+
     def generate_combinations(self,
                              analyses: List[RepositoryAnalysis]) -> List[Dict[str, Any]]:
         """Generate optimal combinations of repositories"""
         combinations = []
-        
+
         if len(analyses) < 2:
             return combinations
-        
+
         # Sort by quality score
         sorted_analyses = sorted(
-            analyses, 
+            analyses,
             key=lambda a: a.quality_score.overall if a.quality_score else 0,
             reverse=True
         )
-        
+
         # Generate combination recommendations
         for i, primary in enumerate(sorted_analyses[:3]):  # Top 3
             for secondary in sorted_analyses[i+1:5]:  # Next repos
                 combination = self._create_combination(primary, secondary)
                 if combination:
                     combinations.append(combination)
-        
+
         # Golden ratio selection - take top PHI fraction
         num_to_keep = max(1, int(len(combinations) / PHI))
         return combinations[:num_to_keep]
-    
+
     def _create_combination(self,
                            primary: RepositoryAnalysis,
                            secondary: RepositoryAnalysis) -> Optional[Dict[str, Any]]:
         """Create a combination recommendation"""
         if not primary.metadata or not secondary.metadata:
             return None
-        
+
         # Identify complementary features
         primary_features = set(primary.key_features) if primary.key_features else set()
         secondary_features = set(secondary.key_features) if secondary.key_features else set()
-        
+
         unique_to_secondary = secondary_features - primary_features
-        
+
         if not unique_to_secondary and primary.category == secondary.category:
             return None  # No value in combining similar repos
-        
+
         combination = {
             "id": str(uuid.uuid4()),
             "primary_repo": primary.metadata.url,
@@ -410,9 +410,9 @@ class CombinationEngine:
             "implementation_complexity": self._estimate_complexity(primary, secondary),
             "bael_integration_path": self._create_integration_path(primary, secondary),
         }
-        
+
         return combination
-    
+
     def _select_strategy(self,
                         primary: RepositoryAnalysis,
                         secondary: RepositoryAnalysis) -> str:
@@ -421,23 +421,23 @@ class CombinationEngine:
             return "feature_merge"
         else:
             return "bridge_integration"
-    
+
     def _estimate_improvement(self,
                               primary: RepositoryAnalysis,
                               secondary: RepositoryAnalysis) -> float:
         """Estimate improvement from combination"""
         if not primary.quality_score or not secondary.quality_score:
             return 0.5
-        
+
         # Improvement is proportional to secondary quality
         base_improvement = secondary.quality_score.overall * 0.3
-        
+
         # Apply golden ratio for exceptional combinations
         if secondary.quality_score.overall > 0.8:
             base_improvement *= PHI
-        
+
         return min(1.0, base_improvement)
-    
+
     def _estimate_complexity(self,
                             primary: RepositoryAnalysis,
                             secondary: RepositoryAnalysis) -> str:
@@ -448,7 +448,7 @@ class CombinationEngine:
             return "low"
         else:
             return "high"
-    
+
     def _create_integration_path(self,
                                 primary: RepositoryAnalysis,
                                 secondary: RepositoryAnalysis) -> List[str]:
@@ -465,14 +465,14 @@ class CombinationEngine:
 
 class BaelIntegrationAnalyzer:
     """Analyzes how repositories can enhance Bael"""
-    
+
     def __init__(self):
         self.bael_components = [
             "core/agents", "core/orchestration", "core/memory",
             "core/tools", "core/llm", "core/council", "core/swarm",
             "mcp/server", "workflows", "integrations",
         ]
-    
+
     def analyze_integration_potential(self,
                                      analysis: RepositoryAnalysis) -> Dict[str, Any]:
         """Analyze how a repo can enhance Bael"""
@@ -484,9 +484,9 @@ class BaelIntegrationAnalyzer:
             RepositoryCategory.LLM_FRAMEWORK: ["core/llm", "integrations"],
             RepositoryCategory.RAG_SYSTEM: ["core/memory", "core/knowledge"],
         }
-        
+
         target_components = enhancement_map.get(analysis.category, ["integrations"])
-        
+
         return {
             "target_components": target_components,
             "integration_type": self._determine_integration_type(analysis),
@@ -495,7 +495,7 @@ class BaelIntegrationAnalyzer:
             "value_add": self._estimate_value(analysis),
             "recommendations": self._generate_recommendations(analysis),
         }
-    
+
     def _determine_integration_type(self, analysis: RepositoryAnalysis) -> str:
         """Determine the type of integration"""
         if analysis.category in [RepositoryCategory.MCP_SERVER, RepositoryCategory.TOOL_LIBRARY]:
@@ -504,12 +504,12 @@ class BaelIntegrationAnalyzer:
             return "pattern_extraction"
         else:
             return "reference_implementation"
-    
+
     def _calculate_priority(self, analysis: RepositoryAnalysis) -> str:
         """Calculate integration priority"""
         if not analysis.quality_score:
             return "low"
-        
+
         score = analysis.quality_score.overall
         if score > 0.8:
             return "critical"
@@ -519,12 +519,12 @@ class BaelIntegrationAnalyzer:
             return "medium"
         else:
             return "low"
-    
+
     def _estimate_effort(self, analysis: RepositoryAnalysis) -> str:
         """Estimate integration effort"""
         if not analysis.metadata:
             return "unknown"
-        
+
         size = analysis.metadata.size_kb
         if size < 1000:
             return "small"
@@ -532,63 +532,63 @@ class BaelIntegrationAnalyzer:
             return "medium"
         else:
             return "large"
-    
+
     def _estimate_value(self, analysis: RepositoryAnalysis) -> float:
         """Estimate value add for Bael"""
         base_value = 0.5
-        
+
         if analysis.quality_score:
             base_value = analysis.quality_score.overall
-        
+
         # Boost for innovative features
         if analysis.unique_innovations:
             base_value *= 1 + (len(analysis.unique_innovations) * 0.1)
-        
+
         return min(1.0, base_value)
-    
+
     def _generate_recommendations(self, analysis: RepositoryAnalysis) -> List[str]:
         """Generate integration recommendations"""
         recommendations = []
-        
+
         if analysis.category == RepositoryCategory.AI_AGENT:
             recommendations.append("Extract autonomous decision-making patterns")
-        
+
         if analysis.category == RepositoryCategory.ORCHESTRATION:
             recommendations.append("Study orchestration architecture for swarm enhancement")
-        
+
         if analysis.unique_innovations:
             recommendations.append(f"Analyze unique innovations: {', '.join(analysis.unique_innovations[:3])}")
-        
+
         recommendations.append("Create Bael-specific wrapper for seamless integration")
-        
+
         return recommendations
 
 
 class GitHubRepositoryAnalyzer:
     """
     The Ultimate GitHub Repository Analyzer
-    
+
     Analyzes repositories, finds competitors, scores quality,
     generates combinations, and plans Bael integrations.
     """
-    
+
     def __init__(self):
         self.quality_scorer = RepositoryQualityScorer()
         self.category_detector = CategoryDetector()
         self.competitor_finder = CompetitorFinder()
         self.combination_engine = CombinationEngine()
         self.integration_analyzer = BaelIntegrationAnalyzer()
-        
+
         self.analysis_cache: Dict[str, RepositoryAnalysis] = {}
         self.comparison_history: List[CompetitorComparison] = []
-    
+
     async def analyze_repository(self,
                                 url: str,
                                 deep: bool = False) -> RepositoryAnalysis:
         """Analyze a GitHub repository"""
         # Parse URL
         owner, name = self._parse_github_url(url)
-        
+
         # Create metadata (in real implementation, would fetch from GitHub API)
         metadata = RepositoryMetadata(
             url=url,
@@ -598,18 +598,18 @@ class GitHubRepositoryAnalyzer:
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
-        
+
         # Detect category
         category = self.category_detector.detect_category(metadata)
-        
+
         # Score quality
         quality_score = self.quality_scorer.score_repository(metadata)
-        
+
         # Find competitors
         competitors = self.competitor_finder.find_competitors(
             name, category, metadata.topics
         )
-        
+
         # Create analysis
         analysis = RepositoryAnalysis(
             metadata=metadata,
@@ -618,22 +618,22 @@ class GitHubRepositoryAnalyzer:
             competitors=competitors,
             integration_potential=quality_score.overall,
         )
-        
+
         # Analyze Bael integration potential
         integration_info = self.integration_analyzer.analyze_integration_potential(analysis)
         analysis.bael_enhancement_opportunities = integration_info["recommendations"]
-        
+
         # Cache
         self.analysis_cache[url] = analysis
-        
+
         return analysis
-    
+
     async def find_better_alternatives(self,
                                       url: str) -> CompetitorComparison:
         """Find better alternatives to a repository"""
         # Analyze main repo
         main_analysis = await self.analyze_repository(url)
-        
+
         # Analyze competitors
         competitor_analyses = []
         for comp_url in main_analysis.competitors[:5]:  # Limit to 5
@@ -641,11 +641,11 @@ class GitHubRepositoryAnalyzer:
                 comp_url = f"https://github.com/{comp_url}"
             comp_analysis = await self.analyze_repository(comp_url)
             competitor_analyses.append(comp_analysis)
-        
+
         # Build comparison matrix
         comparison_matrix = {}
         all_analyses = [main_analysis] + competitor_analyses
-        
+
         for analysis in all_analyses:
             if analysis.metadata and analysis.quality_score:
                 comparison_matrix[analysis.metadata.url] = {
@@ -654,17 +654,17 @@ class GitHubRepositoryAnalyzer:
                     "maintenance": analysis.quality_score.dimensions.get(QualityDimension.MAINTENANCE, 0),
                     "innovation": analysis.quality_score.dimensions.get(QualityDimension.INNOVATION, 0),
                 }
-        
+
         # Determine winner
         winner = max(
             all_analyses,
             key=lambda a: a.quality_score.overall if a.quality_score else 0
         )
         winner_url = winner.metadata.url if winner.metadata else url
-        
+
         # Generate combinations
         combinations = self.combination_engine.generate_combinations(all_analyses)
-        
+
         comparison = CompetitorComparison(
             main_repo=url,
             competitors=[a.metadata.url for a in competitor_analyses if a.metadata],
@@ -677,11 +677,11 @@ class GitHubRepositoryAnalyzer:
                 "Extract innovative patterns from each",
             ],
         )
-        
+
         self.comparison_history.append(comparison)
-        
+
         return comparison
-    
+
     async def create_advanced_combination(self,
                                           urls: List[str]) -> Dict[str, Any]:
         """Create an advanced combination from multiple repositories"""
@@ -689,9 +689,9 @@ class GitHubRepositoryAnalyzer:
         for url in urls:
             analysis = await self.analyze_repository(url)
             analyses.append(analysis)
-        
+
         combinations = self.combination_engine.generate_combinations(analyses)
-        
+
         # Create synthesis plan
         synthesis_plan = {
             "id": str(uuid.uuid4()),
@@ -709,9 +709,9 @@ class GitHubRepositoryAnalyzer:
             "bael_integration_plan": self._create_bael_plan(analyses),
             "expected_power_increase": self._calculate_power_increase(analyses),
         }
-        
+
         return synthesis_plan
-    
+
     def _parse_github_url(self, url: str) -> Tuple[str, str]:
         """Parse GitHub URL to extract owner and repo name"""
         # Handle various URL formats
@@ -719,16 +719,16 @@ class GitHubRepositoryAnalyzer:
             r"github\.com[/:]([^/]+)/([^/\s]+)",
             r"^([^/]+)/([^/\s]+)$",
         ]
-        
+
         for pattern in patterns:
             match = re.search(pattern, url)
             if match:
                 owner = match.group(1)
                 name = match.group(2).replace(".git", "")
                 return owner, name
-        
+
         return "unknown", "unknown"
-    
+
     def _create_synthesis_strategy(self,
                                    analyses: List[RepositoryAnalysis]) -> Dict[str, Any]:
         """Create strategy for synthesizing repos"""
@@ -750,15 +750,15 @@ class GitHubRepositoryAnalyzer:
                 ))
             ],
         }
-    
-    def _create_bael_plan(self, 
+
+    def _create_bael_plan(self,
                          analyses: List[RepositoryAnalysis]) -> Dict[str, Any]:
         """Create Bael integration plan"""
         target_modules = set()
         for analysis in analyses:
             integration = self.integration_analyzer.analyze_integration_potential(analysis)
             target_modules.update(integration["target_components"])
-        
+
         return {
             "target_modules": list(target_modules),
             "integration_phases": [
@@ -770,13 +770,13 @@ class GitHubRepositoryAnalyzer:
             ],
             "enhancement_factor": PHI,  # Golden ratio enhancement
         }
-    
+
     def _calculate_power_increase(self,
                                   analyses: List[RepositoryAnalysis]) -> float:
         """Calculate expected power increase from combination"""
         if not analyses:
             return 0.0
-        
+
         # Sum of quality scores with diminishing returns
         total_quality = sum(
             (a.quality_score.overall if a.quality_score else 0) / (i + 1)
@@ -786,10 +786,10 @@ class GitHubRepositoryAnalyzer:
                 reverse=True
             ))
         )
-        
+
         # Apply golden ratio scaling
         power_increase = total_quality * PHI / len(analyses)
-        
+
         return min(5.0, power_increase)  # Cap at 5x
 
 

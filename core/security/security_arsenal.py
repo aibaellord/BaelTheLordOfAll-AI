@@ -123,7 +123,7 @@ class Vulnerability:
     references: List[str] = field(default_factory=list)
     discovered_at: datetime = field(default_factory=datetime.now)
     confirmed: bool = False
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -156,10 +156,10 @@ class Target:
     credentials: List[Dict[str, str]] = field(default_factory=list)
     notes: List[str] = field(default_factory=list)
     scope: bool = True  # In scope for testing
-    
+
     def add_vulnerability(self, vuln: Vulnerability) -> None:
         self.vulnerabilities.append(vuln)
-    
+
     def get_critical_vulns(self) -> List[Vulnerability]:
         return [v for v in self.vulnerabilities if v.severity == ThreatLevel.CRITICAL]
 
@@ -173,7 +173,7 @@ class AttackChain:
     success_probability: float = 0.0
     impact_score: float = 0.0
     prerequisites: List[str] = field(default_factory=list)
-    
+
     def add_step(
         self,
         tool: str,
@@ -201,7 +201,7 @@ class SecurityReport:
     vulnerabilities: List[Vulnerability] = field(default_factory=list)
     attack_chains: List[AttackChain] = field(default_factory=list)
     recommendations: List[str] = field(default_factory=list)
-    
+
     def get_severity_counts(self) -> Dict[str, int]:
         counts = defaultdict(int)
         for v in self.vulnerabilities:
@@ -215,7 +215,7 @@ class SecurityReport:
 
 class SecurityTool(ABC):
     """Base class for security tools."""
-    
+
     def __init__(
         self,
         name: str,
@@ -230,7 +230,7 @@ class SecurityTool(ABC):
         self.enabled = True
         self.last_run: Optional[datetime] = None
         self.run_count = 0
-    
+
     @abstractmethod
     async def execute(
         self,
@@ -239,7 +239,7 @@ class SecurityTool(ABC):
     ) -> Dict[str, Any]:
         """Execute the tool against a target."""
         pass
-    
+
     def get_definition(self) -> Dict[str, Any]:
         """Get MCP-compatible tool definition."""
         return {
@@ -249,7 +249,7 @@ class SecurityTool(ABC):
             "phase": self.phase.value,
             "parameters": self.get_parameters()
         }
-    
+
     @abstractmethod
     def get_parameters(self) -> Dict[str, Any]:
         """Get tool parameters schema."""
@@ -262,7 +262,7 @@ class SecurityTool(ABC):
 
 class NmapScanner(SecurityTool):
     """Network scanner using Nmap."""
-    
+
     def __init__(self):
         super().__init__(
             name="nmap_scan",
@@ -270,7 +270,7 @@ class NmapScanner(SecurityTool):
             category=ToolCategory.NETWORK,
             phase=AttackPhase.SCANNING
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -287,7 +287,7 @@ class NmapScanner(SecurityTool):
             },
             "required": []
         }
-    
+
     async def execute(
         self,
         target: Target,
@@ -296,7 +296,7 @@ class NmapScanner(SecurityTool):
         options = options or {}
         scan_type = options.get("scan_type", "quick")
         ports = options.get("ports", "common")
-        
+
         # Build nmap command based on scan type
         cmd_map = {
             "quick": "-T4 -F",
@@ -305,13 +305,13 @@ class NmapScanner(SecurityTool):
             "vuln": "--script vuln",
             "service": "-sV"
         }
-        
+
         flags = cmd_map.get(scan_type, "-T4 -F")
-        
+
         # Simulated result (in production, actually run nmap)
         self.run_count += 1
         self.last_run = datetime.now()
-        
+
         return {
             "tool": self.name,
             "target": target.host,
@@ -331,7 +331,7 @@ class NmapScanner(SecurityTool):
 
 class SubdomainEnumerator(SecurityTool):
     """Subdomain enumeration tool."""
-    
+
     def __init__(self):
         super().__init__(
             name="subdomain_enum",
@@ -339,7 +339,7 @@ class SubdomainEnumerator(SecurityTool):
             category=ToolCategory.RECON,
             phase=AttackPhase.RECONNAISSANCE
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -355,17 +355,17 @@ class SubdomainEnumerator(SecurityTool):
                 }
             }
         }
-    
+
     async def execute(
         self,
         target: Target,
         options: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         options = options or {}
-        
+
         # Simulated result
         domain = target.host.replace("www.", "")
-        
+
         return {
             "tool": self.name,
             "domain": domain,
@@ -384,7 +384,7 @@ class SubdomainEnumerator(SecurityTool):
 
 class WAFDetector(SecurityTool):
     """Web Application Firewall detection."""
-    
+
     def __init__(self):
         super().__init__(
             name="waf_detect",
@@ -392,7 +392,7 @@ class WAFDetector(SecurityTool):
             category=ToolCategory.WEB,
             phase=AttackPhase.RECONNAISSANCE
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -403,7 +403,7 @@ class WAFDetector(SecurityTool):
                 }
             }
         }
-    
+
     async def execute(
         self,
         target: Target,
@@ -430,7 +430,7 @@ class WAFDetector(SecurityTool):
 
 class SQLInjectionScanner(SecurityTool):
     """SQL Injection vulnerability scanner."""
-    
+
     def __init__(self):
         super().__init__(
             name="sqli_scan",
@@ -438,7 +438,7 @@ class SQLInjectionScanner(SecurityTool):
             category=ToolCategory.WEB,
             phase=AttackPhase.VULNERABILITY_ANALYSIS
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -458,7 +458,7 @@ class SQLInjectionScanner(SecurityTool):
                 }
             }
         }
-    
+
     async def execute(
         self,
         target: Target,
@@ -466,7 +466,7 @@ class SQLInjectionScanner(SecurityTool):
     ) -> Dict[str, Any]:
         options = options or {}
         url = options.get("url", f"http://{target.host}")
-        
+
         return {
             "tool": self.name,
             "target": url,
@@ -490,7 +490,7 @@ class SQLInjectionScanner(SecurityTool):
 
 class XSSScanner(SecurityTool):
     """Cross-Site Scripting vulnerability scanner."""
-    
+
     def __init__(self):
         super().__init__(
             name="xss_scan",
@@ -498,7 +498,7 @@ class XSSScanner(SecurityTool):
             category=ToolCategory.WEB,
             phase=AttackPhase.VULNERABILITY_ANALYSIS
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -513,14 +513,14 @@ class XSSScanner(SecurityTool):
                 }
             }
         }
-    
+
     async def execute(
         self,
         target: Target,
         options: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         options = options or {}
-        
+
         return {
             "tool": self.name,
             "target": target.host,
@@ -539,7 +539,7 @@ class XSSScanner(SecurityTool):
 
 class NucleiScanner(SecurityTool):
     """Nuclei vulnerability scanner integration."""
-    
+
     def __init__(self):
         super().__init__(
             name="nuclei_scan",
@@ -547,7 +547,7 @@ class NucleiScanner(SecurityTool):
             category=ToolCategory.WEB,
             phase=AttackPhase.VULNERABILITY_ANALYSIS
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -564,14 +564,14 @@ class NucleiScanner(SecurityTool):
                 }
             }
         }
-    
+
     async def execute(
         self,
         target: Target,
         options: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         options = options or {}
-        
+
         return {
             "tool": self.name,
             "target": target.host,
@@ -601,7 +601,7 @@ class NucleiScanner(SecurityTool):
 
 class ExploitGenerator(SecurityTool):
     """AI-powered exploit generator."""
-    
+
     def __init__(self):
         super().__init__(
             name="exploit_gen",
@@ -609,7 +609,7 @@ class ExploitGenerator(SecurityTool):
             category=ToolCategory.EXPLOIT,
             phase=AttackPhase.EXPLOITATION
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -628,7 +628,7 @@ class ExploitGenerator(SecurityTool):
                 }
             }
         }
-    
+
     async def execute(
         self,
         target: Target,
@@ -637,7 +637,7 @@ class ExploitGenerator(SecurityTool):
         options = options or {}
         vuln = options.get("vulnerability", {})
         language = options.get("language", "python")
-        
+
         return {
             "tool": self.name,
             "vulnerability": vuln.get("cve_id", "unknown"),
@@ -663,7 +663,7 @@ if __name__ == '__main__':
 
 class MetasploitInterface(SecurityTool):
     """Metasploit Framework integration."""
-    
+
     def __init__(self):
         super().__init__(
             name="metasploit",
@@ -671,7 +671,7 @@ class MetasploitInterface(SecurityTool):
             category=ToolCategory.EXPLOIT,
             phase=AttackPhase.EXPLOITATION
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -687,7 +687,7 @@ class MetasploitInterface(SecurityTool):
             },
             "required": ["module"]
         }
-    
+
     async def execute(
         self,
         target: Target,
@@ -695,7 +695,7 @@ class MetasploitInterface(SecurityTool):
     ) -> Dict[str, Any]:
         options = options or {}
         module = options.get("module", "auxiliary/scanner/portscan/tcp")
-        
+
         return {
             "tool": self.name,
             "module": module,
@@ -712,7 +712,7 @@ class MetasploitInterface(SecurityTool):
 
 class PrivilegeEscalationFinder(SecurityTool):
     """Find privilege escalation vectors."""
-    
+
     def __init__(self):
         super().__init__(
             name="privesc_finder",
@@ -720,7 +720,7 @@ class PrivilegeEscalationFinder(SecurityTool):
             category=ToolCategory.EXPLOIT,
             phase=AttackPhase.POST_EXPLOITATION
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -735,7 +735,7 @@ class PrivilegeEscalationFinder(SecurityTool):
                 }
             }
         }
-    
+
     async def execute(
         self,
         target: Target,
@@ -743,7 +743,7 @@ class PrivilegeEscalationFinder(SecurityTool):
     ) -> Dict[str, Any]:
         options = options or {}
         os_type = options.get("os_type", "linux")
-        
+
         if os_type == "linux":
             return {
                 "tool": self.name,
@@ -790,7 +790,7 @@ class PrivilegeEscalationFinder(SecurityTool):
 
 class CredentialHarvester(SecurityTool):
     """Harvest credentials from compromised systems."""
-    
+
     def __init__(self):
         super().__init__(
             name="cred_harvest",
@@ -798,7 +798,7 @@ class CredentialHarvester(SecurityTool):
             category=ToolCategory.PASSWORD,
             phase=AttackPhase.POST_EXPLOITATION
         )
-    
+
     def get_parameters(self) -> Dict[str, Any]:
         return {
             "type": "object",
@@ -810,7 +810,7 @@ class CredentialHarvester(SecurityTool):
                 }
             }
         }
-    
+
     async def execute(
         self,
         target: Target,
@@ -842,7 +842,7 @@ class CredentialHarvester(SecurityTool):
 
 class SecurityAgent(ABC):
     """Base class for AI security agents."""
-    
+
     def __init__(
         self,
         agent_type: AgentType,
@@ -856,7 +856,7 @@ class SecurityAgent(ABC):
         self.tools: List[SecurityTool] = []
         self.context: Dict[str, Any] = {}
         self.decisions: List[Dict[str, Any]] = []
-    
+
     @abstractmethod
     async def analyze(
         self,
@@ -865,7 +865,7 @@ class SecurityAgent(ABC):
     ) -> Dict[str, Any]:
         """Analyze target and provide recommendations."""
         pass
-    
+
     @abstractmethod
     async def execute_workflow(
         self,
@@ -879,21 +879,21 @@ class SecurityAgent(ABC):
 class IntelligentDecisionEngine(SecurityAgent):
     """
     AI-powered decision engine for security assessments.
-    
+
     Uses advanced reasoning to:
     - Determine optimal attack paths
     - Prioritize vulnerabilities
     - Chain exploits for maximum impact
     - Adapt based on target responses
     """
-    
+
     def __init__(self):
         super().__init__(
             agent_type=AgentType.DECISION_ENGINE,
             name="Intelligent Decision Engine",
             description="AI brain for security decision making"
         )
-        
+
         # Load all available tools
         self.tools = [
             NmapScanner(),
@@ -907,21 +907,21 @@ class IntelligentDecisionEngine(SecurityAgent):
             PrivilegeEscalationFinder(),
             CredentialHarvester()
         ]
-    
+
     async def analyze(
         self,
         target: Target,
         context: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """Analyze target and determine attack strategy."""
-        
+
         # Phase 1: Reconnaissance decisions
         recon_phase = {
             "phase": "reconnaissance",
             "recommended_tools": ["subdomain_enum", "waf_detect"],
             "reasoning": "Start with passive recon to avoid detection"
         }
-        
+
         # Phase 2: Scanning decisions
         scan_phase = {
             "phase": "scanning",
@@ -929,14 +929,14 @@ class IntelligentDecisionEngine(SecurityAgent):
             "options": {"scan_type": "stealth"},
             "reasoning": "Use stealth scan to evade IDS"
         }
-        
+
         # Phase 3: Vulnerability analysis
         vuln_phase = {
             "phase": "vulnerability_analysis",
             "recommended_tools": ["nuclei_scan", "sqli_scan", "xss_scan"],
             "reasoning": "Comprehensive vulnerability scanning"
         }
-        
+
         return {
             "target": target.host,
             "attack_plan": [recon_phase, scan_phase, vuln_phase],
@@ -944,7 +944,7 @@ class IntelligentDecisionEngine(SecurityAgent):
             "risk_level": "medium",
             "stealth_priority": True
         }
-    
+
     async def execute_workflow(
         self,
         target: Target,
@@ -957,7 +957,7 @@ class IntelligentDecisionEngine(SecurityAgent):
             "findings": [],
             "attack_chains": []
         }
-        
+
         # Execute each tool in intelligent order
         for tool in self.tools[:5]:  # Demo subset
             if tool.phase in [AttackPhase.RECONNAISSANCE, AttackPhase.SCANNING]:
@@ -970,30 +970,30 @@ class IntelligentDecisionEngine(SecurityAgent):
                     })
                 except Exception as e:
                     logger.error(f"Tool {tool.name} failed: {e}")
-        
+
         return results
 
 
 class BugBountyWorkflowManager(SecurityAgent):
     """Manages bug bounty hunting workflows."""
-    
+
     def __init__(self):
         super().__init__(
             agent_type=AgentType.BUG_BOUNTY,
             name="Bug Bounty Workflow Manager",
             description="Automated bug bounty hunting assistant"
         )
-        
+
         self.platforms = ["hackerone", "bugcrowd", "synack"]
         self.in_scope_checks = True
-    
+
     async def analyze(
         self,
         target: Target,
         context: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         program = context.get("program", "unknown") if context else "unknown"
-        
+
         return {
             "program": program,
             "target": target.host,
@@ -1009,7 +1009,7 @@ class BugBountyWorkflowManager(SecurityAgent):
                 "Test authentication flows"
             ]
         }
-    
+
     async def execute_workflow(
         self,
         target: Target,
@@ -1030,16 +1030,16 @@ class BugBountyWorkflowManager(SecurityAgent):
 
 class CVEIntelligenceManager(SecurityAgent):
     """Manages CVE intelligence and exploit mapping."""
-    
+
     def __init__(self):
         super().__init__(
             agent_type=AgentType.CVE_INTEL,
             name="CVE Intelligence Manager",
             description="Real-time CVE intelligence and exploit mapping"
         )
-        
+
         self.cve_database: Dict[str, Dict[str, Any]] = {}
-    
+
     async def analyze(
         self,
         target: Target,
@@ -1047,11 +1047,11 @@ class CVEIntelligenceManager(SecurityAgent):
     ) -> Dict[str, Any]:
         # Analyze services and map to known CVEs
         cve_mappings = []
-        
+
         for service in target.services:
             service_name = service.get("service", "")
             version = service.get("version", "")
-            
+
             # Simulated CVE lookup
             if "nginx" in service_name.lower():
                 cve_mappings.append({
@@ -1070,7 +1070,7 @@ class CVEIntelligenceManager(SecurityAgent):
                         {"id": "CVE-2020-15778", "severity": "high"}
                     ]
                 })
-        
+
         return {
             "target": target.host,
             "services_analyzed": len(target.services),
@@ -1078,14 +1078,14 @@ class CVEIntelligenceManager(SecurityAgent):
             "exploits_available": 2,
             "recommendation": "Prioritize CVE-2021-23017"
         }
-    
+
     async def execute_workflow(
         self,
         target: Target,
         options: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         analysis = await self.analyze(target)
-        
+
         return {
             "workflow": "cve_intelligence",
             "analysis": analysis,
@@ -1096,17 +1096,17 @@ class CVEIntelligenceManager(SecurityAgent):
 
 class ThreatHuntingAssistant(SecurityAgent):
     """Proactive threat hunting assistant."""
-    
+
     def __init__(self):
         super().__init__(
             agent_type=AgentType.THREAT_HUNTER,
             name="Threat Hunting Assistant",
             description="AI-powered proactive threat detection"
         )
-        
+
         self.ioc_database: List[Dict[str, Any]] = []
         self.detection_rules: List[Dict[str, Any]] = []
-    
+
     async def analyze(
         self,
         target: Target,
@@ -1132,7 +1132,7 @@ class ThreatHuntingAssistant(SecurityAgent):
                 "Analyze network traffic"
             ]
         }
-    
+
     async def execute_workflow(
         self,
         target: Target,
@@ -1154,37 +1154,37 @@ class ThreatHuntingAssistant(SecurityAgent):
 class SecurityArsenal:
     """
     Ba'el's Security Arsenal - HexStrike-style security platform.
-    
+
     Features:
     - 150+ security tools
     - 12+ AI agents
     - Attack chain automation
     - Real-time intelligence
     """
-    
+
     def __init__(self):
         self.id = str(uuid.uuid4())
         self.name = "Ba'el Security Arsenal"
-        
+
         # Initialize tools
         self.tools: Dict[str, SecurityTool] = {}
         self._register_all_tools()
-        
+
         # Initialize agents
         self.agents: Dict[AgentType, SecurityAgent] = {}
         self._register_all_agents()
-        
+
         # Target management
         self.targets: Dict[str, Target] = {}
-        
+
         # Attack chain tracking
         self.attack_chains: List[AttackChain] = []
-        
+
         # Session tracking
         self.sessions: Dict[str, Dict[str, Any]] = {}
-        
+
         logger.info(f"SecurityArsenal initialized with {len(self.tools)} tools and {len(self.agents)} agents")
-    
+
     def _register_all_tools(self) -> None:
         """Register all security tools."""
         tool_classes = [
@@ -1199,11 +1199,11 @@ class SecurityArsenal:
             PrivilegeEscalationFinder,
             CredentialHarvester
         ]
-        
+
         for tool_class in tool_classes:
             tool = tool_class()
             self.tools[tool.name] = tool
-    
+
     def _register_all_agents(self) -> None:
         """Register all AI security agents."""
         agent_classes = [
@@ -1212,11 +1212,11 @@ class SecurityArsenal:
             CVEIntelligenceManager,
             ThreatHuntingAssistant
         ]
-        
+
         for agent_class in agent_classes:
             agent = agent_class()
             self.agents[agent.agent_type] = agent
-    
+
     def add_target(
         self,
         name: str,
@@ -1232,15 +1232,15 @@ class SecurityArsenal:
         )
         self.targets[target.id] = target
         return target
-    
+
     def get_tool(self, name: str) -> Optional[SecurityTool]:
         """Get a tool by name."""
         return self.tools.get(name)
-    
+
     def get_agent(self, agent_type: AgentType) -> Optional[SecurityAgent]:
         """Get an agent by type."""
         return self.agents.get(agent_type)
-    
+
     async def run_tool(
         self,
         tool_name: str,
@@ -1250,14 +1250,14 @@ class SecurityArsenal:
         """Run a security tool against a target."""
         tool = self.get_tool(tool_name)
         target = self.targets.get(target_id)
-        
+
         if not tool:
             return {"error": f"Tool not found: {tool_name}"}
         if not target:
             return {"error": f"Target not found: {target_id}"}
-        
+
         return await tool.execute(target, options)
-    
+
     async def run_agent_workflow(
         self,
         agent_type: AgentType,
@@ -1267,14 +1267,14 @@ class SecurityArsenal:
         """Run an agent's security workflow."""
         agent = self.get_agent(agent_type)
         target = self.targets.get(target_id)
-        
+
         if not agent:
             return {"error": f"Agent not found: {agent_type}"}
         if not target:
             return {"error": f"Target not found: {target_id}"}
-        
+
         return await agent.execute_workflow(target, options)
-    
+
     async def auto_pentest(
         self,
         target_id: str,
@@ -1284,21 +1284,21 @@ class SecurityArsenal:
         target = self.targets.get(target_id)
         if not target:
             raise ValueError(f"Target not found: {target_id}")
-        
+
         report = SecurityReport(
             id=str(uuid.uuid4()),
             title=f"Penetration Test Report: {target.name}",
             target_name=target.name,
             start_time=datetime.now()
         )
-        
+
         # Get decision engine
         decision_engine = self.get_agent(AgentType.DECISION_ENGINE)
         if decision_engine:
             # Analyze and execute
             analysis = await decision_engine.analyze(target)
             workflow_result = await decision_engine.execute_workflow(target)
-            
+
             # Process findings
             for phase in workflow_result.get("phases_completed", []):
                 # Extract vulnerabilities from tool results
@@ -1311,16 +1311,16 @@ class SecurityArsenal:
                         severity=ThreatLevel.HIGH
                     )
                     report.vulnerabilities.append(vuln)
-        
+
         report.end_time = datetime.now()
         report.executive_summary = f"Automated penetration test completed. Found {len(report.vulnerabilities)} vulnerabilities."
-        
+
         return report
-    
+
     def get_all_tool_definitions(self) -> List[Dict[str, Any]]:
         """Get all tool definitions for MCP."""
         return [tool.get_definition() for tool in self.tools.values()]
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Get arsenal status."""
         return {
@@ -1342,19 +1342,19 @@ class SecurityArsenal:
 class SecurityMCPServer:
     """
     MCP Server for Security Arsenal.
-    
+
     Exposes all security tools via MCP protocol.
     """
-    
+
     def __init__(self, arsenal: SecurityArsenal):
         self.arsenal = arsenal
         self.name = "bael-security-arsenal"
         self.version = "1.0.0"
-    
+
     def get_tools(self) -> List[Dict[str, Any]]:
         """Get all tools for MCP."""
         tools = self.arsenal.get_all_tool_definitions()
-        
+
         # Add management tools
         tools.extend([
             {
@@ -1388,16 +1388,16 @@ class SecurityMCPServer:
                 "parameters": {"type": "object", "properties": {}}
             }
         ])
-        
+
         return tools
-    
+
     async def execute_tool(
         self,
         tool_name: str,
         arguments: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Execute a tool via MCP."""
-        
+
         if tool_name == "add_target":
             target = self.arsenal.add_target(
                 name=arguments["name"],
@@ -1405,7 +1405,7 @@ class SecurityMCPServer:
                 port=arguments.get("port")
             )
             return {"target_id": target.id, "status": "added"}
-        
+
         elif tool_name == "auto_pentest":
             report = await self.arsenal.auto_pentest(
                 target_id=arguments["target_id"],
@@ -1416,16 +1416,16 @@ class SecurityMCPServer:
                 "vulns_found": len(report.vulnerabilities),
                 "summary": report.executive_summary
             }
-        
+
         elif tool_name == "get_status":
             return self.arsenal.get_status()
-        
+
         else:
             # Regular security tool
             target_id = arguments.pop("target_id", None)
             if not target_id:
                 return {"error": "target_id required"}
-            
+
             return await self.arsenal.run_tool(tool_name, target_id, arguments)
 
 
@@ -1458,9 +1458,9 @@ async def demo():
     print("=" * 60)
     print("BA'EL SECURITY ARSENAL DEMONSTRATION")
     print("=" * 60)
-    
+
     arsenal = get_security_arsenal()
-    
+
     # Add target
     target = arsenal.add_target(
         name="Demo Target",
@@ -1470,25 +1470,25 @@ async def demo():
             {"port": 22, "service": "ssh", "version": "OpenSSH 8.0"}
         ]
     )
-    
+
     print(f"\nTarget added: {target.name} ({target.host})")
     print(f"\nArsenal status:")
     print(json.dumps(arsenal.get_status(), indent=2))
-    
+
     # Run decision engine
     decision_engine = arsenal.get_agent(AgentType.DECISION_ENGINE)
     if decision_engine:
         print("\n--- Intelligent Decision Engine Analysis ---")
         analysis = await decision_engine.analyze(target)
         print(json.dumps(analysis, indent=2))
-    
+
     # Run CVE intelligence
     cve_manager = arsenal.get_agent(AgentType.CVE_INTEL)
     if cve_manager:
         print("\n--- CVE Intelligence Analysis ---")
         cve_analysis = await cve_manager.analyze(target)
         print(json.dumps(cve_analysis, indent=2))
-    
+
     print("\n" + "=" * 60)
     print("DEMO COMPLETE")
 

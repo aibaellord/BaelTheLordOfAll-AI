@@ -265,60 +265,60 @@ TASK_ROUTING = {
 
 class TokenManager:
     """Manage and rotate tokens across providers."""
-    
+
     def __init__(self):
         self.configs: Dict[FreeProvider, TokenConfig] = {}
         self.session_cache: Dict[str, ProviderSession] = {}
         self.rate_limiters: Dict[FreeProvider, List[float]] = defaultdict(list)
-        
+
     def add_tokens(self, provider: FreeProvider, tokens: List[str]) -> None:
         """Add tokens for a provider."""
         self.configs[provider] = TokenConfig(
             provider=provider,
             tokens=tokens
         )
-        
+
     def get_token(self, provider: FreeProvider) -> Optional[str]:
         """Get next available token with rotation."""
         if provider not in self.configs:
             return None
-            
+
         config = self.configs[provider]
         if not config.tokens:
             return None
-            
+
         # Rotate through tokens
         token = config.tokens[config.current_index]
         config.current_index = (config.current_index + 1) % len(config.tokens)
         config.last_rotation = datetime.now()
-        
+
         return token
-        
+
     def mark_failure(self, provider: FreeProvider, token: str) -> None:
         """Mark token as failed."""
         if provider in self.configs:
             config = self.configs[provider]
             config.failures[token] = config.failures.get(token, 0) + 1
-            
+
     def check_rate_limit(self, provider: FreeProvider) -> bool:
         """Check if rate limit allows request."""
         profile = PROVIDER_PROFILES.get(provider)
         if not profile:
             return True
-            
+
         now = time.time()
         window = 60  # 1 minute window
-        
+
         # Clean old entries
         self.rate_limiters[provider] = [
-            t for t in self.rate_limiters[provider] 
+            t for t in self.rate_limiters[provider]
             if now - t < window
         ]
-        
+
         # Check limit
         if len(self.rate_limiters[provider]) >= profile.rate_limit_rpm:
             return False
-            
+
         self.rate_limiters[provider].append(now)
         return True
 
@@ -328,81 +328,81 @@ class TokenManager:
 
 class IntelligentRouter:
     """Route requests to optimal free provider."""
-    
+
     def __init__(self, token_manager: TokenManager):
         self.token_manager = token_manager
         self.provider_stats: Dict[FreeProvider, Dict[str, float]] = defaultdict(
             lambda: {"success": 0, "failure": 0, "latency": 0.0}
         )
-        
+
     def analyze_task(self, prompt: str, **kwargs) -> TaskRequirement:
         """Analyze task to determine requirements."""
         prompt_lower = prompt.lower()
-        
+
         # Check for specific requirements
         if len(prompt) > 50000 or "document" in prompt_lower or "analyze this file" in prompt_lower:
             return TaskRequirement.LONG_DOCUMENT
-            
+
         if any(kw in prompt_lower for kw in ["code", "function", "implement", "debug", "program"]):
             return TaskRequirement.CODE
-            
+
         if any(kw in prompt_lower for kw in ["search", "find", "latest", "news", "research"]):
             return TaskRequirement.RESEARCH
-            
+
         if any(kw in prompt_lower for kw in ["think", "reason", "analyze", "solve", "complex"]):
             return TaskRequirement.REASONING
-            
+
         if any(kw in prompt_lower for kw in ["image", "picture", "draw", "generate image"]):
             return TaskRequirement.IMAGE
-            
+
         if any(kw in prompt_lower for kw in ["speak", "voice", "audio", "read aloud"]):
             return TaskRequirement.VOICE
-            
+
         if any(kw in prompt_lower for kw in ["creative", "story", "imagine", "write"]):
             return TaskRequirement.CREATIVE
-            
+
         return TaskRequirement.GENERAL
-        
-    def select_provider(self, task: TaskRequirement, 
+
+    def select_provider(self, task: TaskRequirement,
                        excluded: Optional[Set[FreeProvider]] = None) -> Optional[FreeProvider]:
         """Select best provider for task."""
         excluded = excluded or set()
         candidates = TASK_ROUTING.get(task, TASK_ROUTING[TaskRequirement.GENERAL])
-        
+
         # Filter available providers
         available = [
-            p for p in candidates 
-            if p not in excluded 
+            p for p in candidates
+            if p not in excluded
             and self.token_manager.check_rate_limit(p)
             and p in self.token_manager.configs
         ]
-        
+
         if not available:
             # Fallback to any available
             available = [
-                p for p in FreeProvider 
-                if p not in excluded 
+                p for p in FreeProvider
+                if p not in excluded
                 and self.token_manager.check_rate_limit(p)
                 and p in self.token_manager.configs
             ]
-            
+
         if not available:
             return None
-            
+
         # Sort by priority and success rate
         def score(p: FreeProvider) -> float:
             profile = PROVIDER_PROFILES.get(p)
             stats = self.provider_stats[p]
-            
+
             priority_score = profile.priority if profile else 5
             total = stats["success"] + stats["failure"]
             success_rate = stats["success"] / max(total, 1)
-            
+
             return priority_score * 0.6 + success_rate * 10 * 0.4
-            
+
         available.sort(key=score, reverse=True)
         return available[0]
-        
+
     def record_result(self, provider: FreeProvider, success: bool, latency: float) -> None:
         """Record request result for learning."""
         stats = self.provider_stats[provider]
@@ -419,35 +419,35 @@ class IntelligentRouter:
 
 class UnifiedAPIClient:
     """Unified client for all free LLM APIs."""
-    
+
     def __init__(self):
         self.token_manager = TokenManager()
         self.router = IntelligentRouter(self.token_manager)
         self.http_session: Optional[aiohttp.ClientSession] = None
         self.active_conversations: Dict[str, Dict[str, Any]] = {}
-        
+
     async def initialize(self) -> None:
         """Initialize HTTP session."""
         if not self.http_session:
             self.http_session = aiohttp.ClientSession(
                 timeout=aiohttp.ClientTimeout(total=120)
             )
-            
+
     async def close(self) -> None:
         """Close HTTP session."""
         if self.http_session:
             await self.http_session.close()
             self.http_session = None
-            
-    def configure_provider(self, provider: FreeProvider, 
-                          tokens: List[str], 
+
+    def configure_provider(self, provider: FreeProvider,
+                          tokens: List[str],
                           base_url: Optional[str] = None) -> None:
         """Configure a provider with tokens."""
         self.token_manager.add_tokens(provider, tokens)
         if base_url and provider in PROVIDER_PROFILES:
             PROVIDER_PROFILES[provider].base_url = base_url
-            
-    async def chat(self, 
+
+    async def chat(self,
                    prompt: str,
                    system: Optional[str] = None,
                    provider: Optional[FreeProvider] = None,
@@ -455,44 +455,44 @@ class UnifiedAPIClient:
                    **kwargs) -> Dict[str, Any]:
         """Send chat request to optimal provider."""
         await self.initialize()
-        
+
         # Determine task and provider
         task = self.router.analyze_task(prompt, **kwargs)
-        
+
         if not provider:
             provider = self.router.select_provider(task)
-            
+
         if not provider:
             return {"error": "No available provider", "content": None}
-            
+
         # Get token and profile
         token = self.token_manager.get_token(provider)
         profile = PROVIDER_PROFILES.get(provider)
-        
+
         if not token or not profile:
             return {"error": f"Provider {provider.value} not configured", "content": None}
-            
+
         # Build request
         start_time = time.time()
-        
+
         try:
             if stream:
                 return await self._stream_request(provider, profile, token, prompt, system, **kwargs)
             else:
                 return await self._standard_request(provider, profile, token, prompt, system, **kwargs)
-                
+
         except Exception as e:
             latency = time.time() - start_time
             self.router.record_result(provider, False, latency)
             self.token_manager.mark_failure(provider, token)
-            
+
             # Try fallback
             fallback = self.router.select_provider(task, excluded={provider})
             if fallback:
                 return await self.chat(prompt, system, fallback, stream, **kwargs)
-                
+
             return {"error": str(e), "content": None}
-            
+
     async def _standard_request(self, provider: FreeProvider,
                                 profile: ProviderProfile,
                                 token: str,
@@ -501,12 +501,12 @@ class UnifiedAPIClient:
                                 **kwargs) -> Dict[str, Any]:
         """Send standard request."""
         url = f"{profile.base_url}/v1/chat/completions"
-        
+
         messages = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
-        
+
         payload = {
             "model": self._get_model_name(provider),
             "messages": messages,
@@ -514,23 +514,23 @@ class UnifiedAPIClient:
             "max_tokens": kwargs.get("max_tokens", 4096),
             "stream": False
         }
-        
+
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
         }
-        
+
         start_time = time.time()
-        
+
         async with self.http_session.post(url, json=payload, headers=headers) as response:
             latency = time.time() - start_time
-            
+
             if response.status == 200:
                 data = await response.json()
                 self.router.record_result(provider, True, latency)
-                
+
                 content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-                
+
                 return {
                     "content": content,
                     "provider": provider.value,
@@ -542,7 +542,7 @@ class UnifiedAPIClient:
                 error = await response.text()
                 self.router.record_result(provider, False, latency)
                 return {"error": error, "content": None}
-                
+
     async def _stream_request(self, provider: FreeProvider,
                               profile: ProviderProfile,
                               token: str,
@@ -551,12 +551,12 @@ class UnifiedAPIClient:
                               **kwargs) -> AsyncIterator[str]:
         """Stream response from provider."""
         url = f"{profile.base_url}/v1/chat/completions"
-        
+
         messages = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
-        
+
         payload = {
             "model": self._get_model_name(provider),
             "messages": messages,
@@ -564,15 +564,15 @@ class UnifiedAPIClient:
             "max_tokens": kwargs.get("max_tokens", 4096),
             "stream": True
         }
-        
+
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
         }
-        
+
         start_time = time.time()
         full_content = []
-        
+
         async with self.http_session.post(url, json=payload, headers=headers) as response:
             if response.status == 200:
                 async for line in response.content:
@@ -589,14 +589,14 @@ class UnifiedAPIClient:
                                 yield delta
                         except json.JSONDecodeError:
                             continue
-                            
+
                 latency = time.time() - start_time
                 self.router.record_result(provider, True, latency)
             else:
                 error = await response.text()
                 self.router.record_result(provider, False, time.time() - start_time)
                 yield f"[ERROR]: {error}"
-                
+
     def _get_model_name(self, provider: FreeProvider) -> str:
         """Get model name for provider."""
         model_names = {
@@ -617,20 +617,20 @@ class UnifiedAPIClient:
 
 class MultiProviderOrchestrator:
     """Orchestrate multiple free LLM providers for maximum capability."""
-    
+
     def __init__(self):
         self.client = UnifiedAPIClient()
         self.ensemble_enabled = True
         self.logger = logging.getLogger("BAEL.MultiProviderOrchestrator")
-        
+
     async def initialize(self) -> None:
         """Initialize orchestrator."""
         await self.client.initialize()
-        
+
     async def close(self) -> None:
         """Close orchestrator."""
         await self.client.close()
-        
+
     def configure_all_providers(self, config: Dict[str, Dict[str, Any]]) -> None:
         """Configure all providers from config dict."""
         for provider_name, provider_config in config.items():
@@ -638,14 +638,14 @@ class MultiProviderOrchestrator:
                 provider = FreeProvider(provider_name)
                 tokens = provider_config.get("tokens", [])
                 base_url = provider_config.get("base_url")
-                
+
                 if tokens:
                     self.client.configure_provider(provider, tokens, base_url)
                     self.logger.info(f"Configured {provider.value} with {len(tokens)} tokens")
             except ValueError:
                 self.logger.warning(f"Unknown provider: {provider_name}")
-                
-    async def smart_complete(self, 
+
+    async def smart_complete(self,
                             prompt: str,
                             system: Optional[str] = None,
                             use_ensemble: bool = False,
@@ -655,8 +655,8 @@ class MultiProviderOrchestrator:
             return await self._ensemble_complete(prompt, system, **kwargs)
         else:
             return await self.client.chat(prompt, system, **kwargs)
-            
-    async def _ensemble_complete(self, 
+
+    async def _ensemble_complete(self,
                                  prompt: str,
                                  system: Optional[str] = None,
                                  **kwargs) -> Dict[str, Any]:
@@ -664,35 +664,35 @@ class MultiProviderOrchestrator:
         # Select top 3 providers
         task = self.client.router.analyze_task(prompt)
         providers = TASK_ROUTING.get(task, TASK_ROUTING[TaskRequirement.GENERAL])[:3]
-        
+
         # Query all in parallel
         tasks = [
             self.client.chat(prompt, system, provider, **kwargs)
             for provider in providers
             if provider in self.client.token_manager.configs
         ]
-        
+
         if not tasks:
             return await self.client.chat(prompt, system, **kwargs)
-            
+
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # Filter successful responses
         valid_responses = [
-            r for r in results 
+            r for r in results
             if isinstance(r, dict) and r.get("content")
         ]
-        
+
         if not valid_responses:
             return {"error": "All providers failed", "content": None}
-            
+
         if len(valid_responses) == 1:
             return valid_responses[0]
-            
+
         # Synthesize responses
         return await self._synthesize_responses(valid_responses, prompt)
-        
-    async def _synthesize_responses(self, 
+
+    async def _synthesize_responses(self,
                                     responses: List[Dict[str, Any]],
                                     original_prompt: str) -> Dict[str, Any]:
         """Synthesize multiple provider responses into best answer."""
@@ -701,7 +701,7 @@ class MultiProviderOrchestrator:
         best["ensemble"] = True
         best["sources"] = [r.get("provider") for r in responses]
         return best
-        
+
     async def generate_image(self, prompt: str, **kwargs) -> Dict[str, Any]:
         """Generate image using image-capable provider."""
         # Use Jimeng or Qwen for image generation
@@ -710,33 +710,33 @@ class MultiProviderOrchestrator:
                 profile = PROVIDER_PROFILES.get(provider)
                 if profile and profile.supports_image_gen:
                     return await self._image_request(provider, prompt, **kwargs)
-                    
+
         return {"error": "No image generation provider available", "content": None}
-        
-    async def _image_request(self, provider: FreeProvider, 
+
+    async def _image_request(self, provider: FreeProvider,
                             prompt: str, **kwargs) -> Dict[str, Any]:
         """Send image generation request."""
         profile = PROVIDER_PROFILES.get(provider)
         token = self.client.token_manager.get_token(provider)
-        
+
         if not profile or not token:
             return {"error": "Provider not configured", "content": None}
-            
+
         url = f"{profile.base_url}/v1/images/generations"
-        
+
         payload = {
             "prompt": prompt,
             "n": kwargs.get("n", 1),
             "size": kwargs.get("size", "1024x1024")
         }
-        
+
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
         }
-        
+
         await self.client.initialize()
-        
+
         async with self.client.http_session.post(url, json=payload, headers=headers) as response:
             if response.status == 200:
                 data = await response.json()
@@ -747,7 +747,7 @@ class MultiProviderOrchestrator:
             else:
                 error = await response.text()
                 return {"error": error, "content": None}
-                
+
     async def web_search(self, query: str, **kwargs) -> Dict[str, Any]:
         """Perform web search using search-capable provider."""
         # Use Doubao or Kimi for web search
@@ -758,11 +758,11 @@ class MultiProviderOrchestrator:
                     # Add search instruction
                     search_prompt = f"Search the web and find the latest information about: {query}"
                     return await self.client.chat(search_prompt, provider=provider, **kwargs)
-                    
+
         return {"error": "No search provider available", "content": None}
-        
-    async def long_document_analysis(self, 
-                                     document: str, 
+
+    async def long_document_analysis(self,
+                                     document: str,
                                      question: str,
                                      **kwargs) -> Dict[str, Any]:
         """Analyze long document using long-context provider."""
@@ -778,12 +778,12 @@ QUESTION:
 {question}
 
 Provide a detailed, accurate answer based on the document content."""
-                
+
                 return await self.client.chat(prompt, provider=provider, **kwargs)
-                
+
         return {"error": "No long-context provider available", "content": None}
-        
-    async def deep_reasoning(self, 
+
+    async def deep_reasoning(self,
                             problem: str,
                             use_thinking_model: bool = True,
                             **kwargs) -> Dict[str, Any]:
@@ -798,9 +798,9 @@ PROBLEM:
 {problem}
 
 Provide a thorough analysis and solution."""
-                
+
                 return await self.client.chat(prompt, provider=provider, **kwargs)
-                
+
         return {"error": "No reasoning provider available", "content": None}
 
 # ============================================================================
@@ -809,55 +809,55 @@ Provide a thorough analysis and solution."""
 
 class ZeroCostScalingEngine:
     """Scale AI capabilities at zero cost using free APIs."""
-    
+
     def __init__(self):
         self.orchestrator = MultiProviderOrchestrator()
         self.request_queue: asyncio.Queue = asyncio.Queue()
         self.workers: List[asyncio.Task] = []
         self.running = False
-        
+
     async def start(self, num_workers: int = 5) -> None:
         """Start the scaling engine."""
         await self.orchestrator.initialize()
         self.running = True
-        
+
         for i in range(num_workers):
             worker = asyncio.create_task(self._worker(i))
             self.workers.append(worker)
-            
+
     async def stop(self) -> None:
         """Stop the scaling engine."""
         self.running = False
-        
+
         for worker in self.workers:
             worker.cancel()
-            
+
         await self.orchestrator.close()
-        
+
     async def _worker(self, worker_id: int) -> None:
         """Worker that processes requests."""
         while self.running:
             try:
                 request = await asyncio.wait_for(
-                    self.request_queue.get(), 
+                    self.request_queue.get(),
                     timeout=1.0
                 )
-                
+
                 result = await self.orchestrator.smart_complete(
                     request["prompt"],
                     request.get("system"),
                     **request.get("kwargs", {})
                 )
-                
+
                 if request.get("callback"):
                     await request["callback"](result)
-                    
+
             except asyncio.TimeoutError:
                 continue
             except Exception as e:
                 logger.error(f"Worker {worker_id} error: {e}")
-                
-    async def submit(self, 
+
+    async def submit(self,
                     prompt: str,
                     system: Optional[str] = None,
                     callback: Optional[Callable] = None,
@@ -869,8 +869,8 @@ class ZeroCostScalingEngine:
             "callback": callback,
             "kwargs": kwargs
         })
-        
-    async def batch_process(self, 
+
+    async def batch_process(self,
                            prompts: List[str],
                            system: Optional[str] = None,
                            **kwargs) -> List[Dict[str, Any]]:
@@ -879,7 +879,7 @@ class ZeroCostScalingEngine:
             self.orchestrator.smart_complete(prompt, system, **kwargs)
             for prompt in prompts
         ]
-        
+
         return await asyncio.gather(*tasks, return_exceptions=True)
 
 # ============================================================================
@@ -889,10 +889,10 @@ class ZeroCostScalingEngine:
 def create_free_llm_hub(config: Optional[Dict[str, Any]] = None) -> MultiProviderOrchestrator:
     """Create and configure a free LLM hub."""
     hub = MultiProviderOrchestrator()
-    
+
     if config:
         hub.configure_all_providers(config)
-        
+
     return hub
 
 # ============================================================================
@@ -912,23 +912,23 @@ async def example_usage():
             "base_url": "http://localhost:8000"
         }
     }
-    
+
     hub = create_free_llm_hub(config)
     await hub.initialize()
-    
+
     try:
         # Simple chat
         result = await hub.smart_complete("Explain quantum computing")
         print(f"Response from {result.get('provider')}: {result.get('content')[:200]}...")
-        
+
         # Deep reasoning
         result = await hub.deep_reasoning("How can we solve climate change?")
         print(f"Reasoning result: {result.get('content')[:200]}...")
-        
+
         # Web search
         result = await hub.web_search("Latest AI research breakthroughs 2026")
         print(f"Search result: {result.get('content')[:200]}...")
-        
+
     finally:
         await hub.close()
 

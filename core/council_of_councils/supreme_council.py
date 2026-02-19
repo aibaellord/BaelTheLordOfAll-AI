@@ -82,17 +82,17 @@ class CouncilMember:
     role: MemberRole
     expertise: List[str]
     personality_traits: Dict[str, float]
-    
+
     # Performance metrics
     contribution_score: float = 0.0
     insight_count: int = 0
     consensus_alignment: float = 0.5
-    
+
     # State
     current_position: Optional[str] = None
     confidence: float = 0.5
     energy: float = 1.0
-    
+
     def get_persona_prompt(self) -> str:
         """Generate a persona prompt for this member."""
         traits = ", ".join(f"{k}: {v:.1f}" for k, v in self.personality_traits.items())
@@ -119,7 +119,7 @@ Be authentic to your role - if you're a critic, challenge ideas. If you're a vis
             "concerns": [],
             "suggestions": []
         }
-        
+
         # Role-based behavior
         if self.role == MemberRole.DEVIL_ADVOCATE:
             position["position"] = f"Challenging: {topic[:30]}..."
@@ -130,7 +130,7 @@ Be authentic to your role - if you're a critic, challenge ideas. If you're a vis
             position["concerns"] = ["What are the immediate steps?", "What resources do we need?"]
         elif self.role == MemberRole.CRITIC:
             position["concerns"] = ["This needs more evidence", "The logic may be flawed"]
-        
+
         return position
 
 
@@ -140,31 +140,31 @@ class CouncilDecision:
     decision_id: str
     council_id: str
     topic: str
-    
+
     # Decision content
     conclusion: str
     reasoning: List[str]
     dissenting_views: List[str]
-    
+
     # Metrics
     consensus_level: ConsensusLevel
     confidence: float
     deliberation_rounds: int
     time_taken_ms: float
-    
+
     # Member contributions
     member_contributions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    
+
     # Emergent insights
     emergent_insights: List[str] = field(default_factory=list)
-    
+
     # Action items
     recommendations: List[str] = field(default_factory=list)
     action_items: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     # Metadata
     created_at: datetime = field(default_factory=datetime.utcnow)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "decision_id": self.decision_id,
@@ -185,20 +185,20 @@ class Council:
     level: CouncilLevel
     members: List[CouncilMember]
     domain: str
-    
+
     # Configuration
     min_deliberation_rounds: int = 2
     max_deliberation_rounds: int = 10
     consensus_threshold: float = 0.6
-    
+
     # State
     active_topics: List[str] = field(default_factory=list)
     decision_history: List[CouncilDecision] = field(default_factory=list)
-    
+
     # Statistics
     total_decisions: int = 0
     avg_consensus: float = 0.0
-    
+
     async def deliberate(
         self,
         topic: str,
@@ -211,42 +211,42 @@ class Council:
         """
         start_time = time.time()
         context = context or {}
-        
+
         positions = {}
         rounds = 0
         consensus = 0.0
-        
+
         # Initial positions
         for member in self.members:
             pos = await member.deliberate(topic, context)
             positions[member.member_id] = pos
-        
+
         # Deliberation rounds
         while rounds < self.max_deliberation_rounds:
             rounds += 1
-            
+
             # Members update positions based on others
             other_positions = [p["position"] for p in positions.values()]
-            
+
             for member in self.members:
                 if deliberation_type == DeliberationType.ADVERSARIAL:
                     # In adversarial mode, devil's advocates are more active
                     if member.role == MemberRole.DEVIL_ADVOCATE:
                         member.energy = min(1.0, member.energy + 0.2)
-                
+
                 # Update position
                 updated = await member.deliberate(
                     topic, context, other_positions
                 )
                 positions[member.member_id] = updated
-            
+
             # Calculate consensus
             consensus = self._calculate_consensus(positions)
-            
+
             # Check if we've reached sufficient consensus
             if consensus >= self.consensus_threshold and rounds >= self.min_deliberation_rounds:
                 break
-            
+
             # Special deliberation type handling
             if deliberation_type == DeliberationType.SOCRATIC:
                 # Generate questions to deepen understanding
@@ -254,35 +254,35 @@ class Council:
             elif deliberation_type == DeliberationType.DIALECTICAL:
                 # Identify thesis, antithesis, synthesize
                 context["dialectic"] = await self._apply_dialectical_method(positions)
-        
+
         # Synthesize final decision
         decision = await self._synthesize_decision(
             topic, positions, consensus, rounds, time.time() - start_time
         )
-        
+
         # Find emergent insights
         decision.emergent_insights = await self._find_emergent_insights(positions)
-        
+
         # Update statistics
         self.total_decisions += 1
         self.avg_consensus = (
-            (self.avg_consensus * (self.total_decisions - 1) + consensus) 
+            (self.avg_consensus * (self.total_decisions - 1) + consensus)
             / self.total_decisions
         )
-        
+
         self.decision_history.append(decision)
-        
+
         return decision
-    
+
     def _calculate_consensus(self, positions: Dict[str, Dict]) -> float:
         """Calculate consensus level from member positions."""
         if not positions:
             return 0.0
-        
+
         # Simple: average of confidences
         confidences = [p.get("confidence", 0.5) for p in positions.values()]
         return sum(confidences) / len(confidences)
-    
+
     async def _generate_socratic_questions(
         self,
         positions: Dict[str, Dict]
@@ -296,7 +296,7 @@ class Council:
             "What are we not seeing?"
         ]
         return questions
-    
+
     async def _apply_dialectical_method(
         self,
         positions: Dict[str, Dict]
@@ -304,16 +304,16 @@ class Council:
         """Apply thesis-antithesis-synthesis."""
         # Find most confident position as thesis
         thesis_pos = max(positions.values(), key=lambda p: p.get("confidence", 0))
-        
+
         # Find most opposing as antithesis
         antithesis_pos = min(positions.values(), key=lambda p: p.get("confidence", 0))
-        
+
         return {
             "thesis": thesis_pos.get("position", ""),
             "antithesis": antithesis_pos.get("position", ""),
             "synthesis": "Combining both perspectives..."
         }
-    
+
     async def _synthesize_decision(
         self,
         topic: str,
@@ -336,7 +336,7 @@ class Council:
             consensus_level = ConsensusLevel.SPLIT
         else:
             consensus_level = ConsensusLevel.DISSENT
-        
+
         # Extract reasoning and dissent
         reasoning = []
         dissenting = []
@@ -345,7 +345,7 @@ class Council:
                 reasoning.extend(pos.get("reasoning", []))
             else:
                 dissenting.append(pos.get("position", ""))
-        
+
         return CouncilDecision(
             decision_id=f"decision_{hashlib.md5(f'{topic}{time.time()}'.encode()).hexdigest()[:12]}",
             council_id=self.council_id,
@@ -359,39 +359,39 @@ class Council:
             time_taken_ms=time_taken * 1000,
             member_contributions={m: p for m, p in positions.items()}
         )
-    
+
     async def _find_emergent_insights(
         self,
         positions: Dict[str, Dict]
     ) -> List[str]:
         """Find emergent insights from the deliberation."""
         insights = []
-        
+
         # Look for patterns across positions
         all_suggestions = []
         all_concerns = []
         for pos in positions.values():
             all_suggestions.extend(pos.get("suggestions", []))
             all_concerns.extend(pos.get("concerns", []))
-        
+
         if len(all_suggestions) >= 3:
             insights.append(f"Multiple innovative suggestions emerged ({len(all_suggestions)})")
-        
+
         if len(all_concerns) >= 3:
             insights.append(f"Key concerns identified that need addressing ({len(all_concerns)})")
-        
+
         return insights
 
 
 class SupremeCouncil:
     """
     The Supreme Council - Hierarchical deliberation system.
-    
+
     Structure:
     - Multiple micro-councils for specific domains
     - Meta-councils that synthesize across domains
     - The Supreme Council for final decisions
-    
+
     Features:
     - Psychological dynamics (group thinking, devil's advocacy)
     - Emergent insight detection
@@ -399,7 +399,7 @@ class SupremeCouncil:
     - Decision quality tracking
     - Continuous learning from outcomes
     """
-    
+
     PERSONALITY_TEMPLATES = {
         MemberRole.LEADER: {"assertiveness": 0.8, "openness": 0.7, "patience": 0.8},
         MemberRole.EXPERT: {"analytical": 0.9, "detail_oriented": 0.8, "cautious": 0.6},
@@ -412,7 +412,7 @@ class SupremeCouncil:
         MemberRole.INNOVATOR: {"creativity": 0.95, "risk_tolerance": 0.8, "curiosity": 0.9},
         MemberRole.GUARDIAN: {"caution": 0.8, "principles": 0.9, "consistency": 0.8},
     }
-    
+
     DOMAIN_COUNCILS = [
         {"name": "Technical", "expertise": ["engineering", "architecture", "code", "systems"]},
         {"name": "Strategic", "expertise": ["planning", "goals", "vision", "execution"]},
@@ -423,7 +423,7 @@ class SupremeCouncil:
         {"name": "Resources", "expertise": ["budget", "time", "people", "tools"]},
         {"name": "User", "expertise": ["experience", "needs", "satisfaction", "usability"]},
     ]
-    
+
     def __init__(
         self,
         llm_provider: Optional[Callable] = None,
@@ -432,17 +432,17 @@ class SupremeCouncil:
     ):
         self.llm_provider = llm_provider
         self.enable_psychological = enable_psychological_dynamics
-        
+
         # Council registry
         self._councils: Dict[str, Council] = {}
         self._micro_councils: Dict[str, Council] = {}
         self._meta_councils: Dict[str, Council] = {}
         self._supreme_council: Optional[Council] = None
-        
+
         # Decision tracking
         self._decisions: Dict[str, CouncilDecision] = {}
         self._pending_topics: List[str] = []
-        
+
         # Statistics
         self._stats = {
             "total_deliberations": 0,
@@ -450,12 +450,12 @@ class SupremeCouncil:
             "emergent_insights": 0,
             "avg_consensus": 0.0
         }
-        
+
         if auto_create_councils:
             self._initialize_council_hierarchy()
-        
+
         logger.info("SupremeCouncil initialized with hierarchical structure")
-    
+
     def _initialize_council_hierarchy(self):
         """Initialize the full council hierarchy."""
         # Create micro-councils for each domain
@@ -466,30 +466,30 @@ class SupremeCouncil:
             )
             self._micro_councils[council.council_id] = council
             self._councils[council.council_id] = council
-        
+
         # Create meta-councils
         self._meta_councils["meta_technical_strategic"] = self._create_meta_council(
             "Technical-Strategic Synthesis",
             ["Technical", "Strategic", "Resources"]
         )
-        
+
         self._meta_councils["meta_creative_analytical"] = self._create_meta_council(
             "Creative-Analytical Synthesis",
             ["Creative", "Analytical", "User"]
         )
-        
+
         self._meta_councils["meta_governance"] = self._create_meta_council(
             "Governance Synthesis",
             ["Security", "Ethics", "Strategic"]
         )
-        
+
         for council in self._meta_councils.values():
             self._councils[council.council_id] = council
-        
+
         # Create the Supreme Council
         self._supreme_council = self._create_supreme_council()
         self._councils[self._supreme_council.council_id] = self._supreme_council
-    
+
     def _create_micro_council(
         self,
         name: str,
@@ -504,7 +504,7 @@ class SupremeCouncil:
             MemberRole.INNOVATOR,
             MemberRole.DEVIL_ADVOCATE
         ]
-        
+
         members = []
         for i, role in enumerate(roles):
             member = CouncilMember(
@@ -515,7 +515,7 @@ class SupremeCouncil:
                 personality_traits=self.PERSONALITY_TEMPLATES.get(role, {})
             )
             members.append(member)
-        
+
         return Council(
             council_id=f"council_micro_{name.lower()}",
             name=f"{name} Council",
@@ -525,7 +525,7 @@ class SupremeCouncil:
             min_deliberation_rounds=2,
             max_deliberation_rounds=5
         )
-    
+
     def _create_meta_council(
         self,
         name: str,
@@ -541,7 +541,7 @@ class SupremeCouncil:
             MemberRole.CRITIC,
             MemberRole.GUARDIAN
         ]
-        
+
         members = []
         for i, role in enumerate(roles):
             member = CouncilMember(
@@ -552,7 +552,7 @@ class SupremeCouncil:
                 personality_traits=self.PERSONALITY_TEMPLATES.get(role, {})
             )
             members.append(member)
-        
+
         return Council(
             council_id=f"council_meta_{name.lower().replace(' ', '_').replace('-', '_')}",
             name=name,
@@ -562,7 +562,7 @@ class SupremeCouncil:
             min_deliberation_rounds=3,
             max_deliberation_rounds=7
         )
-    
+
     def _create_supreme_council(self) -> Council:
         """Create the Supreme Council with the wisest members."""
         roles = [
@@ -576,14 +576,14 @@ class SupremeCouncil:
             MemberRole.DEVIL_ADVOCATE,
             MemberRole.INNOVATOR,
         ]
-        
+
         members = []
         for i, role in enumerate(roles):
             traits = self.PERSONALITY_TEMPLATES.get(role, {}).copy()
             # Supreme council members have enhanced wisdom
             traits["wisdom"] = 0.95
             traits["patience"] = 0.9
-            
+
             member = CouncilMember(
                 member_id=f"supreme_{role.value}_{i}",
                 name=f"Supreme {role.value.title()}",
@@ -592,7 +592,7 @@ class SupremeCouncil:
                 personality_traits=traits
             )
             members.append(member)
-        
+
         return Council(
             council_id="council_supreme",
             name="The Supreme Council",
@@ -603,7 +603,7 @@ class SupremeCouncil:
             max_deliberation_rounds=10,
             consensus_threshold=0.7
         )
-    
+
     async def deliberate(
         self,
         topic: str,
@@ -613,30 +613,30 @@ class SupremeCouncil:
     ) -> CouncilDecision:
         """
         Conduct a full hierarchical deliberation.
-        
+
         If use_hierarchy is True:
         1. Relevant micro-councils deliberate first
         2. Meta-councils synthesize
         3. Supreme council makes final decision
-        
+
         If use_hierarchy is False:
         - Supreme council deliberates directly
         """
         start_time = time.time()
         self._stats["total_deliberations"] += 1
         context = context or {}
-        
+
         if use_hierarchy:
             # Phase 1: Micro-council deliberations
             micro_decisions = {}
             relevant_councils = self._identify_relevant_councils(topic)
-            
+
             for council_id in relevant_councils:
                 council = self._councils[council_id]
                 decision = await council.deliberate(topic, context, deliberation_type)
                 micro_decisions[council_id] = decision
                 context[f"micro_{council.domain}"] = decision.to_dict()
-            
+
             # Phase 2: Meta-council synthesis
             meta_decisions = {}
             for meta_id, meta_council in self._meta_councils.items():
@@ -647,63 +647,63 @@ class SupremeCouncil:
                 decision = await meta_council.deliberate(topic, meta_context, deliberation_type)
                 meta_decisions[meta_id] = decision
                 context[f"meta_{meta_council.name}"] = decision.to_dict()
-            
+
             # Phase 3: Supreme council final decision
             supreme_context = {
                 **context,
                 "micro_decisions": {k: v.to_dict() for k, v in micro_decisions.items()},
                 "meta_decisions": {k: v.to_dict() for k, v in meta_decisions.items()}
             }
-            
+
             final_decision = await self._supreme_council.deliberate(
                 topic, supreme_context, deliberation_type
             )
-            
+
             # Aggregate emergent insights from all levels
             all_insights = []
             for d in list(micro_decisions.values()) + list(meta_decisions.values()):
                 all_insights.extend(d.emergent_insights)
             all_insights.extend(final_decision.emergent_insights)
             final_decision.emergent_insights = list(set(all_insights))
-            
+
         else:
             # Direct supreme council deliberation
             final_decision = await self._supreme_council.deliberate(
                 topic, context, deliberation_type
             )
-        
+
         # Track decision
         self._decisions[final_decision.decision_id] = final_decision
-        
+
         # Update stats
         if final_decision.consensus_level == ConsensusLevel.UNANIMOUS:
             self._stats["unanimous_decisions"] += 1
         self._stats["emergent_insights"] += len(final_decision.emergent_insights)
         self._stats["avg_consensus"] = (
-            (self._stats["avg_consensus"] * (self._stats["total_deliberations"] - 1) + 
+            (self._stats["avg_consensus"] * (self._stats["total_deliberations"] - 1) +
              final_decision.confidence) / self._stats["total_deliberations"]
         )
-        
+
         return final_decision
-    
+
     def _identify_relevant_councils(self, topic: str) -> List[str]:
         """Identify which micro-councils are relevant for a topic."""
         topic_lower = topic.lower()
         relevant = []
-        
+
         for council_id, council in self._micro_councils.items():
             # Check if any expertise matches
             for exp in council.members[0].expertise:
                 if exp.lower() in topic_lower:
                     relevant.append(council_id)
                     break
-        
+
         # If no specific match, use all
         if not relevant:
             relevant = list(self._micro_councils.keys())
-        
+
         return relevant
-    
+
     async def quick_decision(
         self,
         topic: str,
@@ -716,7 +716,7 @@ class SupremeCouncil:
             use_hierarchy=False,
             deliberation_type=DeliberationType.QUICK_CONSENSUS
         )
-    
+
     async def adversarial_analysis(
         self,
         topic: str,
@@ -729,7 +729,7 @@ class SupremeCouncil:
             use_hierarchy=True,
             deliberation_type=DeliberationType.ADVERSARIAL
         )
-    
+
     async def creative_brainstorm(
         self,
         topic: str,
@@ -742,15 +742,15 @@ class SupremeCouncil:
             use_hierarchy=True,
             deliberation_type=DeliberationType.CREATIVE
         )
-    
+
     def get_council(self, council_id: str) -> Optional[Council]:
         """Get a specific council."""
         return self._councils.get(council_id)
-    
+
     def get_decision(self, decision_id: str) -> Optional[CouncilDecision]:
         """Get a specific decision."""
         return self._decisions.get(decision_id)
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get council statistics."""
         return {
@@ -760,7 +760,7 @@ class SupremeCouncil:
             "meta_councils": len(self._meta_councils),
             "decisions_made": len(self._decisions)
         }
-    
+
     def get_council_structure(self) -> Dict[str, Any]:
         """Get the full council hierarchy structure."""
         return {
@@ -804,41 +804,41 @@ def get_supreme_council() -> SupremeCouncil:
 async def demo():
     """Demonstrate the council of councils."""
     council = get_supreme_council()
-    
+
     print("=== COUNCIL OF COUNCILS DEMO ===\n")
-    
+
     # Show structure
     structure = council.get_council_structure()
     print(f"Micro-councils: {len(structure['micro_councils'])}")
     for c in structure['micro_councils']:
         print(f"  - {c['name']} ({c['members']} members)")
-    
+
     print(f"\nMeta-councils: {len(structure['meta_councils'])}")
     for c in structure['meta_councils']:
         print(f"  - {c['name']} ({c['members']} members)")
-    
+
     print(f"\nSupreme Council: {structure['supreme_council']['members']} members")
-    
+
     # Deliberate on a topic
     print("\n\n--- DELIBERATION ---")
     print("Topic: Should we implement quantum-inspired optimization?")
-    
+
     decision = await council.deliberate(
         "Should we implement quantum-inspired optimization algorithms for the Bael system?",
         context={"project": "bael", "goal": "maximum_performance"},
         use_hierarchy=True
     )
-    
+
     print(f"\nDecision: {decision.conclusion}")
     print(f"Consensus Level: {decision.consensus_level.name}")
     print(f"Confidence: {decision.confidence:.2f}")
     print(f"Rounds: {decision.deliberation_rounds}")
-    
+
     if decision.emergent_insights:
         print("\nEmergent Insights:")
         for insight in decision.emergent_insights:
             print(f"  ✨ {insight}")
-    
+
     # Show stats
     print("\n=== STATS ===")
     for key, value in council.get_stats().items():

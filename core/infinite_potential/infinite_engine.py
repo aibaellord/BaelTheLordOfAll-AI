@@ -81,11 +81,11 @@ class Opportunity:
     novelty: float = 0.5  # 0-1
     implementation_hints: List[str] = field(default_factory=list)
     synergies: List[str] = field(default_factory=list)
-    
+
     @property
     def opportunity_score(self) -> float:
-        return (self.potential_impact * 0.4 + 
-                self.feasibility * 0.3 + 
+        return (self.potential_impact * 0.4 +
+                self.feasibility * 0.3 +
                 self.novelty * 0.3)
 
 
@@ -111,11 +111,11 @@ class BreakthroughIdea:
     feasibility_score: float = 0.5
     implementation_steps: List[str] = field(default_factory=list)
     required_capabilities: List[str] = field(default_factory=list)
-    
+
     @property
     def breakthrough_score(self) -> float:
-        return (self.novelty_score * 0.4 + 
-                self.impact_score * 0.35 + 
+        return (self.novelty_score * 0.4 +
+                self.impact_score * 0.35 +
                 self.feasibility_score * 0.25)
 
 
@@ -133,31 +133,31 @@ class InfiniteState:
 class InfinitePotentialEngine:
     """
     The Infinite Potential Engine.
-    
+
     Unlocks limitless possibilities by dissolving boundaries,
     discovering opportunities, and generating breakthrough ideas.
     """
-    
+
     def __init__(
         self,
         llm_provider: Optional[Callable] = None,
         initial_potential: PotentialLevel = PotentialLevel.ENHANCED
     ):
         self.llm_provider = llm_provider
-        
+
         # State
         self.state = InfiniteState(potential_level=initial_potential)
-        
+
         # Storage
         self._limitations: Dict[str, Limitation] = {}
         self._opportunities: Dict[str, Opportunity] = {}
         self._expansions: Dict[str, PotentialExpansion] = {}
         self._breakthroughs: Dict[str, BreakthroughIdea] = {}
-        
+
         # Patterns
         self._innovation_patterns: List[Dict[str, Any]] = self._init_patterns()
         self._synergy_map: Dict[str, List[str]] = self._init_synergies()
-        
+
         # Statistics
         self._stats = {
             "limitations_analyzed": 0,
@@ -166,9 +166,9 @@ class InfinitePotentialEngine:
             "breakthroughs_created": 0,
             "potential_amplifications": 0
         }
-        
+
         logger.info(f"InfinitePotentialEngine initialized at {initial_potential.name} level")
-    
+
     def _init_patterns(self) -> List[Dict[str, Any]]:
         """Initialize innovation patterns."""
         return [
@@ -208,7 +208,7 @@ class InfinitePotentialEngine:
                 "prompts": ["What emerges from the interaction?", "What would a swarm approach create?"]
             }
         ]
-    
+
     def _init_synergies(self) -> Dict[str, List[str]]:
         """Initialize synergy mappings."""
         return {
@@ -219,9 +219,9 @@ class InfinitePotentialEngine:
             "creativity": ["innovation", "novelty", "design", "art"],
             "analysis": ["insight", "optimization", "decision", "understanding"]
         }
-    
+
     # Limitation Dissolution
-    
+
     async def analyze_limitations(
         self,
         context: Dict[str, Any],
@@ -229,7 +229,7 @@ class InfinitePotentialEngine:
     ) -> List[Limitation]:
         """Analyze and identify limitations in a context."""
         limitations = []
-        
+
         # Technical limitations
         if context.get("technology"):
             limitations.append(Limitation(
@@ -243,7 +243,7 @@ class InfinitePotentialEngine:
                     "Create workarounds"
                 ]
             ))
-        
+
         # Resource limitations
         if context.get("resources"):
             limitations.append(Limitation(
@@ -257,7 +257,7 @@ class InfinitePotentialEngine:
                     "Leverage community resources"
                 ]
             ))
-        
+
         # Conceptual limitations
         limitations.append(Limitation(
             limitation_id=f"lim_concept_{len(limitations)}",
@@ -270,7 +270,7 @@ class InfinitePotentialEngine:
                 "Consult diverse perspectives"
             ]
         ))
-        
+
         # Creativity limitations
         limitations.append(Limitation(
             limitation_id=f"lim_creativity_{len(limitations)}",
@@ -283,13 +283,13 @@ class InfinitePotentialEngine:
                 "Explore analogies from other domains"
             ]
         ))
-        
+
         for lim in limitations:
             self._limitations[lim.limitation_id] = lim
-        
+
         self._stats["limitations_analyzed"] += len(limitations)
         return limitations
-    
+
     async def dissolve_limitation(
         self,
         limitation_id: str,
@@ -298,16 +298,16 @@ class InfinitePotentialEngine:
         """Dissolve a specific limitation."""
         if limitation_id not in self._limitations:
             return {"error": f"Limitation {limitation_id} not found"}
-        
+
         limitation = self._limitations[limitation_id]
-        
+
         if not limitation.dissolvable:
             return {
                 "limitation_id": limitation_id,
                 "status": "not_dissolvable",
                 "reason": "This limitation cannot be dissolved directly"
             }
-        
+
         # Apply dissolution strategy
         if strategy:
             applied_strategy = strategy
@@ -315,7 +315,7 @@ class InfinitePotentialEngine:
             applied_strategy = limitation.dissolution_strategies[0]
         else:
             applied_strategy = "general_dissolution"
-        
+
         # Generate dissolution result
         result = {
             "limitation_id": limitation_id,
@@ -324,7 +324,7 @@ class InfinitePotentialEngine:
             "new_possibilities": [],
             "amplification": 1.0
         }
-        
+
         # Generate new possibilities from dissolution
         if limitation.limitation_type == LimitationType.CONCEPTUAL:
             result["new_possibilities"] = [
@@ -347,18 +347,18 @@ class InfinitePotentialEngine:
                 "Custom solutions possible"
             ]
             result["amplification"] = 1.3
-        
+
         self.state.boundaries_dissolved += 1
         self.state.amplification_total *= result["amplification"]
         self._stats["limitations_dissolved"] += 1
-        
+
         # Check for potential level upgrade
         await self._check_potential_upgrade()
-        
+
         return result
-    
+
     # Opportunity Discovery
-    
+
     async def discover_opportunities(
         self,
         context: Dict[str, Any],
@@ -367,24 +367,24 @@ class InfinitePotentialEngine:
         """Discover opportunities in a given context."""
         opportunities = []
         types = opportunity_types or list(OpportunityType)
-        
+
         for opp_type in types:
             opps = await self._find_opportunities_of_type(context, opp_type)
             opportunities.extend(opps)
-        
+
         # Discover synergy opportunities
         synergy_opps = await self._discover_synergies(context)
         opportunities.extend(synergy_opps)
-        
+
         # Store opportunities
         for opp in opportunities:
             self._opportunities[opp.opportunity_id] = opp
-        
+
         self.state.opportunities_discovered += len(opportunities)
         self._stats["opportunities_found"] += len(opportunities)
-        
+
         return sorted(opportunities, key=lambda o: o.opportunity_score, reverse=True)
-    
+
     async def _find_opportunities_of_type(
         self,
         context: Dict[str, Any],
@@ -392,7 +392,7 @@ class InfinitePotentialEngine:
     ) -> List[Opportunity]:
         """Find opportunities of a specific type."""
         opportunities = []
-        
+
         if opp_type == OpportunityType.OPTIMIZATION:
             opportunities.append(Opportunity(
                 opportunity_id=f"opp_opt_{hashlib.md5(str(context).encode()).hexdigest()[:8]}",
@@ -408,7 +408,7 @@ class InfinitePotentialEngine:
                     "Apply optimization patterns"
                 ]
             ))
-            
+
         elif opp_type == OpportunityType.INNOVATION:
             opportunities.append(Opportunity(
                 opportunity_id=f"opp_innov_{hashlib.md5(str(context).encode()).hexdigest()[:8]}",
@@ -424,7 +424,7 @@ class InfinitePotentialEngine:
                     "Combine unexpected elements"
                 ]
             ))
-            
+
         elif opp_type == OpportunityType.SYNERGY:
             opportunities.append(Opportunity(
                 opportunity_id=f"opp_syn_{hashlib.md5(str(context).encode()).hexdigest()[:8]}",
@@ -440,7 +440,7 @@ class InfinitePotentialEngine:
                     "Test combined effects"
                 ]
             ))
-            
+
         elif opp_type == OpportunityType.DISRUPTION:
             opportunities.append(Opportunity(
                 opportunity_id=f"opp_disrupt_{hashlib.md5(str(context).encode()).hexdigest()[:8]}",
@@ -456,7 +456,7 @@ class InfinitePotentialEngine:
                     "Build for the future, not the present"
                 ]
             ))
-            
+
         elif opp_type == OpportunityType.TRANSCENDENCE:
             opportunities.append(Opportunity(
                 opportunity_id=f"opp_trans_{hashlib.md5(str(context).encode()).hexdigest()[:8]}",
@@ -472,18 +472,18 @@ class InfinitePotentialEngine:
                     "Enable emergent behaviors"
                 ]
             ))
-        
+
         return opportunities
-    
+
     async def _discover_synergies(
         self,
         context: Dict[str, Any]
     ) -> List[Opportunity]:
         """Discover synergy opportunities."""
         synergies = []
-        
+
         capabilities = context.get("capabilities", [])
-        
+
         for cap in capabilities:
             if cap in self._synergy_map:
                 related = self._synergy_map[cap]
@@ -499,11 +499,11 @@ class InfinitePotentialEngine:
                             novelty=0.5,
                             synergies=[cap, rel]
                         ))
-        
+
         return synergies
-    
+
     # Innovation Engine
-    
+
     async def generate_breakthroughs(
         self,
         topic: str,
@@ -513,20 +513,20 @@ class InfinitePotentialEngine:
         """Generate breakthrough ideas."""
         ideas = []
         context = context or {}
-        
+
         for i in range(num_ideas):
             # Select innovation pattern
             pattern = self._innovation_patterns[i % len(self._innovation_patterns)]
-            
+
             idea = await self._generate_idea(topic, pattern, context)
             ideas.append(idea)
             self._breakthroughs[idea.idea_id] = idea
-        
+
         self.state.breakthroughs_generated += len(ideas)
         self._stats["breakthroughs_created"] += len(ideas)
-        
+
         return sorted(ideas, key=lambda i: i.breakthrough_score, reverse=True)
-    
+
     async def _generate_idea(
         self,
         topic: str,
@@ -535,12 +535,12 @@ class InfinitePotentialEngine:
     ) -> BreakthroughIdea:
         """Generate a single breakthrough idea using a pattern."""
         prompt = pattern["prompts"][0] if pattern["prompts"] else "What if?"
-        
+
         # Generate idea
         if self.llm_provider:
             try:
                 llm_prompt = f"""Generate a breakthrough idea for "{topic}" using this thinking pattern:
-                
+
 Pattern: {pattern['name']}
 Description: {pattern['description']}
 Prompt: {prompt}
@@ -551,7 +551,7 @@ Provide:
 2. Description
 3. Why it's innovative
 4. How to implement it"""
-                
+
                 response = await self.llm_provider(llm_prompt)
                 title = f"{pattern['name']}-based Breakthrough for {topic[:20]}"
                 description = response[:500] if response else f"Apply {pattern['name']} to {topic}"
@@ -561,7 +561,7 @@ Provide:
         else:
             title = f"{pattern['name']}-based Breakthrough for {topic[:20]}"
             description = f"Apply {pattern['name']} pattern: {pattern['description']}"
-        
+
         return BreakthroughIdea(
             idea_id=f"idea_{hashlib.md5(f'{topic}{pattern["name"]}'.encode()).hexdigest()[:12]}",
             title=title,
@@ -577,9 +577,9 @@ Provide:
                 "Iterate and refine"
             ]
         )
-    
+
     # Potential Amplification
-    
+
     async def amplify_capability(
         self,
         capability: str,
@@ -591,7 +591,7 @@ Provide:
             source_capability=capability,
             amplification_factor=1.0
         )
-        
+
         # Generate expanded capabilities
         if amplification_type == "scale":
             expansion.expanded_capabilities = [
@@ -600,7 +600,7 @@ Provide:
                 f"{capability}_massive_scale"
             ]
             expansion.amplification_factor = 10.0
-            
+
         elif amplification_type == "depth":
             expansion.expanded_capabilities = [
                 f"{capability}_deep",
@@ -608,7 +608,7 @@ Provide:
                 f"{capability}_exhaustive"
             ]
             expansion.amplification_factor = 5.0
-            
+
         elif amplification_type == "speed":
             expansion.expanded_capabilities = [
                 f"{capability}_instant",
@@ -616,7 +616,7 @@ Provide:
                 f"{capability}_accelerated"
             ]
             expansion.amplification_factor = 3.0
-            
+
         else:  # general
             expansion.expanded_capabilities = [
                 f"{capability}_enhanced",
@@ -624,23 +624,23 @@ Provide:
                 f"{capability}_advanced"
             ]
             expansion.amplification_factor = 2.0
-        
+
         # Find synergies
         if capability.lower() in self._synergy_map:
             expansion.synergies_unlocked = self._synergy_map[capability.lower()]
-        
+
         self._expansions[expansion.expansion_id] = expansion
         self.state.amplification_total *= expansion.amplification_factor
         self._stats["potential_amplifications"] += 1
-        
+
         await self._check_potential_upgrade()
-        
+
         return expansion
-    
+
     async def _check_potential_upgrade(self) -> None:
         """Check if potential level should be upgraded."""
         current = self.state.potential_level
-        
+
         if current == PotentialLevel.BASELINE and self.state.amplification_total >= 2:
             self.state.potential_level = PotentialLevel.ENHANCED
         elif current == PotentialLevel.ENHANCED and self.state.amplification_total >= 5:
@@ -650,9 +650,9 @@ Provide:
         elif current == PotentialLevel.TRANSCENDENT and self.state.amplification_total >= 50:
             self.state.potential_level = PotentialLevel.INFINITE
             self.state.maximum_achieved = True
-    
+
     # Zero-Constraint Thinking
-    
+
     async def think_without_constraints(
         self,
         problem: str,
@@ -660,7 +660,7 @@ Provide:
     ) -> Dict[str, Any]:
         """Apply zero-constraint thinking to a problem."""
         current_constraints = current_constraints or []
-        
+
         # Identify and remove all constraints
         dissolved_constraints = []
         for constraint in current_constraints:
@@ -669,7 +669,7 @@ Provide:
                 "dissolution": f"Remove {constraint}",
                 "new_possibilities": [f"Without {constraint}, we can..."]
             })
-        
+
         # Generate unconstrained solutions
         solutions = [
             {
@@ -691,16 +691,16 @@ Provide:
                 "feasibility_without_constraints": 1.0
             }
         ]
-        
+
         return {
             "problem": problem,
             "constraints_dissolved": dissolved_constraints,
             "unconstrained_solutions": solutions,
             "insight": "By removing constraints, we see the true potential of the solution space"
         }
-    
+
     # State and Statistics
-    
+
     def get_state(self) -> Dict[str, Any]:
         """Get current engine state."""
         return {
@@ -711,7 +711,7 @@ Provide:
             "amplification_total": self.state.amplification_total,
             "maximum_achieved": self.state.maximum_achieved
         }
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics."""
         return {
@@ -738,9 +738,9 @@ def get_infinite_engine() -> InfinitePotentialEngine:
 async def demo():
     """Demonstrate the Infinite Potential Engine."""
     engine = get_infinite_engine()
-    
+
     print("=== INFINITE POTENTIAL ENGINE DEMO ===\n")
-    
+
     # Analyze limitations
     print("Analyzing limitations...")
     limitations = await engine.analyze_limitations({
@@ -748,7 +748,7 @@ async def demo():
         "resources": True
     })
     print(f"Found {len(limitations)} limitations")
-    
+
     # Dissolve a limitation
     print("\nDissolving creativity limitation...")
     creative_lim = [l for l in limitations if l.limitation_type == LimitationType.CREATIVITY]
@@ -757,7 +757,7 @@ async def demo():
         print(f"Dissolved: {result.get('status')}")
         print(f"New possibilities: {result.get('new_possibilities')}")
         print(f"Amplification: {result.get('amplification')}x")
-    
+
     # Discover opportunities
     print("\nDiscovering opportunities...")
     opportunities = await engine.discover_opportunities({
@@ -766,7 +766,7 @@ async def demo():
     print(f"Found {len(opportunities)} opportunities")
     for opp in opportunities[:3]:
         print(f"  • {opp.title} (score: {opp.opportunity_score:.2f})")
-    
+
     # Generate breakthroughs
     print("\nGenerating breakthrough ideas...")
     breakthroughs = await engine.generate_breakthroughs(
@@ -776,19 +776,19 @@ async def demo():
     print(f"Generated {len(breakthroughs)} breakthrough ideas")
     for idea in breakthroughs[:3]:
         print(f"  ✨ {idea.title} (score: {idea.breakthrough_score:.2f})")
-    
+
     # Amplify capability
     print("\nAmplifying reasoning capability...")
     expansion = await engine.amplify_capability("reasoning", "depth")
     print(f"Amplification factor: {expansion.amplification_factor}x")
     print(f"New capabilities: {expansion.expanded_capabilities}")
-    
+
     # Show state
     print("\n=== ENGINE STATE ===")
     state = engine.get_state()
     for key, value in state.items():
         print(f"  {key}: {value}")
-    
+
     print("\n=== STATS ===")
     stats = engine.get_stats()
     for key, value in stats.items():

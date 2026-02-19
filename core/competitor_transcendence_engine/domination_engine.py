@@ -126,12 +126,12 @@ class DominationStatus:
 
 class CompetitorAnalyzer:
     """Deep analysis of competitors"""
-    
+
     def __init__(self):
         self.known_competitors: Dict[str, CompetitorProfile] = {}
         self.analysis_cache: Dict[str, Dict] = {}
-    
-    async def analyze_competitor(self, 
+
+    async def analyze_competitor(self,
                                 name: str,
                                 url: str = "",
                                 deep: bool = False) -> CompetitorProfile:
@@ -140,42 +140,42 @@ class CompetitorAnalyzer:
             name=name,
             url=url,
         )
-        
+
         # Determine competitor type
         profile.type = self._determine_type(name)
-        
+
         # Analyze features
         profile.features = await self._analyze_features(name, url)
-        
+
         # Analyze strengths
         profile.strengths = await self._analyze_strengths(name, profile.features)
-        
+
         # Analyze weaknesses
         profile.weaknesses = await self._analyze_weaknesses(name, profile.features)
-        
+
         # Extract innovations
         profile.unique_innovations = await self._extract_innovations(name, profile.features)
-        
+
         # Calculate threat level
         profile.threat_level = self._calculate_threat_level(profile)
-        
+
         # Calculate quality score
         profile.quality_score = self._calculate_quality(profile)
-        
+
         self.known_competitors[profile.id] = profile
         return profile
-    
+
     def _determine_type(self, name: str) -> CompetitorType:
         """Determine competitor type"""
         direct_competitors = [
             "autogpt", "autogen", "langchain", "crewai", "agent-zero",
             "opendevin", "devin", "manus", "kimi",
         ]
-        
+
         if any(comp in name.lower() for comp in direct_competitors):
             return CompetitorType.DIRECT
         return CompetitorType.INDIRECT
-    
+
     async def _analyze_features(self, name: str, url: str) -> List[str]:
         """Analyze competitor features"""
         # Known features for major competitors
@@ -203,33 +203,33 @@ class CompetitorAnalyzer:
                 "sequential/parallel execution",
             ],
         }
-        
+
         for key, features in known_features.items():
             if key in name.lower():
                 return features
-        
+
         return ["unknown features - requires deeper analysis"]
-    
+
     async def _analyze_strengths(self, name: str, features: List[str]) -> List[str]:
         """Analyze competitor strengths"""
         strengths = []
-        
+
         if len(features) > 5:
             strengths.append("Comprehensive feature set")
-        
+
         if "autonomous" in " ".join(features).lower():
             strengths.append("Strong autonomous capabilities")
-        
+
         if "multi-agent" in " ".join(features).lower():
             strengths.append("Advanced multi-agent support")
-        
+
         return strengths or ["No significant strengths identified"]
-    
+
     async def _analyze_weaknesses(self, name: str, features: List[str]) -> List[str]:
         """Analyze competitor weaknesses"""
         # Common weaknesses to look for
         weaknesses = []
-        
+
         common_weaknesses = {
             "autogpt": [
                 "High token usage",
@@ -250,40 +250,40 @@ class CompetitorAnalyzer:
                 "Basic memory",
             ],
         }
-        
+
         for key, weak in common_weaknesses.items():
             if key in name.lower():
                 return weak
-        
+
         return ["Requires deeper analysis to identify weaknesses"]
-    
+
     async def _extract_innovations(self, name: str, features: List[str]) -> List[str]:
         """Extract unique innovations"""
         innovations = []
-        
+
         # Look for unique patterns
         innovation_keywords = ["novel", "unique", "first", "only", "breakthrough"]
-        
+
         for feature in features:
             for keyword in innovation_keywords:
                 if keyword in feature.lower():
                     innovations.append(feature)
-        
+
         return innovations or ["No unique innovations identified"]
-    
+
     def _calculate_threat_level(self, profile: CompetitorProfile) -> ThreatLevel:
         """Calculate threat level of competitor"""
         score = 0
-        
+
         # Feature count
         score += min(2, len(profile.features) / 5)
-        
+
         # Strengths
         score += len(profile.strengths) * 0.5
-        
+
         # Innovations
         score += len(profile.unique_innovations) * 0.3
-        
+
         if score > 5:
             return ThreatLevel.CRITICAL
         elif score > 4:
@@ -294,24 +294,24 @@ class CompetitorAnalyzer:
             return ThreatLevel.LOW
         else:
             return ThreatLevel.MINIMAL
-    
+
     def _calculate_quality(self, profile: CompetitorProfile) -> float:
         """Calculate overall quality score"""
         # Base on features, strengths, and lack of weaknesses
         feature_score = min(1.0, len(profile.features) / 10)
         strength_score = min(1.0, len(profile.strengths) / 5)
         weakness_penalty = min(0.5, len(profile.weaknesses) * 0.1)
-        
+
         return (feature_score + strength_score - weakness_penalty) / 2
 
 
 class WeaknessExploiter:
     """Exploits competitor weaknesses"""
-    
+
     def __init__(self):
         self.exploitation_strategies: Dict[str, Dict] = {}
         self._initialize_strategies()
-    
+
     def _initialize_strategies(self):
         """Initialize exploitation strategies"""
         self.exploitation_strategies = {
@@ -341,15 +341,15 @@ class WeaknessExploiter:
                 "impact": "medium",
             },
         }
-    
-    def analyze_weaknesses(self, 
+
+    def analyze_weaknesses(self,
                           profile: CompetitorProfile) -> WeaknessAnalysis:
         """Analyze weaknesses for exploitation"""
         analysis = WeaknessAnalysis(competitor_id=profile.id)
-        
+
         for weakness in profile.weaknesses:
             weakness_lower = weakness.lower()
-            
+
             for strategy_name, strategy in self.exploitation_strategies.items():
                 for trigger in strategy["trigger"]:
                     if trigger in weakness_lower:
@@ -361,14 +361,14 @@ class WeaknessExploiter:
                         }
                         analysis.weaknesses.append(weakness_entry)
                         analysis.exploitation_opportunities.append(strategy["action"])
-                        
+
                         # Calculate effort vs impact
                         effort = 0.5  # Default medium effort
                         impact = 0.9 if strategy["impact"] == "high" else 0.6
                         analysis.effort_vs_impact[strategy_name] = (effort, impact)
-                        
+
                         break
-        
+
         # Determine priority targets (high impact, low effort)
         sorted_strategies = sorted(
             analysis.effort_vs_impact.items(),
@@ -376,13 +376,13 @@ class WeaknessExploiter:
             reverse=True
         )
         analysis.priority_targets = [s[0] for s in sorted_strategies[:3]]
-        
+
         return analysis
 
 
 class FeatureGapAnalyzer:
     """Analyzes feature gaps vs competitors"""
-    
+
     def __init__(self):
         self.bael_features: List[str] = [
             "supreme council architecture",
@@ -399,19 +399,19 @@ class FeatureGapAnalyzer:
             "automated tool genesis",
             "automated mcp genesis",
         ]
-    
-    def analyze_gaps(self, 
+
+    def analyze_gaps(self,
                     competitor: CompetitorProfile) -> FeatureGapAnalysis:
         """Analyze feature gaps"""
         analysis = FeatureGapAnalysis(
             our_features=self.bael_features.copy(),
             competitor_features=competitor.features.copy(),
         )
-        
+
         # Find gaps (features they have that we might not)
         our_features_lower = {f.lower() for f in self.bael_features}
         their_features_lower = {f.lower() for f in competitor.features}
-        
+
         # Features they have that we might want to verify
         potential_gaps = []
         for feature in competitor.features:
@@ -422,9 +422,9 @@ class FeatureGapAnalyzer:
             )
             if not has_similar:
                 potential_gaps.append(feature)
-        
+
         analysis.gaps_we_have = potential_gaps
-        
+
         # Features we have that they don't
         their_gaps = []
         for feature in self.bael_features:
@@ -434,41 +434,41 @@ class FeatureGapAnalyzer:
             )
             if not has_similar:
                 their_gaps.append(feature)
-        
+
         analysis.gaps_they_have = their_gaps
-        
+
         # Combined best features
         analysis.combined_best = list(set(self.bael_features + competitor.features))
-        
+
         # Enhancement opportunities
         analysis.enhancement_opportunities = [
             f"Implement enhanced version of: {gap}"
             for gap in analysis.gaps_we_have[:5]
         ]
-        
+
         return analysis
-    
+
     def _features_similar(self, feature1: str, feature2: str) -> bool:
         """Check if two features are similar"""
         # Simple similarity check
         words1 = set(feature1.lower().split())
         words2 = set(feature2.lower().split())
-        
+
         # Common important words
         important_words = words1.intersection(words2)
         stop_words = {"the", "a", "an", "and", "or", "of", "for", "to"}
         important_words = important_words - stop_words
-        
+
         return len(important_words) >= 2
 
 
 class DominationPlanner:
     """Creates plans for competitor domination"""
-    
+
     def __init__(self):
         self.plan_templates: Dict[str, List[Dict]] = {}
         self._initialize_templates()
-    
+
     def _initialize_templates(self):
         """Initialize plan templates"""
         self.plan_templates = {
@@ -540,7 +540,7 @@ class DominationPlanner:
                 ]},
             ],
         }
-    
+
     def create_plan(self,
                    competitor: CompetitorProfile,
                    weakness_analysis: WeaknessAnalysis,
@@ -548,12 +548,12 @@ class DominationPlanner:
                    plan_type: str = "total_domination") -> DominationPlan:
         """Create domination plan"""
         template = self.plan_templates.get(plan_type, self.plan_templates["total_domination"])
-        
+
         plan = DominationPlan(
             target_competitor=competitor.name,
             current_phase=DominationPhase.ANALYSIS,
         )
-        
+
         total_days = 0
         for phase_template in template:
             phase = {
@@ -562,33 +562,33 @@ class DominationPlanner:
                 "start_day": total_days,
                 "actions": phase_template["actions"].copy(),
             }
-            
+
             # Add specific actions based on analysis
             if phase_template["phase"] == DominationPhase.WEAKNESS_IDENTIFICATION:
                 phase["actions"].extend([
                     f"Exploit: {target}"
                     for target in weakness_analysis.priority_targets[:3]
                 ])
-            
+
             if phase_template["phase"] == DominationPhase.FEATURE_DEVELOPMENT:
                 phase["actions"].extend([
                     f"Implement: {opp}"
                     for opp in gap_analysis.enhancement_opportunities[:3]
                 ])
-            
+
             plan.phases.append(phase)
             total_days += max(0, phase_template["duration_days"])
-        
+
         plan.timeline_days = total_days
         plan.expected_outcome = f"Complete domination over {competitor.name}"
-        
+
         # Calculate domination score
         plan.domination_score = self._calculate_domination_score(
             competitor, weakness_analysis, gap_analysis
         )
-        
+
         return plan
-    
+
     def _calculate_domination_score(self,
                                    competitor: CompetitorProfile,
                                    weakness_analysis: WeaknessAnalysis,
@@ -598,65 +598,65 @@ class DominationPlanner:
         weakness_score = len(weakness_analysis.priority_targets) * 0.15
         advantage_score = len(gap_analysis.gaps_they_have) * 0.1
         quality_advantage = (1.0 - competitor.quality_score) * 0.3
-        
+
         base_score = weakness_score + advantage_score + quality_advantage + 0.3
-        
+
         # Apply golden ratio for exceptional cases
         if base_score > 0.7:
             base_score *= PHI / 1.5
-        
+
         return min(1.0, base_score)
 
 
 class UniversalCompetitorDominationEngine:
     """
     The Ultimate Competitor Domination Engine
-    
+
     Analyzes all competitors, finds every weakness, identifies every opportunity,
     and creates comprehensive plans for total market domination.
     """
-    
+
     def __init__(self):
         self.analyzer = CompetitorAnalyzer()
         self.exploiter = WeaknessExploiter()
         self.gap_analyzer = FeatureGapAnalyzer()
         self.planner = DominationPlanner()
-        
+
         self.competitors: Dict[str, CompetitorProfile] = {}
         self.domination_plans: Dict[str, DominationPlan] = {}
         self.current_status: Optional[DominationStatus] = None
-    
+
     async def analyze_all_competitors(self,
                                      competitor_names: List[str]) -> Dict[str, CompetitorProfile]:
         """Analyze all competitors"""
         results = {}
-        
+
         for name in competitor_names:
             profile = await self.analyzer.analyze_competitor(name)
             results[name] = profile
             self.competitors[profile.id] = profile
-        
+
         return results
-    
+
     async def create_domination_strategy(self,
                                         target: str) -> Dict[str, Any]:
         """Create complete domination strategy for a target"""
         # Analyze competitor
         profile = await self.analyzer.analyze_competitor(target)
-        
+
         # Analyze weaknesses
         weakness_analysis = self.exploiter.analyze_weaknesses(profile)
-        
+
         # Analyze feature gaps
         gap_analysis = self.gap_analyzer.analyze_gaps(profile)
-        
+
         # Create domination plan
         plan = self.planner.create_plan(
             profile, weakness_analysis, gap_analysis, "total_domination"
         )
-        
+
         self.domination_plans[plan.id] = plan
-        
+
         return {
             "target": target,
             "profile": {
@@ -684,35 +684,35 @@ class UniversalCompetitorDominationEngine:
                 "domination_score": plan.domination_score,
             },
         }
-    
+
     async def dominate_all(self) -> DominationStatus:
         """Create strategies to dominate all known competitors"""
         major_competitors = [
             "autogpt", "autogen", "langchain", "crewai", "agent-zero",
             "opendevin", "devin", "manus", "kimi",
         ]
-        
+
         per_competitor = {}
         areas_of_dominance = []
         areas_to_improve = []
-        
+
         for competitor in major_competitors:
             strategy = await self.create_domination_strategy(competitor)
             per_competitor[competitor] = strategy["domination_plan"]["domination_score"]
-            
+
             # Track areas
             if strategy["domination_plan"]["domination_score"] > 0.7:
                 areas_of_dominance.append(f"Superior to {competitor}")
             else:
                 areas_to_improve.append(f"Improve vs {competitor}")
-        
+
         # Calculate overall score
         overall_score = sum(per_competitor.values()) / len(per_competitor)
-        
+
         # Apply golden ratio scaling
         if overall_score > 0.6:
             overall_score = min(1.0, overall_score * (1 + (PHI - 1) * 0.2))
-        
+
         status = DominationStatus(
             overall_score=overall_score,
             per_competitor=per_competitor,
@@ -725,15 +725,15 @@ class UniversalCompetitorDominationEngine:
                 "Monitor competitor updates",
             ],
         )
-        
+
         self.current_status = status
         return status
-    
+
     def get_domination_report(self) -> Dict[str, Any]:
         """Get comprehensive domination report"""
         if not self.current_status:
             return {"error": "No domination analysis performed yet"}
-        
+
         return {
             "overall_domination_score": self.current_status.overall_score,
             "per_competitor_scores": self.current_status.per_competitor,

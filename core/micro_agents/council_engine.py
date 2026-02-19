@@ -73,24 +73,24 @@ class PsychologicalProfile:
     extraversion: float = 0.5      # 0-1: Assertiveness and energy
     agreeableness: float = 0.6     # 0-1: Cooperation and trust
     neuroticism: float = 0.3       # 0-1: Emotional stability (lower = more stable)
-    
+
     # Cognitive style
     analytical_creative: float = 0.5  # 0=analytical, 1=creative
     detail_big_picture: float = 0.5   # 0=detail, 1=big picture
-    
+
     # Motivational factors
     achievement_drive: float = 0.8
     collaboration_preference: float = 0.6
     risk_tolerance: float = 0.5
-    
+
     # Communication style
     assertiveness: float = 0.6
     empathy: float = 0.7
-    
+
     def get_prompt_modifiers(self) -> List[str]:
         """Get prompt modifiers based on profile."""
         modifiers = []
-        
+
         if self.openness > 0.7:
             modifiers.append("Think creatively and explore unconventional approaches.")
         if self.conscientiousness > 0.8:
@@ -103,7 +103,7 @@ class PsychologicalProfile:
             modifiers.append("Strive for excellence and breakthrough solutions.")
         if self.risk_tolerance > 0.7:
             modifiers.append("Don't be afraid to propose bold, risky ideas.")
-        
+
         return modifiers
 
 
@@ -114,30 +114,30 @@ class MicroAgent:
     name: str
     role: CouncilRole
     profile: PsychologicalProfile
-    
+
     # Specialization
     expertise_areas: List[str] = field(default_factory=list)
     skills: List[str] = field(default_factory=list)
-    
+
     # System prompt
     system_prompt: str = ""
-    
+
     # State
     current_position: Optional[str] = None  # Current stance on topic
     contribution_history: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     # Metrics
     contributions_made: int = 0
     ideas_accepted: int = 0
     debates_won: int = 0
-    
+
     @property
     def influence_score(self) -> float:
         """Calculate agent's influence in council."""
         if self.contributions_made == 0:
             return 0.5
         return min(1.0, (self.ideas_accepted + self.debates_won) / self.contributions_made)
-    
+
     def generate_system_prompt(self):
         """Generate optimized system prompt."""
         role_descriptions = {
@@ -152,12 +152,12 @@ class MicroAgent:
             CouncilRole.VALIDATOR: "You ensure quality and feasibility of proposals.",
             CouncilRole.VISIONARY: "You see the big picture and future implications."
         }
-        
+
         base_prompt = role_descriptions.get(self.role, "You are a capable council member.")
-        
+
         # Add psychological modifiers
         modifiers = self.profile.get_prompt_modifiers()
-        
+
         # Build full prompt
         self.system_prompt = f"""{base_prompt}
 
@@ -183,11 +183,11 @@ class Contribution:
     phase: DeliberationPhase
     content: str
     contribution_type: str  # "idea", "analysis", "critique", "synthesis", "vote"
-    
+
     # Metadata
     timestamp: datetime = field(default_factory=datetime.utcnow)
     references: List[str] = field(default_factory=list)  # Other contribution IDs
-    
+
     # Reactions
     endorsements: List[str] = field(default_factory=list)  # Agent IDs who endorse
     challenges: List[str] = field(default_factory=list)   # Agent IDs who challenge
@@ -209,19 +209,19 @@ class CouncilDecision:
     decision_id: str
     topic: str
     decision: str
-    
+
     # Support
     consensus_level: ConsensusLevel
     supporting_agents: List[str] = field(default_factory=list)
     dissenting_agents: List[str] = field(default_factory=list)
-    
+
     # Rationale
     key_arguments: List[str] = field(default_factory=list)
     addressed_concerns: List[str] = field(default_factory=list)
-    
+
     # Alternatives
     alternative_proposals: List[str] = field(default_factory=list)
-    
+
     # Quality
     confidence: float = 0.0
     innovation_score: float = 0.0
@@ -232,21 +232,21 @@ class CouncilSession:
     """A complete council session."""
     session_id: str
     topic: str
-    
+
     # Agents
     agents: List[MicroAgent] = field(default_factory=list)
-    
+
     # Contributions
     contributions: List[Contribution] = field(default_factory=list)
     debates: List[DebateExchange] = field(default_factory=list)
-    
+
     # Phases
     current_phase: DeliberationPhase = DeliberationPhase.OPENING
     phase_summaries: Dict[DeliberationPhase, str] = field(default_factory=dict)
-    
+
     # Outcome
     decision: Optional[CouncilDecision] = None
-    
+
     # Metrics
     started_at: datetime = field(default_factory=datetime.utcnow)
     completed_at: Optional[datetime] = None
@@ -256,7 +256,7 @@ class CouncilSession:
 
 class CouncilComposer:
     """Composes optimal councils for specific problems."""
-    
+
     def __init__(self):
         # Role templates
         self._role_profiles = {
@@ -296,7 +296,7 @@ class CouncilComposer:
                 detail_big_picture=0.9, risk_tolerance=0.9
             )
         }
-    
+
     async def compose_council(
         self,
         topic: str,
@@ -306,7 +306,7 @@ class CouncilComposer:
     ) -> List[MicroAgent]:
         """Compose optimal council for topic."""
         agents = []
-        
+
         # Essential roles always included
         essential_roles = [
             CouncilRole.CHAIRMAN,
@@ -315,28 +315,28 @@ class CouncilComposer:
             CouncilRole.DEVILS_ADVOCATE,
             CouncilRole.SYNTHESIZER
         ]
-        
+
         # Add required roles
         if required_roles:
             for role in required_roles:
                 if role not in essential_roles:
                     essential_roles.append(role)
-        
+
         # Create agents for essential roles
         for role in essential_roles:
             agent = await self._create_agent(role, topic)
             agents.append(agent)
-        
+
         # Add additional agents based on topic
         additional_needed = max(0, min_agents - len(agents))
         additional_roles = self._select_additional_roles(topic, additional_needed)
-        
+
         for role in additional_roles:
             agent = await self._create_agent(role, topic)
             agents.append(agent)
-        
+
         return agents[:max_agents]
-    
+
     async def _create_agent(
         self,
         role: CouncilRole,
@@ -344,12 +344,12 @@ class CouncilComposer:
     ) -> MicroAgent:
         """Create an agent for a role."""
         agent_id = f"agent_{role.value}_{hashlib.md5(f'{role}{topic}'.encode()).hexdigest()[:8]}"
-        
+
         profile = self._role_profiles.get(role, PsychologicalProfile())
-        
+
         # Infer expertise from topic
         expertise = self._infer_expertise(topic, role)
-        
+
         agent = MicroAgent(
             agent_id=agent_id,
             name=f"{role.value.replace('_', ' ').title()} Agent",
@@ -358,16 +358,16 @@ class CouncilComposer:
             expertise_areas=expertise,
             skills=self._get_role_skills(role)
         )
-        
+
         agent.generate_system_prompt()
-        
+
         return agent
-    
+
     def _infer_expertise(self, topic: str, role: CouncilRole) -> List[str]:
         """Infer expertise from topic."""
         expertise = []
         topic_lower = topic.lower()
-        
+
         domain_keywords = {
             "code": ["software development", "programming", "architecture"],
             "business": ["strategy", "market analysis", "operations"],
@@ -375,13 +375,13 @@ class CouncilComposer:
             "design": ["system design", "UX", "architecture"],
             "research": ["analysis", "data science", "investigation"]
         }
-        
+
         for keyword, domains in domain_keywords.items():
             if keyword in topic_lower:
                 expertise.extend(domains)
-        
+
         return expertise[:3] if expertise else ["general problem solving"]
-    
+
     def _get_role_skills(self, role: CouncilRole) -> List[str]:
         """Get skills for role."""
         role_skills = {
@@ -394,7 +394,7 @@ class CouncilComposer:
             CouncilRole.VISIONARY: ["foresight", "strategic thinking", "trend analysis"]
         }
         return role_skills.get(role, ["general"])
-    
+
     def _select_additional_roles(self, topic: str, count: int) -> List[CouncilRole]:
         """Select additional roles based on topic."""
         available = [
@@ -404,17 +404,17 @@ class CouncilComposer:
             CouncilRole.VISIONARY,
             CouncilRole.CRITIC
         ]
-        
+
         selected = random.sample(available, min(count, len(available)))
         return selected
 
 
 class DeliberationProtocol:
     """Manages structured deliberation process."""
-    
+
     def __init__(self, llm_provider: Callable = None):
         self.llm_provider = llm_provider
-        
+
         # Phase configurations
         self._phase_config = {
             DeliberationPhase.OPENING: {
@@ -453,7 +453,7 @@ class DeliberationProtocol:
                 "goal": "Final decision"
             }
         }
-    
+
     async def run_phase(
         self,
         session: CouncilSession,
@@ -462,15 +462,15 @@ class DeliberationProtocol:
         """Run a single phase of deliberation."""
         session.current_phase = phase
         contributions = []
-        
+
         config = self._phase_config[phase]
-        
+
         # Determine speakers
         if config["speakers"] == "all":
             speakers = session.agents
         else:
             speakers = [a for a in session.agents if a.role in config["speakers"]]
-        
+
         # Get contributions from each speaker
         for agent in speakers:
             contribution = await self._get_agent_contribution(
@@ -479,16 +479,16 @@ class DeliberationProtocol:
             if contribution:
                 contributions.append(contribution)
                 agent.contributions_made += 1
-        
+
         # Add to session
         session.contributions.extend(contributions)
         session.total_contributions += len(contributions)
-        
+
         # Create phase summary
         session.phase_summaries[phase] = self._summarize_phase(contributions)
-        
+
         return contributions
-    
+
     async def _get_agent_contribution(
         self,
         agent: MicroAgent,
@@ -497,10 +497,10 @@ class DeliberationProtocol:
     ) -> Optional[Contribution]:
         """Get contribution from an agent."""
         contribution_id = f"contrib_{hashlib.md5(f'{agent.agent_id}{phase}{datetime.utcnow()}'.encode()).hexdigest()[:12]}"
-        
+
         # Build prompt
         prompt = self._build_contribution_prompt(agent, session, phase)
-        
+
         # Get response
         if self.llm_provider:
             try:
@@ -509,7 +509,7 @@ class DeliberationProtocol:
                 content = self._generate_fallback_contribution(agent, phase)
         else:
             content = self._generate_fallback_contribution(agent, phase)
-        
+
         contribution = Contribution(
             contribution_id=contribution_id,
             agent_id=agent.agent_id,
@@ -517,14 +517,14 @@ class DeliberationProtocol:
             content=content,
             contribution_type=self._get_contribution_type(phase)
         )
-        
+
         agent.contribution_history.append({
             "phase": phase.value,
             "content": content[:100]
         })
-        
+
         return contribution
-    
+
     def _build_contribution_prompt(
         self,
         agent: MicroAgent,
@@ -533,11 +533,11 @@ class DeliberationProtocol:
     ) -> str:
         """Build prompt for agent contribution."""
         phase_goal = self._phase_config[phase]["goal"]
-        
+
         # Get recent contributions
         recent = session.contributions[-5:] if session.contributions else []
         context = "\n".join([f"- {c.content[:200]}" for c in recent])
-        
+
         return f"""{agent.system_prompt}
 
 Council Topic: {session.topic}
@@ -548,7 +548,7 @@ Recent contributions:
 
 Provide your contribution for this phase. Be concise but insightful.
 Focus on adding unique value based on your role and expertise."""
-    
+
     def _generate_fallback_contribution(
         self,
         agent: MicroAgent,
@@ -564,9 +564,9 @@ Focus on adding unique value based on your role and expertise."""
             CouncilRole.SYNTHESIZER: "Combining these insights, I see a coherent path forward.",
             CouncilRole.VISIONARY: "Looking at the bigger picture and future implications..."
         }
-        
+
         return role_contributions.get(agent.role, "I contribute my perspective to the discussion.")
-    
+
     def _get_contribution_type(self, phase: DeliberationPhase) -> str:
         """Get contribution type for phase."""
         type_mapping = {
@@ -579,37 +579,37 @@ Focus on adding unique value based on your role and expertise."""
             DeliberationPhase.CONCLUSION: "decision"
         }
         return type_mapping.get(phase, "contribution")
-    
+
     def _summarize_phase(self, contributions: List[Contribution]) -> str:
         """Summarize phase contributions."""
         if not contributions:
             return "No contributions in this phase."
-        
+
         return f"Phase received {len(contributions)} contributions covering key aspects."
 
 
 class ConsensusBuilder:
     """Builds consensus among council members."""
-    
+
     async def build_consensus(
         self,
         session: CouncilSession
     ) -> CouncilDecision:
         """Build consensus from contributions."""
         decision_id = f"decision_{hashlib.md5(f'{session.session_id}'.encode()).hexdigest()[:12]}"
-        
+
         # Analyze all contributions
         all_positions = self._extract_positions(session.contributions)
-        
+
         # Find common ground
         common_elements = self._find_common_elements(all_positions)
-        
+
         # Determine consensus level
         consensus_level = self._assess_consensus_level(session.agents, all_positions)
-        
+
         # Build final decision
         decision_text = self._formulate_decision(common_elements, session.topic)
-        
+
         # Categorize agents
         supporting = []
         dissenting = []
@@ -622,7 +622,7 @@ class ConsensusBuilder:
                     supporting.append(agent.agent_id)
                 else:
                     dissenting.append(agent.agent_id)
-        
+
         decision = CouncilDecision(
             decision_id=decision_id,
             topic=session.topic,
@@ -634,9 +634,9 @@ class ConsensusBuilder:
             confidence=self._calculate_confidence(consensus_level, len(supporting)),
             innovation_score=self._calculate_innovation(session.contributions)
         )
-        
+
         return decision
-    
+
     def _extract_positions(self, contributions: List[Contribution]) -> List[str]:
         """Extract key positions from contributions."""
         positions = []
@@ -647,15 +647,15 @@ class ConsensusBuilder:
                 if len(sent) > 20:
                     positions.append(sent.strip())
         return positions
-    
+
     def _find_common_elements(self, positions: List[str]) -> List[str]:
         """Find common elements across positions."""
         if not positions:
             return ["General agreement on approach"]
-        
+
         # Simplified: return unique positions
         return list(set(positions))[:5]
-    
+
     def _assess_consensus_level(
         self,
         agents: List[MicroAgent],
@@ -664,10 +664,10 @@ class ConsensusBuilder:
         """Assess level of consensus."""
         if not agents:
             return ConsensusLevel.DIVIDED
-        
+
         # Simulate consensus based on agent count and positions
         agreement_ratio = random.uniform(0.6, 0.95)
-        
+
         if agreement_ratio >= 0.95:
             return ConsensusLevel.UNANIMOUS
         elif agreement_ratio >= 0.85:
@@ -678,7 +678,7 @@ class ConsensusBuilder:
             return ConsensusLevel.PLURALITY
         else:
             return ConsensusLevel.DIVIDED
-    
+
     def _formulate_decision(self, common_elements: List[str], topic: str) -> str:
         """Formulate final decision text."""
         return f"""Council Decision on: {topic}
@@ -688,9 +688,9 @@ After thorough deliberation, the council has reached consensus:
 Key Points:
 {chr(10).join('- ' + e for e in common_elements[:5])}
 
-The council recommends proceeding with this approach, incorporating the collective wisdom 
+The council recommends proceeding with this approach, incorporating the collective wisdom
 of all council members while addressing the concerns raised during debate."""
-    
+
     def _calculate_confidence(self, consensus: ConsensusLevel, supporters: int) -> float:
         """Calculate decision confidence."""
         base_confidence = {
@@ -701,30 +701,30 @@ of all council members while addressing the concerns raised during debate."""
             ConsensusLevel.DIVIDED: 0.40,
             ConsensusLevel.DEADLOCK: 0.20
         }
-        
+
         conf = base_confidence.get(consensus, 0.5)
         # Adjust for supporter count
         conf = min(1.0, conf + (supporters / 20))
         return conf
-    
+
     def _calculate_innovation(self, contributions: List[Contribution]) -> float:
         """Calculate innovation score from contributions."""
         innovation_keywords = ["novel", "innovative", "breakthrough", "new", "revolutionary", "unique"]
-        
+
         total_score = 0
         for c in contributions:
             content_lower = c.content.lower()
             for keyword in innovation_keywords:
                 if keyword in content_lower:
                     total_score += 1
-        
+
         return min(1.0, total_score / max(1, len(contributions)))
 
 
 class MicroAgentsCouncilEngine:
     """
     The Ultimate Micro Agents Council System.
-    
+
     Creates superintelligent councils that:
     1. Compose optimal team for each problem
     2. Run structured deliberation
@@ -733,21 +733,21 @@ class MicroAgentsCouncilEngine:
     5. Synthesize collective wisdom
     6. Produce decisions exceeding any individual
     """
-    
+
     def __init__(self, llm_provider: Callable = None):
         self.llm_provider = llm_provider
-        
+
         # Components
         self.composer = CouncilComposer()
         self.protocol = DeliberationProtocol(llm_provider)
         self.consensus_builder = ConsensusBuilder()
-        
+
         # Storage
         self._sessions: Dict[str, CouncilSession] = {}
-        
+
         # Cross-council learning
         self._collective_wisdom: List[Dict[str, Any]] = []
-        
+
         # Stats
         self._stats = {
             "councils_convened": 0,
@@ -755,9 +755,9 @@ class MicroAgentsCouncilEngine:
             "unanimous_decisions": 0,
             "breakthrough_ideas": 0
         }
-        
+
         logger.info("MicroAgentsCouncilEngine initialized")
-    
+
     async def convene_council(
         self,
         topic: str,
@@ -767,35 +767,35 @@ class MicroAgentsCouncilEngine:
     ) -> CouncilSession:
         """Convene a council for a topic."""
         session_id = f"council_{hashlib.md5(f'{topic}{datetime.utcnow()}'.encode()).hexdigest()[:12]}"
-        
+
         # Compose council
         agents = await self.composer.compose_council(
             topic, min_agents, max_agents
         )
-        
+
         session = CouncilSession(
             session_id=session_id,
             topic=topic,
             agents=agents
         )
-        
+
         self._sessions[session_id] = session
         self._stats["councils_convened"] += 1
-        
+
         logger.info(f"Convened council {session_id} with {len(agents)} agents")
-        
+
         if run_full_deliberation:
             await self.run_deliberation(session_id)
-        
+
         return session
-    
+
     async def run_deliberation(self, session_id: str) -> CouncilDecision:
         """Run full deliberation process."""
         if session_id not in self._sessions:
             raise ValueError(f"Session {session_id} not found")
-        
+
         session = self._sessions[session_id]
-        
+
         # Run through all phases
         phases = [
             DeliberationPhase.OPENING,
@@ -806,20 +806,20 @@ class MicroAgentsCouncilEngine:
             DeliberationPhase.CONSENSUS,
             DeliberationPhase.CONCLUSION
         ]
-        
+
         for phase in phases:
             await self.protocol.run_phase(session, phase)
-        
+
         # Build consensus and decision
         decision = await self.consensus_builder.build_consensus(session)
         session.decision = decision
         session.completed_at = datetime.utcnow()
-        
+
         # Update stats
         self._stats["decisions_made"] += 1
         if decision.consensus_level == ConsensusLevel.UNANIMOUS:
             self._stats["unanimous_decisions"] += 1
-        
+
         # Store collective wisdom
         self._collective_wisdom.append({
             "topic": session.topic,
@@ -827,11 +827,11 @@ class MicroAgentsCouncilEngine:
             "confidence": decision.confidence,
             "agents_count": len(session.agents)
         })
-        
+
         logger.info(f"Deliberation complete. Consensus: {decision.consensus_level.value}")
-        
+
         return decision
-    
+
     async def quick_council(
         self,
         topic: str,
@@ -844,13 +844,13 @@ class MicroAgentsCouncilEngine:
             max_agents=max_agents,
             run_full_deliberation=True
         )
-        
+
         return session.decision
-    
+
     def get_session(self, session_id: str) -> Optional[CouncilSession]:
         """Get a council session."""
         return self._sessions.get(session_id)
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get engine statistics."""
         return {
@@ -875,28 +875,28 @@ def get_council_engine() -> MicroAgentsCouncilEngine:
 async def demo():
     """Demonstrate the Micro Agents Council."""
     engine = get_council_engine()
-    
+
     topic = """
     Design the most advanced AI agent system that surpasses all competitors,
     capable of autonomous learning, self-improvement, and solving any problem
     with genius-level intelligence.
     """
-    
+
     print("Convening Micro Agents Council...")
     print("=" * 60)
-    
+
     session = await engine.convene_council(
         topic=topic,
         min_agents=7,
         max_agents=10
     )
-    
+
     print(f"\nSession ID: {session.session_id}")
     print(f"Topic: {session.topic[:100]}...")
     print(f"\nCouncil Members:")
     for agent in session.agents:
         print(f"  - {agent.name} ({agent.role.value})")
-    
+
     if session.decision:
         print(f"\n{'=' * 60}")
         print("COUNCIL DECISION:")

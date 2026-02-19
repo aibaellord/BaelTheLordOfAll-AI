@@ -110,18 +110,18 @@ class Frequency:
     amplitude: float
     phase: float
     effects: List[str]
-    
+
     @property
     def wavelength(self) -> float:
         """Calculate wavelength (for EM waves in vacuum)."""
         c = 299792458  # Speed of light
         return c / self.value_hz if self.value_hz > 0 else float('inf')
-    
+
     @property
     def period(self) -> float:
         """Calculate period in seconds."""
         return 1 / self.value_hz if self.value_hz > 0 else float('inf')
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "frequency_hz": self.value_hz,
@@ -139,7 +139,7 @@ class Field:
     direction: Tuple[float, float, float]  # Vector
     area_of_effect: float
     properties: Dict[str, Any]
-    
+
     @property
     def magnitude(self) -> float:
         """Calculate field magnitude."""
@@ -187,7 +187,7 @@ class ManipulationBlueprint:
 class RealityManipulationEngine:
     """
     The Reality Manipulation Engine - control fundamental forces.
-    
+
     Provides:
     - Frequency generation and control
     - Wave manipulation
@@ -196,18 +196,18 @@ class RealityManipulationEngine:
     - Energy transformation
     - Molecular influence concepts
     """
-    
+
     def __init__(self):
         self.frequencies: Dict[str, Frequency] = {}
         self.fields: Dict[str, Field] = {}
         self.resonance_patterns: Dict[str, ResonancePattern] = {}
         self.blueprints: Dict[str, ManipulationBlueprint] = {}
-        
+
         # Initialize known frequencies and patterns
         self._init_frequencies()
         self._init_resonance_patterns()
         self._init_fields()
-        
+
         # Physical constants
         self.constants = {
             "c": 299792458,  # Speed of light
@@ -218,9 +218,9 @@ class RealityManipulationEngine:
             "mu0": 1.257e-6,  # Vacuum permeability
             "epsilon0": 8.854e-12,  # Vacuum permittivity
         }
-        
+
         logger.info("RealityManipulationEngine initialized - forces under control")
-    
+
     def _init_frequencies(self):
         """Initialize significant frequencies."""
         significant_frequencies = [
@@ -250,7 +250,7 @@ class RealityManipulationEngine:
             (1e9, WaveType.MICROWAVE, ["Communication", "Heating"]),
             (5e14, WaveType.VISIBLE_LIGHT, ["Visible light center"]),
         ]
-        
+
         for hz, wave_type, effects in significant_frequencies:
             freq_id = f"freq_{hz}"
             self.frequencies[freq_id] = Frequency(
@@ -260,7 +260,7 @@ class RealityManipulationEngine:
                 phase=0.0,
                 effects=effects
             )
-    
+
     def _init_resonance_patterns(self):
         """Initialize resonance patterns."""
         patterns = [
@@ -272,7 +272,7 @@ class RealityManipulationEngine:
             ("Water Structuring", 528, "Water", "Molecular arrangement change"),
             ("Metal Fatigue", 10, "Metals", "Crystalline structure stress"),
         ]
-        
+
         for name, freq, target, effect in patterns:
             pattern = ResonancePattern(
                 id=self._gen_id("resonance"),
@@ -284,7 +284,7 @@ class RealityManipulationEngine:
                 power_required=random.uniform(1, 1000)
             )
             self.resonance_patterns[pattern.id] = pattern
-    
+
     def _init_fields(self):
         """Initialize field types."""
         field_specs = [
@@ -293,7 +293,7 @@ class RealityManipulationEngine:
             (FieldType.ELECTROMAGNETIC, 1e6, (0, 1, 0), {"frequency": 1e9, "source": "antenna"}),
             (FieldType.GRAVITATIONAL, 9.81, (0, 0, -1), {"mass": 5.97e24, "source": "Earth"}),
         ]
-        
+
         for field_type, strength, direction, props in field_specs:
             field_id = f"field_{field_type.value}"
             self.fields[field_id] = Field(
@@ -303,11 +303,11 @@ class RealityManipulationEngine:
                 area_of_effect=10.0,
                 properties=props
             )
-    
+
     # -------------------------------------------------------------------------
     # FREQUENCY MANIPULATION
     # -------------------------------------------------------------------------
-    
+
     async def generate_frequency(
         self,
         hz: float,
@@ -317,7 +317,7 @@ class RealityManipulationEngine:
     ) -> Frequency:
         """Generate a specific frequency."""
         effects = self._determine_frequency_effects(hz, wave_type)
-        
+
         freq = Frequency(
             value_hz=hz,
             wave_type=wave_type,
@@ -325,12 +325,12 @@ class RealityManipulationEngine:
             phase=0.0,
             effects=effects
         )
-        
+
         freq_id = f"freq_custom_{hz}"
         self.frequencies[freq_id] = freq
-        
+
         return freq
-    
+
     async def generate_binaural_beat(
         self,
         target_frequency: float,
@@ -340,7 +340,7 @@ class RealityManipulationEngine:
         # Binaural beat = difference between two frequencies
         left = carrier_frequency
         right = carrier_frequency + target_frequency
-        
+
         left_freq = Frequency(
             value_hz=left,
             wave_type=WaveType.SOUND,
@@ -348,7 +348,7 @@ class RealityManipulationEngine:
             phase=0.0,
             effects=["Left ear carrier"]
         )
-        
+
         right_freq = Frequency(
             value_hz=right,
             wave_type=WaveType.SOUND,
@@ -356,9 +356,9 @@ class RealityManipulationEngine:
             phase=0.0,
             effects=["Right ear carrier"]
         )
-        
+
         return left_freq, right_freq
-    
+
     async def find_resonant_frequency(
         self,
         material: str,
@@ -375,17 +375,17 @@ class RealityManipulationEngine:
             "crystal": 32768,  # Quartz crystal
             "human_body": 7.83,  # Schumann resonance
         }
-        
+
         base = base_frequencies.get(material.lower(), 100)
-        
+
         # Adjust for dimensions if provided
         if dimensions:
             length = dimensions.get("length", 1)
             # Resonance often inversely proportional to length
             base = base / length if length > 0 else base
-        
+
         return base
-    
+
     def _determine_frequency_effects(
         self,
         hz: float,
@@ -393,7 +393,7 @@ class RealityManipulationEngine:
     ) -> List[str]:
         """Determine effects of a frequency."""
         effects = []
-        
+
         if wave_type == WaveType.SOUND or wave_type == WaveType.BRAINWAVE:
             if hz < 4:
                 effects = ["Deep relaxation", "Sleep induction", "Healing"]
@@ -415,13 +415,13 @@ class RealityManipulationEngine:
             effects = ["Heating", "Thermal imaging"]
         elif wave_type == WaveType.VISIBLE_LIGHT:
             effects = ["Illumination", "Color perception"]
-        
+
         return effects
-    
+
     # -------------------------------------------------------------------------
     # FIELD MANIPULATION
     # -------------------------------------------------------------------------
-    
+
     async def create_field(
         self,
         field_type: FieldType,
@@ -437,12 +437,12 @@ class RealityManipulationEngine:
             area_of_effect=area,
             properties={}
         )
-        
+
         field_id = self._gen_id("field")
         self.fields[field_id] = field
-        
+
         return field
-    
+
     async def calculate_field_interaction(
         self,
         field1: Field,
@@ -459,7 +459,7 @@ class RealityManipulationEngine:
         else:
             interaction = "independent"
             combined_strength = max(field1.magnitude, field2.magnitude)
-        
+
         return {
             "interaction_type": interaction,
             "combined_strength": combined_strength,
@@ -467,11 +467,11 @@ class RealityManipulationEngine:
                 d1 + d2 for d1, d2 in zip(field1.direction, field2.direction)
             )
         }
-    
+
     # -------------------------------------------------------------------------
     # RESONANCE MANIPULATION
     # -------------------------------------------------------------------------
-    
+
     async def apply_resonance(
         self,
         pattern_id: str,
@@ -481,13 +481,13 @@ class RealityManipulationEngine:
         pattern = self.resonance_patterns.get(pattern_id)
         if not pattern:
             return {"success": False, "error": "Pattern not found"}
-        
+
         # Check power requirement
         if power < pattern.power_required:
             efficiency = power / pattern.power_required
         else:
             efficiency = 1.0
-        
+
         return {
             "success": True,
             "pattern": pattern.name,
@@ -497,7 +497,7 @@ class RealityManipulationEngine:
             "efficiency": efficiency,
             "power_used": min(power, pattern.power_required)
         }
-    
+
     async def find_resonance_pattern(
         self,
         target: str
@@ -505,17 +505,17 @@ class RealityManipulationEngine:
         """Find resonance patterns for a target."""
         target_lower = target.lower()
         matches = []
-        
+
         for pattern in self.resonance_patterns.values():
             if target_lower in pattern.target_material.lower():
                 matches.append(pattern)
-        
+
         return matches
-    
+
     # -------------------------------------------------------------------------
     # ENERGY MANIPULATION
     # -------------------------------------------------------------------------
-    
+
     async def calculate_energy_transformation(
         self,
         input_energy: float,
@@ -533,9 +533,9 @@ class RealityManipulationEngine:
             ("electrical", "heat"): 0.99,
             ("nuclear", "electrical"): 0.35,
         }
-        
+
         efficiency = efficiencies.get((input_form, output_form), 0.5)
-        
+
         return EnergyTransformation(
             id=self._gen_id("energy"),
             input_form=input_form,
@@ -544,11 +544,11 @@ class RealityManipulationEngine:
             method=f"Convert {input_form} to {output_form}",
             requirements=["Energy source", "Conversion mechanism"]
         )
-    
+
     # -------------------------------------------------------------------------
     # BLUEPRINT CREATION
     # -------------------------------------------------------------------------
-    
+
     async def create_manipulation_blueprint(
         self,
         name: str,
@@ -568,7 +568,7 @@ class RealityManipulationEngine:
                 phase=0.0,
                 effects=self._determine_frequency_effects(hz, wave_type)
             ))
-        
+
         blueprint = ManipulationBlueprint(
             id=self._gen_id("blueprint"),
             name=name,
@@ -581,10 +581,10 @@ class RealityManipulationEngine:
             safety_level=5,
             feasibility=0.7
         )
-        
+
         self.blueprints[blueprint.id] = blueprint
         return blueprint
-    
+
     def _determine_wave_type(self, hz: float) -> WaveType:
         """Determine wave type from frequency."""
         if hz < 20:
@@ -605,11 +605,11 @@ class RealityManipulationEngine:
             return WaveType.XRAY
         else:
             return WaveType.GAMMA
-    
+
     # -------------------------------------------------------------------------
     # STATS
     # -------------------------------------------------------------------------
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get engine statistics."""
         return {
@@ -619,7 +619,7 @@ class RealityManipulationEngine:
             "blueprints_created": len(self.blueprints),
             "physical_constants": len(self.constants)
         }
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
@@ -649,40 +649,40 @@ async def demo():
     print("=" * 60)
     print("🌀 REALITY MANIPULATION ENGINE 🌀")
     print("=" * 60)
-    
+
     engine = get_reality_engine()
-    
+
     # Stats
     print("\n--- Engine Statistics ---")
     stats = engine.get_stats()
     print(f"Frequencies: {stats['frequencies_defined']}")
     print(f"Resonance patterns: {stats['resonance_patterns']}")
-    
+
     # Generate frequency
     print("\n--- Frequency Generation ---")
     freq = await engine.generate_frequency(528, WaveType.SOUND, 1.0, "healing")
     print(f"Generated: {freq.value_hz} Hz")
     print(f"  Wavelength: {freq.wavelength:.6f} m")
     print(f"  Effects: {freq.effects}")
-    
+
     # Binaural beats
     print("\n--- Binaural Beat Generation ---")
     left, right = await engine.generate_binaural_beat(10.0, 200)
     print(f"Left ear: {left.value_hz} Hz")
     print(f"Right ear: {right.value_hz} Hz")
     print(f"Perceived: {right.value_hz - left.value_hz} Hz (Alpha)")
-    
+
     # Find resonance
     print("\n--- Resonance Calculation ---")
     glass_resonance = await engine.find_resonant_frequency("glass")
     print(f"Glass resonant frequency: ~{glass_resonance} Hz")
-    
+
     # Resonance patterns
     print("\n--- Resonance Patterns ---")
     patterns = await engine.find_resonance_pattern("glass")
     for p in patterns:
         print(f"  - {p.name}: {p.primary_frequency} Hz → {p.effect}")
-    
+
     # Create blueprint
     print("\n--- Manipulation Blueprint ---")
     blueprint = await engine.create_manipulation_blueprint(
@@ -695,7 +695,7 @@ async def demo():
     print(f"  Type: {blueprint.manipulation_type.value}")
     print(f"  Frequencies: {[f.value_hz for f in blueprint.frequencies_used]}")
     print(f"  Feasibility: {blueprint.feasibility:.0%}")
-    
+
     print("\n" + "=" * 60)
     print("🌀 REALITY UNDER CONTROL 🌀")
 

@@ -79,7 +79,7 @@ class GoldenRatioMetrics:
     secondary: float
     tertiary: float
     quaternary: float
-    
+
     @classmethod
     def from_base(cls, base: float) -> 'GoldenRatioMetrics':
         """Create golden ratio proportions from a base value"""
@@ -89,7 +89,7 @@ class GoldenRatioMetrics:
             tertiary=base * (PHI_INVERSE ** 2),
             quaternary=base * (PHI_INVERSE ** 3)
         )
-    
+
     @classmethod
     def from_target(cls, target: float) -> 'GoldenRatioMetrics':
         """Create proportions that sum to target"""
@@ -106,17 +106,17 @@ class GoldenRatioMetrics:
 class FibonacciSequence:
     """Fibonacci sequence generator and utilities"""
     cache: List[int] = field(default_factory=lambda: [0, 1])
-    
+
     def get(self, n: int) -> int:
         """Get nth Fibonacci number"""
         while len(self.cache) <= n:
             self.cache.append(self.cache[-1] + self.cache[-2])
         return self.cache[n]
-    
+
     def get_range(self, start: int, end: int) -> List[int]:
         """Get Fibonacci numbers from index start to end"""
         return [self.get(i) for i in range(start, end + 1)]
-    
+
     def find_nearest(self, value: float) -> Tuple[int, int]:
         """Find nearest Fibonacci numbers to a value"""
         i = 0
@@ -125,7 +125,7 @@ class FibonacciSequence:
         if i == 0:
             return (self.get(0), self.get(0))
         return (self.get(i - 1), self.get(i))
-    
+
     def scale_to_fibonacci(self, values: List[float]) -> List[int]:
         """Scale a list of values to nearest Fibonacci numbers"""
         return [self.find_nearest(v)[1] for v in values]
@@ -137,7 +137,7 @@ class SacredGeometryPoint:
     x: float
     y: float
     z: float = 0.0
-    
+
     def distance_to(self, other: 'SacredGeometryPoint') -> float:
         """Calculate distance to another point"""
         return math.sqrt(
@@ -145,22 +145,22 @@ class SacredGeometryPoint:
             (self.y - other.y) ** 2 +
             (self.z - other.z) ** 2
         )
-    
+
     def rotate_2d(self, angle: float, center: Optional['SacredGeometryPoint'] = None) -> 'SacredGeometryPoint':
         """Rotate point around center"""
         center = center or SacredGeometryPoint(0, 0)
         dx = self.x - center.x
         dy = self.y - center.y
-        
+
         cos_a = math.cos(angle)
         sin_a = math.sin(angle)
-        
+
         return SacredGeometryPoint(
             center.x + dx * cos_a - dy * sin_a,
             center.y + dx * sin_a + dy * cos_a,
             self.z
         )
-    
+
     def scale(self, factor: float, center: Optional['SacredGeometryPoint'] = None) -> 'SacredGeometryPoint':
         """Scale point from center"""
         center = center or SacredGeometryPoint(0, 0, 0)
@@ -174,7 +174,7 @@ class SacredGeometryPoint:
 class SacredPatternGenerator:
     """
     THE ULTIMATE SACRED PATTERN GENERATOR
-    
+
     Applies timeless mathematical wisdom to modern challenges:
     - Golden Ratio optimization for natural harmony
     - Fibonacci sequences for organic proportions
@@ -182,16 +182,16 @@ class SacredPatternGenerator:
     - Fractal patterns for infinite scalability
     - Platonic solids for dimensional balance
     """
-    
+
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or {}
         self.fibonacci = FibonacciSequence()
         self.generated_patterns: Dict[str, Any] = {}
-    
+
     # ========================
     # GOLDEN RATIO APPLICATIONS
     # ========================
-    
+
     def apply_golden_ratio(
         self,
         value: float,
@@ -199,12 +199,12 @@ class SacredPatternGenerator:
     ) -> Dict[str, Any]:
         """
         Apply golden ratio to a value for specific domain
-        
+
         The golden ratio appears throughout nature and creates
         aesthetically pleasing proportions.
         """
         metrics = GoldenRatioMetrics.from_base(value)
-        
+
         result = {
             'original': value,
             'golden_metrics': {
@@ -218,7 +218,7 @@ class SacredPatternGenerator:
                 'phi_inverse': PHI_INVERSE
             }
         }
-        
+
         # Domain-specific applications
         if application == ApplicationDomain.UI_LAYOUT:
             result['layout'] = self._golden_layout(value)
@@ -228,9 +228,9 @@ class SacredPatternGenerator:
             result['allocation'] = self._golden_allocation(value)
         elif application == ApplicationDomain.CONTENT_CREATION:
             result['content'] = self._golden_content(value)
-        
+
         return result
-    
+
     def _golden_layout(self, total_size: float) -> Dict[str, float]:
         """Create golden ratio layout dimensions"""
         return {
@@ -240,7 +240,7 @@ class SacredPatternGenerator:
             'footer': total_size * (PHI_INVERSE ** 4),
             'margin': total_size * (PHI_INVERSE ** 5)
         }
-    
+
     def _golden_timing(self, total_time: float) -> Dict[str, float]:
         """Create golden ratio timing intervals"""
         return {
@@ -249,7 +249,7 @@ class SacredPatternGenerator:
             'transition': total_time * (PHI_INVERSE ** 3),
             'buffer': total_time * (PHI_INVERSE ** 4)
         }
-    
+
     def _golden_allocation(self, total_resources: float) -> Dict[str, float]:
         """Allocate resources using golden ratio"""
         return {
@@ -258,7 +258,7 @@ class SacredPatternGenerator:
             'tertiary': total_resources * (PHI_INVERSE ** 3),
             'reserve': total_resources * (PHI_INVERSE ** 4)
         }
-    
+
     def _golden_content(self, content_length: float) -> Dict[str, float]:
         """Structure content using golden ratio"""
         return {
@@ -267,11 +267,11 @@ class SacredPatternGenerator:
             'supporting': content_length * (PHI_INVERSE ** 2),
             'conclusion': content_length * (PHI_INVERSE ** 4)
         }
-    
+
     # ========================
     # FIBONACCI APPLICATIONS
     # ========================
-    
+
     def apply_fibonacci(
         self,
         count: int,
@@ -281,7 +281,7 @@ class SacredPatternGenerator:
         Apply Fibonacci sequence to create natural progressions
         """
         sequence = self.fibonacci.get_range(0, count)
-        
+
         result = {
             'sequence': sequence,
             'sum': sum(sequence),
@@ -290,17 +290,17 @@ class SacredPatternGenerator:
                 for i in range(len(sequence))
             ]
         }
-        
+
         # Note how ratios approach φ
         result['convergence_to_phi'] = abs(result['ratios'][-1] - PHI) if result['ratios'] else 0
-        
+
         if application == ApplicationDomain.DATA_STRUCTURE:
             result['structure'] = self._fibonacci_structure(sequence)
         elif application == ApplicationDomain.ALGORITHM:
             result['algorithm'] = self._fibonacci_algorithm(sequence)
-        
+
         return result
-    
+
     def _fibonacci_structure(self, sequence: List[int]) -> Dict[str, Any]:
         """Create Fibonacci-based data structure sizing"""
         return {
@@ -308,7 +308,7 @@ class SacredPatternGenerator:
             'bucket_sizes': sequence[3:8],
             'tree_branching': sequence[2:7]
         }
-    
+
     def _fibonacci_algorithm(self, sequence: List[int]) -> Dict[str, Any]:
         """Create Fibonacci-based algorithm parameters"""
         return {
@@ -316,11 +316,11 @@ class SacredPatternGenerator:
             'batch_sizes': sequence[2:7],
             'timeout_steps': sequence[3:8]
         }
-    
+
     # ========================
     # SACRED GEOMETRY
     # ========================
-    
+
     def generate_flower_of_life(
         self,
         center: SacredGeometryPoint,
@@ -329,41 +329,41 @@ class SacredPatternGenerator:
     ) -> List[Dict[str, Any]]:
         """
         Generate Flower of Life pattern
-        
+
         The Flower of Life is an ancient sacred geometry pattern
         that represents the fundamental forms of space and time.
         """
         circles = []
-        
+
         # Central circle
         circles.append({
             'center': (center.x, center.y),
             'radius': radius,
             'iteration': 0
         })
-        
+
         # Generate expanding circles
         for iteration in range(1, iterations + 1):
             num_circles = 6 * iteration if iteration > 0 else 1
             angle_step = TAU / num_circles
-            
+
             for i in range(num_circles):
                 angle = i * angle_step
                 distance = radius * iteration
-                
+
                 new_center = SacredGeometryPoint(
                     center.x + distance * math.cos(angle),
                     center.y + distance * math.sin(angle)
                 )
-                
+
                 circles.append({
                     'center': (new_center.x, new_center.y),
                     'radius': radius,
                     'iteration': iteration
                 })
-        
+
         return circles
-    
+
     def generate_metatrons_cube(
         self,
         center: SacredGeometryPoint,
@@ -371,30 +371,30 @@ class SacredPatternGenerator:
     ) -> Dict[str, Any]:
         """
         Generate Metatron's Cube
-        
+
         Contains all 5 Platonic Solids and represents the
         fundamental building blocks of reality.
         """
         # 13 circles of Metatron's Cube
         circles = []
-        
+
         # Central circle
         circles.append({'center': (center.x, center.y), 'radius': size / 10})
-        
+
         # Inner ring (6 circles)
         for i in range(6):
             angle = i * TAU / 6
             x = center.x + size * math.cos(angle)
             y = center.y + size * math.sin(angle)
             circles.append({'center': (x, y), 'radius': size / 10})
-        
+
         # Outer ring (6 circles)
         for i in range(6):
             angle = i * TAU / 6 + TAU / 12
             x = center.x + size * PHI * math.cos(angle)
             y = center.y + size * PHI * math.sin(angle)
             circles.append({'center': (x, y), 'radius': size / 10})
-        
+
         # Generate all connecting lines
         lines = []
         for i, c1 in enumerate(circles):
@@ -403,13 +403,13 @@ class SacredPatternGenerator:
                     'from': c1['center'],
                     'to': c2['center']
                 })
-        
+
         return {
             'circles': circles,
             'lines': lines,
             'contains_platonic_solids': True
         }
-    
+
     def generate_sri_yantra(
         self,
         center: SacredGeometryPoint,
@@ -417,12 +417,12 @@ class SacredPatternGenerator:
     ) -> Dict[str, Any]:
         """
         Generate Sri Yantra pattern
-        
+
         Ancient Hindu sacred geometry representing the cosmos
         and the union of divine masculine and feminine.
         """
         triangles = []
-        
+
         # 9 interlocking triangles
         # 4 pointing up (masculine/Shiva)
         for i in range(4):
@@ -432,7 +432,7 @@ class SacredPatternGenerator:
                 'vertices': self._triangle_vertices(center, size * scale, True),
                 'level': i
             })
-        
+
         # 5 pointing down (feminine/Shakti)
         for i in range(5):
             scale = 0.9 - (i * 0.15)
@@ -441,23 +441,23 @@ class SacredPatternGenerator:
                 'vertices': self._triangle_vertices(center, size * scale, False),
                 'level': i
             })
-        
+
         # Central bindu (point)
         bindu = {'center': (center.x, center.y), 'radius': size / 50}
-        
+
         # Outer circles
         circles = [
             {'center': (center.x, center.y), 'radius': size * 1.1},
             {'center': (center.x, center.y), 'radius': size * 1.2}
         ]
-        
+
         return {
             'triangles': triangles,
             'bindu': bindu,
             'circles': circles,
             'total_intersections': 43  # Sri Yantra has exactly 43 intersection points
         }
-    
+
     def _triangle_vertices(
         self,
         center: SacredGeometryPoint,
@@ -467,19 +467,19 @@ class SacredPatternGenerator:
         """Calculate triangle vertices"""
         angle_offset = 0 if pointing_up else PI
         vertices = []
-        
+
         for i in range(3):
             angle = angle_offset + i * TAU / 3 - PI / 2
             x = center.x + size * math.cos(angle)
             y = center.y + size * math.sin(angle)
             vertices.append((x, y))
-        
+
         return vertices
-    
+
     # ========================
     # PLATONIC SOLIDS
     # ========================
-    
+
     def generate_platonic_solid(
         self,
         solid: PlatonicSolid,
@@ -488,7 +488,7 @@ class SacredPatternGenerator:
     ) -> Dict[str, Any]:
         """
         Generate a Platonic solid
-        
+
         The five Platonic solids are the only 3D shapes with
         identical regular polygon faces.
         """
@@ -502,7 +502,7 @@ class SacredPatternGenerator:
             return self._generate_dodecahedron(center, size)
         elif solid == PlatonicSolid.ICOSAHEDRON:
             return self._generate_icosahedron(center, size)
-    
+
     def _generate_tetrahedron(
         self,
         center: SacredGeometryPoint,
@@ -535,7 +535,7 @@ class SacredPatternGenerator:
                 'dihedral_angle': 70.53  # degrees
             }
         }
-    
+
     def _generate_cube(
         self,
         center: SacredGeometryPoint,
@@ -573,7 +573,7 @@ class SacredPatternGenerator:
                 'dihedral_angle': 90
             }
         }
-    
+
     def _generate_octahedron(
         self,
         center: SacredGeometryPoint,
@@ -604,7 +604,7 @@ class SacredPatternGenerator:
                 'dihedral_angle': 109.47
             }
         }
-    
+
     def _generate_dodecahedron(
         self,
         center: SacredGeometryPoint,
@@ -614,7 +614,7 @@ class SacredPatternGenerator:
         # Uses golden ratio
         phi = PHI
         inv_phi = PHI_INVERSE
-        
+
         vertices = []
         # Cube vertices
         for i in [-1, 1]:
@@ -625,14 +625,14 @@ class SacredPatternGenerator:
                         center.y + j * size,
                         center.z + k * size
                     ))
-        
+
         # Rectangle vertices (3 orientations)
         for i in [-1, 1]:
             for j in [-1, 1]:
                 vertices.append((center.x, center.y + i * phi * size, center.z + j * inv_phi * size))
                 vertices.append((center.x + i * phi * size, center.y + j * inv_phi * size, center.z))
                 vertices.append((center.x + i * inv_phi * size, center.y, center.z + j * phi * size))
-        
+
         return {
             'solid': 'dodecahedron',
             'vertices': vertices,
@@ -646,7 +646,7 @@ class SacredPatternGenerator:
                 'uses_golden_ratio': True
             }
         }
-    
+
     def _generate_icosahedron(
         self,
         center: SacredGeometryPoint,
@@ -654,7 +654,7 @@ class SacredPatternGenerator:
     ) -> Dict[str, Any]:
         """Generate icosahedron vertices"""
         phi = PHI
-        
+
         vertices = []
         # 3 golden rectangles
         for i in [-1, 1]:
@@ -662,7 +662,7 @@ class SacredPatternGenerator:
                 vertices.append((center.x, center.y + i * size, center.z + j * phi * size))
                 vertices.append((center.x + i * size, center.y + j * phi * size, center.z))
                 vertices.append((center.x + i * phi * size, center.y, center.z + j * size))
-        
+
         return {
             'solid': 'icosahedron',
             'vertices': vertices,
@@ -676,11 +676,11 @@ class SacredPatternGenerator:
                 'uses_golden_ratio': True
             }
         }
-    
+
     # ========================
     # FRACTAL GENERATION
     # ========================
-    
+
     def generate_fractal(
         self,
         pattern_type: str,
@@ -698,7 +698,7 @@ class SacredPatternGenerator:
             return self._golden_spiral(depth, base_size)
         else:
             return {}
-    
+
     def _sierpinski_triangle(
         self,
         depth: int,
@@ -706,22 +706,22 @@ class SacredPatternGenerator:
     ) -> Dict[str, Any]:
         """Generate Sierpinski triangle"""
         triangles = []
-        
+
         def subdivide(vertices: List[Tuple[float, float]], level: int):
             if level == 0:
                 triangles.append(vertices)
                 return
-            
+
             # Calculate midpoints
             mid01 = ((vertices[0][0] + vertices[1][0]) / 2, (vertices[0][1] + vertices[1][1]) / 2)
             mid12 = ((vertices[1][0] + vertices[2][0]) / 2, (vertices[1][1] + vertices[2][1]) / 2)
             mid20 = ((vertices[2][0] + vertices[0][0]) / 2, (vertices[2][1] + vertices[0][1]) / 2)
-            
+
             # Recursively subdivide 3 triangles (not the center)
             subdivide([vertices[0], mid01, mid20], level - 1)
             subdivide([mid01, vertices[1], mid12], level - 1)
             subdivide([mid20, mid12, vertices[2]], level - 1)
-        
+
         # Initial triangle
         height = size * math.sqrt(3) / 2
         initial = [
@@ -729,9 +729,9 @@ class SacredPatternGenerator:
             (size, 0),
             (size / 2, height)
         ]
-        
+
         subdivide(initial, depth)
-        
+
         return {
             'type': 'sierpinski',
             'depth': depth,
@@ -739,7 +739,7 @@ class SacredPatternGenerator:
             'self_similarity': True,
             'dimension': math.log(3) / math.log(2)  # ≈ 1.585
         }
-    
+
     def _koch_snowflake(
         self,
         depth: int,
@@ -749,41 +749,41 @@ class SacredPatternGenerator:
         def koch_line(p1, p2, level):
             if level == 0:
                 return [p1, p2]
-            
+
             # Divide line into thirds
             dx = p2[0] - p1[0]
             dy = p2[1] - p1[1]
-            
+
             a = p1
             b = (p1[0] + dx / 3, p1[1] + dy / 3)
             d = (p1[0] + 2 * dx / 3, p1[1] + 2 * dy / 3)
             e = p2
-            
+
             # Peak point
             angle = math.atan2(dy, dx) - PI / 3
             length = math.sqrt(dx**2 + dy**2) / 3
             c = (b[0] + length * math.cos(angle), b[1] + length * math.sin(angle))
-            
+
             # Recursively generate
             points = []
             points.extend(koch_line(a, b, level - 1)[:-1])
             points.extend(koch_line(b, c, level - 1)[:-1])
             points.extend(koch_line(c, d, level - 1)[:-1])
             points.extend(koch_line(d, e, level - 1))
-            
+
             return points
-        
+
         # Initial equilateral triangle
         height = size * math.sqrt(3) / 2
         p1 = (0, 0)
         p2 = (size, 0)
         p3 = (size / 2, height)
-        
+
         points = []
         points.extend(koch_line(p1, p2, depth)[:-1])
         points.extend(koch_line(p2, p3, depth)[:-1])
         points.extend(koch_line(p3, p1, depth)[:-1])
-        
+
         return {
             'type': 'koch_snowflake',
             'depth': depth,
@@ -791,7 +791,7 @@ class SacredPatternGenerator:
             'self_similarity': True,
             'dimension': math.log(4) / math.log(3)  # ≈ 1.262
         }
-    
+
     def _golden_spiral(
         self,
         depth: int,
@@ -800,11 +800,11 @@ class SacredPatternGenerator:
         """Generate golden spiral"""
         points = []
         squares = []
-        
+
         # Each quarter turn follows Fibonacci scaling
         current_size = base_size
         x, y = 0, 0
-        
+
         for i in range(depth):
             # Store square
             squares.append({
@@ -813,7 +813,7 @@ class SacredPatternGenerator:
                 'size': current_size,
                 'iteration': i
             })
-            
+
             # Generate arc points
             for t in range(90):
                 angle = math.radians(t + i * 90)
@@ -821,10 +821,10 @@ class SacredPatternGenerator:
                 px = x + radius * math.cos(angle)
                 py = y + radius * math.sin(angle)
                 points.append((px, py))
-            
+
             # Move to next square position (Fibonacci-like)
             next_size = current_size * PHI_INVERSE
-            
+
             # Position depends on iteration
             direction = i % 4
             if direction == 0:
@@ -835,9 +835,9 @@ class SacredPatternGenerator:
                 x -= next_size
             elif direction == 3:
                 y -= next_size
-            
+
             current_size = next_size
-        
+
         return {
             'type': 'golden_spiral',
             'depth': depth,
@@ -845,11 +845,11 @@ class SacredPatternGenerator:
             'squares': squares,
             'uses_golden_ratio': True
         }
-    
+
     # ========================
     # PRACTICAL APPLICATIONS
     # ========================
-    
+
     def optimize_business_strategy(
         self,
         resources: Dict[str, float]
@@ -858,33 +858,33 @@ class SacredPatternGenerator:
         Apply sacred patterns to business strategy
         """
         result = {}
-        
+
         # Golden ratio resource allocation
         total = sum(resources.values())
         golden_alloc = self._golden_allocation(total)
-        
+
         result['resource_allocation'] = {
             'core_business': golden_alloc['primary'],
             'innovation': golden_alloc['secondary'],
             'marketing': golden_alloc['tertiary'],
             'reserves': golden_alloc['reserve']
         }
-        
+
         # Fibonacci growth targets
         fib = self.fibonacci.get_range(1, 8)
         result['growth_milestones'] = [
             total * (f / sum(fib)) for f in fib
         ]
-        
+
         # Decision timing using golden intervals
         result['decision_intervals'] = {
             'strategic_review': 'Every {} days'.format(int(PHI * 100)),
             'tactical_check': 'Every {} days'.format(int(PHI * 10)),
             'operational_sync': 'Every {} days'.format(int(PHI))
         }
-        
+
         return result
-    
+
     def create_harmonious_layout(
         self,
         width: float,
@@ -900,7 +900,7 @@ class SacredPatternGenerator:
         else:
             optimal_width = width
             optimal_height = width / PHI
-        
+
         # Create grid based on golden sections
         grid = {
             'columns': [
@@ -914,7 +914,7 @@ class SacredPatternGenerator:
                 {'height': optimal_height * (PHI_INVERSE ** 2), 'type': 'footer'}
             ]
         }
-        
+
         # Focal points based on golden ratio
         focal_points = [
             (optimal_width * PHI_INVERSE, optimal_height * PHI_INVERSE),
@@ -922,7 +922,7 @@ class SacredPatternGenerator:
             (optimal_width * (1 - PHI_INVERSE), optimal_height * PHI_INVERSE),
             (optimal_width * (1 - PHI_INVERSE), optimal_height * (1 - PHI_INVERSE))
         ]
-        
+
         return {
             'optimal_dimensions': {'width': optimal_width, 'height': optimal_height},
             'grid': grid,

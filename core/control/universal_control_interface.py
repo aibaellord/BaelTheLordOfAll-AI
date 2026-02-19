@@ -119,7 +119,7 @@ class ControlResult:
     execution_time_ms: float
     detected: bool
     errors: List[str] = field(default_factory=list)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "command_id": self.command_id,
@@ -144,7 +144,7 @@ class ControlSession:
 class UniversalControlInterface:
     """
     The Universal Controller - controls EVERYTHING.
-    
+
     Provides unified interface to:
     - Control any system
     - Control any network
@@ -153,7 +153,7 @@ class UniversalControlInterface:
     - Chain control commands
     - Automate control sequences
     """
-    
+
     def __init__(self):
         self.targets: Dict[str, ControlTarget] = {}
         self.commands: Dict[str, ControlCommand] = {}
@@ -161,7 +161,7 @@ class UniversalControlInterface:
         self.sessions: Dict[str, ControlSession] = {}
         self.control_chains: Dict[str, List[str]] = {}
         self.automation_rules: List[Dict[str, Any]] = []
-        
+
         # Control handlers by domain
         self.domain_handlers = {
             ControlDomain.SYSTEM: self._control_system,
@@ -177,7 +177,7 @@ class UniversalControlInterface:
             ControlDomain.COMMUNICATION: self._control_communication,
             ControlDomain.AUTOMATION: self._control_automation
         }
-        
+
         # Available actions by domain
         self.domain_actions = {
             ControlDomain.SYSTEM: [
@@ -229,13 +229,13 @@ class UniversalControlInterface:
                 "chain", "conditional", "loop", "parallel", "sequential"
             ]
         }
-        
+
         logger.info("UniversalControlInterface initialized - control is absolute")
-    
+
     # -------------------------------------------------------------------------
     # TARGET MANAGEMENT
     # -------------------------------------------------------------------------
-    
+
     async def register_target(
         self,
         name: str,
@@ -254,12 +254,12 @@ class UniversalControlInterface:
             current_control=ControlLevel.OBSERVE,
             security_level=security_level
         )
-        
+
         self.targets[target.id] = target
         logger.info(f"Registered target: {name} in {domain.value}")
-        
+
         return target
-    
+
     async def discover_targets(
         self,
         domain: ControlDomain,
@@ -268,7 +268,7 @@ class UniversalControlInterface:
         """Discover available targets in a domain."""
         # Simulate target discovery
         discovered = []
-        
+
         num_targets = random.randint(3, 10)
         for i in range(num_targets):
             target = await self.register_target(
@@ -279,13 +279,13 @@ class UniversalControlInterface:
                 security_level=random.randint(1, 10)
             )
             discovered.append(target)
-        
+
         return discovered
-    
+
     # -------------------------------------------------------------------------
     # CONTROL OPERATIONS
     # -------------------------------------------------------------------------
-    
+
     async def control(
         self,
         target_id: str,
@@ -307,7 +307,7 @@ class UniversalControlInterface:
                 detected=False,
                 errors=["Target not found"]
             )
-        
+
         # Create command
         command = ControlCommand(
             id=self._gen_id("cmd"),
@@ -317,21 +317,21 @@ class UniversalControlInterface:
             parameters=parameters or {},
             silent=silent
         )
-        
+
         self.commands[command.id] = command
-        
+
         # Execute through appropriate handler
         handler = self.domain_handlers.get(target.domain, self._control_generic)
         result = await handler(command, target)
-        
+
         self.results[command.id] = result
-        
+
         # Update target control level if successful
         if result.status == ControlStatus.SUCCESS:
             target.current_control = result.control_achieved
-        
+
         return result
-    
+
     async def silent_control(
         self,
         target_id: str,
@@ -346,14 +346,14 @@ class UniversalControlInterface:
             parameters=parameters,
             silent=True
         )
-    
+
     async def cascade_control(
         self,
         commands: List[Dict[str, Any]]
     ) -> List[ControlResult]:
         """Execute cascading control commands."""
         results = []
-        
+
         for cmd in commands:
             result = await self.control(
                 cmd["target_id"],
@@ -363,13 +363,13 @@ class UniversalControlInterface:
                 cmd.get("silent", False)
             )
             results.append(result)
-            
+
             # Stop cascade if failed
             if result.status == ControlStatus.FAILED:
                 break
-        
+
         return results
-    
+
     async def take_over(
         self,
         target_id: str,
@@ -388,7 +388,7 @@ class UniversalControlInterface:
                 detected=False,
                 errors=["Target not found"]
             )
-        
+
         # Execute takeover sequence
         takeover_sequence = [
             {"action": "reconnaissance", "silent": True},
@@ -399,11 +399,11 @@ class UniversalControlInterface:
             {"action": "establish_persistence", "silent": True},
             {"action": "take_control", "silent": True}
         ]
-        
+
         start = time.time()
         success = True
         detected = False
-        
+
         for step in takeover_sequence:
             result = await self.control(
                 target_id,
@@ -411,16 +411,16 @@ class UniversalControlInterface:
                 method,
                 silent=step["silent"]
             )
-            
+
             if result.detected:
                 detected = True
-            
+
             if result.status == ControlStatus.FAILED:
                 success = False
                 break
-        
+
         execution_time = (time.time() - start) * 1000
-        
+
         return ControlResult(
             command_id=self._gen_id("takeover"),
             target_id=target_id,
@@ -430,19 +430,19 @@ class UniversalControlInterface:
             execution_time_ms=execution_time,
             detected=detected
         )
-    
+
     # -------------------------------------------------------------------------
     # DOMAIN HANDLERS
     # -------------------------------------------------------------------------
-    
+
     async def _control_system(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control a system target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.01, 0.1))
-        
+
         success = random.random() > 0.2
         detected = not command.silent and random.random() > 0.7
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -452,15 +452,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_network(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control a network target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.05, 0.2))
-        
+
         success = random.random() > 0.25
         detected = not command.silent and random.random() > 0.6
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -470,15 +470,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_device(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control a device target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.02, 0.15))
-        
+
         success = random.random() > 0.3
         detected = not command.silent and random.random() > 0.5
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -488,15 +488,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_process(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control a process target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.01, 0.05))
-        
+
         success = random.random() > 0.15
         detected = not command.silent and random.random() > 0.8
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -506,15 +506,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_data(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control data target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.01, 0.08))
-        
+
         success = random.random() > 0.2
         detected = not command.silent and random.random() > 0.75
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -524,15 +524,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_service(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control a service target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.02, 0.1))
-        
+
         success = random.random() > 0.25
         detected = not command.silent and random.random() > 0.65
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -542,15 +542,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_application(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control an application target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.01, 0.08))
-        
+
         success = random.random() > 0.2
         detected = not command.silent and random.random() > 0.7
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -560,15 +560,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_infrastructure(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control infrastructure target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.05, 0.2))
-        
+
         success = random.random() > 0.35
         detected = not command.silent and random.random() > 0.55
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -578,15 +578,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_cloud(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control cloud target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.02, 0.15))
-        
+
         success = random.random() > 0.3
         detected = not command.silent and random.random() > 0.6
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -596,15 +596,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_iot(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control IoT target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.01, 0.1))
-        
+
         success = random.random() > 0.2  # IoT often easier to control
         detected = not command.silent and random.random() > 0.8  # Often less monitored
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -614,15 +614,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_communication(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control communication target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.02, 0.12))
-        
+
         success = random.random() > 0.25
         detected = not command.silent and random.random() > 0.5
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -632,15 +632,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_automation(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Control automation target."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.01, 0.05))
-        
+
         success = random.random() > 0.15
         detected = not command.silent and random.random() > 0.85
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -650,15 +650,15 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     async def _control_generic(self, command: ControlCommand, target: ControlTarget) -> ControlResult:
         """Generic control handler."""
         start = time.time()
         await asyncio.sleep(random.uniform(0.01, 0.1))
-        
+
         success = random.random() > 0.3
         detected = not command.silent and random.random() > 0.6
-        
+
         return ControlResult(
             command_id=command.id,
             target_id=target.id,
@@ -668,11 +668,11 @@ class UniversalControlInterface:
             execution_time_ms=(time.time() - start) * 1000,
             detected=detected
         )
-    
+
     # -------------------------------------------------------------------------
     # AUTOMATION
     # -------------------------------------------------------------------------
-    
+
     async def create_automation_rule(
         self,
         name: str,
@@ -690,16 +690,16 @@ class UniversalControlInterface:
             "enabled": True,
             "created_at": datetime.now().isoformat()
         }
-        
+
         self.automation_rules.append(rule)
         return rule
-    
+
     async def execute_automation(self, rule_id: str) -> List[ControlResult]:
         """Execute an automation rule."""
         rule = next((r for r in self.automation_rules if r["id"] == rule_id), None)
         if not rule:
             return []
-        
+
         results = []
         for action in rule["actions"]:
             result = await self.control(
@@ -710,13 +710,13 @@ class UniversalControlInterface:
                 action.get("silent", False)
             )
             results.append(result)
-        
+
         return results
-    
+
     # -------------------------------------------------------------------------
     # SESSION MANAGEMENT
     # -------------------------------------------------------------------------
-    
+
     async def start_session(
         self,
         target_ids: List[str],
@@ -731,22 +731,22 @@ class UniversalControlInterface:
             started_at=datetime.now(),
             silent_mode=silent
         )
-        
+
         self.sessions[session.id] = session
         return session
-    
+
     # -------------------------------------------------------------------------
     # HELPER METHODS
     # -------------------------------------------------------------------------
-    
+
     def _gen_id(self, prefix: str) -> str:
         """Generate unique ID."""
         return hashlib.md5(f"{prefix}{time.time()}{random.random()}".encode()).hexdigest()[:12]
-    
+
     def get_available_actions(self, domain: ControlDomain) -> List[str]:
         """Get available actions for a domain."""
         return self.domain_actions.get(domain, [])
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get control statistics."""
         return {
@@ -757,7 +757,7 @@ class UniversalControlInterface:
             "automation_rules": len(self.automation_rules),
             "detection_rate": self._calculate_detection_rate()
         }
-    
+
     def _calculate_detection_rate(self) -> float:
         """Calculate detection rate."""
         if not self.results:
@@ -790,14 +790,14 @@ async def demo():
     print("=" * 60)
     print("🎮 UNIVERSAL CONTROL INTERFACE 🎮")
     print("=" * 60)
-    
+
     controller = get_control_interface()
-    
+
     # Discover targets
     print("\n--- Discovering Targets ---")
     targets = await controller.discover_targets(ControlDomain.NETWORK, "local")
     print(f"Discovered {len(targets)} network targets")
-    
+
     # Control a target
     print("\n--- Executing Control ---")
     if targets:
@@ -811,25 +811,25 @@ async def demo():
         print(f"Control result: {result.status.value}")
         print(f"Control achieved: {result.control_achieved.name}")
         print(f"Detected: {result.detected}")
-    
+
     # Silent control
     print("\n--- Silent Control ---")
     if targets:
         result = await controller.silent_control(targets[0].id, "intercept")
         print(f"Silent control: {result.status.value}, Detected: {result.detected}")
-    
+
     # Takeover
     print("\n--- Complete Takeover ---")
     if targets:
         result = await controller.take_over(targets[0].id, ControlMethod.SILENT)
         print(f"Takeover: {result.status.value}")
         print(f"Final control: {result.control_achieved.name}")
-    
+
     # Stats
     print("\n--- Statistics ---")
     stats = controller.get_stats()
     print(json.dumps(stats, indent=2))
-    
+
     print("\n" + "=" * 60)
     print("🎮 CONTROL ESTABLISHED 🎮")
 

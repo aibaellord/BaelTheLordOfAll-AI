@@ -148,13 +148,13 @@ class IdeaContribution:
 
 class PsychologicalTuner:
     """Tunes agent psychology for optimal output"""
-    
+
     def __init__(self):
         self.tuning_history: List[Dict[str, Any]] = []
-    
+
     def tune_for_task(
-        self, 
-        agent: MicroAgent, 
+        self,
+        agent: MicroAgent,
         task_type: str
     ) -> MicroAgent:
         """Tune an agent's psychology for a specific task"""
@@ -184,42 +184,42 @@ class PsychologicalTuner:
                 "risk_boost": 0.2
             }
         }
-        
+
         tuning = tunings.get(task_type, {})
-        
+
         if "emotion" in tuning:
             agent.current_emotion = tuning["emotion"]
-        
+
         if "creativity_boost" in tuning:
-            agent.profile.creativity_index = min(1.0, 
+            agent.profile.creativity_index = min(1.0,
                 agent.profile.creativity_index + tuning["creativity_boost"])
-        
+
         if "analytical_boost" in tuning:
             agent.profile.analytical_depth = min(1.0,
                 agent.profile.analytical_depth + tuning["analytical_boost"])
-        
+
         if "risk_boost" in tuning:
             agent.profile.risk_tolerance = min(1.0,
                 agent.profile.risk_tolerance + tuning["risk_boost"])
-        
+
         self.tuning_history.append({
             "agent_id": agent.id,
             "task_type": task_type,
             "tuning": tuning,
             "timestamp": datetime.now().isoformat()
         })
-        
+
         return agent
-    
+
     def apply_motivational_layer(
-        self, 
-        agent: MicroAgent, 
+        self,
+        agent: MicroAgent,
         layer: MotivationalLayer
     ) -> MicroAgent:
         """Apply a motivational layer to boost agent performance"""
         if layer not in agent.profile.motivations:
             agent.profile.motivations.append(layer)
-        
+
         # Different layers have different effects
         effects = {
             MotivationalLayer.ACHIEVEMENT: {"analytical_depth": 0.1},
@@ -229,29 +229,29 @@ class PsychologicalTuner:
             MotivationalLayer.COMPETITION: {"analytical_depth": 0.1, "risk_tolerance": 0.1},
             MotivationalLayer.LEGACY: {"creativity_index": 0.1, "analytical_depth": 0.1}
         }
-        
+
         effect = effects.get(layer, {})
         for attr, boost in effect.items():
             current = getattr(agent.profile, attr, 0.5)
             setattr(agent.profile, attr, min(1.0, current + boost))
-        
+
         return agent
 
 
 class CreativeTensionManager:
     """Manages creative tension between agents for breakthrough insights"""
-    
+
     def __init__(self):
         self.tension_events: List[Dict[str, Any]] = []
-    
+
     def create_tension(
-        self, 
-        agents: List[MicroAgent], 
+        self,
+        agents: List[MicroAgent],
         topic: str
     ) -> List[Tuple[MicroAgent, MicroAgent]]:
         """Create creative tension pairings"""
         pairings = []
-        
+
         # Pair opposite archetypes for tension
         opposite_archetypes = {
             PsychologicalArchetype.VISIONARY: PsychologicalArchetype.ANALYST,
@@ -260,7 +260,7 @@ class CreativeTensionManager:
             PsychologicalArchetype.EXPLORER: PsychologicalArchetype.SAGE,
             PsychologicalArchetype.CATALYST: PsychologicalArchetype.ARCHITECT
         }
-        
+
         for agent_a in agents:
             opposite = opposite_archetypes.get(agent_a.profile.archetype)
             if opposite:
@@ -268,18 +268,18 @@ class CreativeTensionManager:
                     if agent_b.profile.archetype == opposite:
                         pairings.append((agent_a, agent_b))
                         break
-        
+
         self.tension_events.append({
             "topic": topic,
             "pairings": [(a.id, b.id) for a, b in pairings],
             "timestamp": datetime.now().isoformat()
         })
-        
+
         return pairings
-    
+
     def resolve_tension(
-        self, 
-        agent_a: MicroAgent, 
+        self,
+        agent_a: MicroAgent,
         agent_b: MicroAgent,
         idea_a: str,
         idea_b: str
@@ -289,23 +289,23 @@ class CreativeTensionManager:
         synthesis = f"[Synthesis from tension between {agent_a.name} and {agent_b.name}]: "
         synthesis += f"Combining '{idea_a[:50]}...' with '{idea_b[:50]}...' "
         synthesis += "reveals a higher-order solution that transcends both perspectives."
-        
+
         return synthesis
 
 
 class BreakthroughTrigger:
     """Triggers breakthrough insights in the council"""
-    
+
     def __init__(self):
         self.breakthroughs: List[Dict[str, Any]] = []
-    
+
     async def scan_for_breakthroughs(
-        self, 
+        self,
         ideas: List[IdeaContribution]
     ) -> List[str]:
         """Scan ideas for potential breakthroughs"""
         breakthroughs = []
-        
+
         # Look for high novelty + high impact combinations
         for idea in ideas:
             if idea.novelty_score > 0.7 and idea.impact_score > 0.7:
@@ -319,41 +319,41 @@ class BreakthroughTrigger:
                     "impact": idea.impact_score,
                     "timestamp": datetime.now().isoformat()
                 })
-        
+
         # Look for idea chains (ideas building on each other)
         chain_length = defaultdict(int)
         for idea in ideas:
             if idea.builds_on:
                 chain_length[idea.builds_on] += 1
-        
+
         for root_id, length in chain_length.items():
             if length >= 3:  # Chain of 3+ ideas
                 breakthroughs.append(
                     f"BREAKTHROUGH CHAIN: {length} ideas evolved from root concept"
                 )
-        
+
         return breakthroughs
-    
+
     async def trigger_intentional_breakthrough(
-        self, 
+        self,
         agents: List[MicroAgent],
         topic: str
     ) -> Optional[str]:
         """Intentionally trigger a breakthrough through psychological manipulation"""
         # Select agents with highest creativity
         creative_agents = sorted(
-            agents, 
-            key=lambda a: a.profile.creativity_index, 
+            agents,
+            key=lambda a: a.profile.creativity_index,
             reverse=True
         )[:3]
-        
+
         if not creative_agents:
             return None
-        
+
         # Set them to BOLD + INSPIRED state
         for agent in creative_agents:
             agent.current_emotion = EmotionalState.BOLD
-        
+
         # Generate breakthrough prompt
         breakthrough = (
             f"[TRIGGERED BREAKTHROUGH on '{topic}']: "
@@ -361,25 +361,25 @@ class BreakthroughTrigger:
             f"entered breakthrough state. "
             f"Seeking the impossible angle that transcends all current thinking."
         )
-        
+
         self.breakthroughs.append({
             "type": "triggered",
             "topic": topic,
             "agents": [a.id for a in creative_agents],
             "timestamp": datetime.now().isoformat()
         })
-        
+
         return breakthrough
 
 
 class ConsensusBuilder:
     """Builds consensus among agents"""
-    
+
     def __init__(self):
         self.consensus_history: List[Dict[str, Any]] = []
-    
+
     async def build_consensus(
-        self, 
+        self,
         agents: List[MicroAgent],
         ideas: List[IdeaContribution],
         topic: str
@@ -389,7 +389,7 @@ class ConsensusBuilder:
         idea_scores: Dict[str, float] = {}
         idea_supporters: Dict[str, List[str]] = defaultdict(list)
         idea_opposers: Dict[str, List[str]] = defaultdict(list)
-        
+
         for idea in ideas:
             score = 0.0
             for agent in agents:
@@ -400,9 +400,9 @@ class ConsensusBuilder:
                     idea_supporters[idea.id].append(agent.id)
                 else:
                     idea_opposers[idea.id].append(agent.id)
-            
+
             idea_scores[idea.id] = score / len(agents)
-        
+
         # Find the idea with highest consensus
         if not idea_scores:
             best_idea = None
@@ -411,7 +411,7 @@ class ConsensusBuilder:
             best_idea_id = max(idea_scores, key=idea_scores.get)
             best_idea = next(i for i in ideas if i.id == best_idea_id)
             consensus_level = idea_scores[best_idea_id]
-        
+
         decision = CouncilDecision(
             id=str(uuid.uuid4()),
             topic=topic,
@@ -424,50 +424,50 @@ class ConsensusBuilder:
             breakthroughs=[],
             consensus_level=consensus_level
         )
-        
+
         self.consensus_history.append({
             "decision_id": decision.id,
             "topic": topic,
             "consensus_level": consensus_level,
             "timestamp": datetime.now().isoformat()
         })
-        
+
         return decision
-    
+
     def _calculate_compatibility(
-        self, 
-        agent: MicroAgent, 
+        self,
+        agent: MicroAgent,
         idea: IdeaContribution
     ) -> float:
         """Calculate how compatible an agent is with an idea"""
         score = 0.5  # Baseline
-        
+
         # High creativity agents like novel ideas
         if idea.novelty_score > 0.7:
             score += agent.profile.creativity_index * 0.2
-        
+
         # High analytical agents like feasible ideas
         if idea.feasibility_score > 0.7:
             score += agent.profile.analytical_depth * 0.2
-        
+
         # Risk-tolerant agents like high-impact ideas
         if idea.impact_score > 0.7:
             score += agent.profile.risk_tolerance * 0.2
-        
+
         # Emotional alignment
         if agent.current_emotion == idea.emotional_tone:
             score += 0.1
-        
+
         return min(1.0, score)
 
 
 class PsychologicalCouncilOrchestrator:
     """
     THE ULTIMATE PSYCHOLOGICAL SWARM ORCHESTRATOR
-    
+
     Orchestrates micro-agent swarms using deep psychological principles.
     Every interaction is psychologically optimized for maximum output.
-    
+
     Features:
     - Dynamic agent psychological profiling
     - Motivational layering for peak performance
@@ -476,39 +476,39 @@ class PsychologicalCouncilOrchestrator:
     - Psychological consensus building
     - Group dynamics optimization
     """
-    
+
     def __init__(self):
         self.agents: Dict[str, MicroAgent] = {}
         self.tuner = PsychologicalTuner()
         self.tension_manager = CreativeTensionManager()
         self.breakthrough_trigger = BreakthroughTrigger()
         self.consensus_builder = ConsensusBuilder()
-        
+
         self.session_ideas: List[IdeaContribution] = []
         self.session_decisions: List[CouncilDecision] = []
         self.current_dynamic: GroupDynamic = GroupDynamic.BRAINSTORM
-    
+
     async def spawn_agent(
-        self, 
+        self,
         archetype: PsychologicalArchetype,
         name: Optional[str] = None
     ) -> MicroAgent:
         """Spawn a new micro-agent with psychological profile"""
         # Generate profile based on archetype
         profile = self._generate_profile(archetype)
-        
+
         agent = MicroAgent(
             id=str(uuid.uuid4()),
             name=name or f"{archetype.name.title()}Agent_{len(self.agents)}",
             profile=profile,
             current_emotion=profile.emotional_baseline
         )
-        
+
         self.agents[agent.id] = agent
         return agent
-    
+
     def _generate_profile(
-        self, 
+        self,
         archetype: PsychologicalArchetype
     ) -> PsychologicalProfile:
         """Generate psychological profile based on archetype"""
@@ -569,7 +569,7 @@ class PsychologicalCouncilOrchestrator:
                 openness_to_change=0.7
             )
         }
-        
+
         return profiles.get(archetype, PsychologicalProfile(
             archetype=archetype,
             emotional_baseline=EmotionalState.FOCUSED,
@@ -581,7 +581,7 @@ class PsychologicalCouncilOrchestrator:
             social_orientation=0.5,
             openness_to_change=0.5
         ))
-    
+
     async def spawn_diverse_council(self, size: int = 7) -> List[MicroAgent]:
         """Spawn a diverse council with complementary archetypes"""
         archetypes = [
@@ -593,17 +593,17 @@ class PsychologicalCouncilOrchestrator:
             PsychologicalArchetype.GUARDIAN,
             PsychologicalArchetype.CATALYST
         ]
-        
+
         agents = []
         for i in range(min(size, len(archetypes))):
             agent = await self.spawn_agent(archetypes[i % len(archetypes)])
             agents.append(agent)
-        
+
         return agents
-    
+
     async def generate_idea(
-        self, 
-        agent: MicroAgent, 
+        self,
+        agent: MicroAgent,
         topic: str,
         builds_on: Optional[str] = None,
         challenges: Optional[str] = None
@@ -613,7 +613,7 @@ class PsychologicalCouncilOrchestrator:
         novelty = agent.profile.creativity_index * random.uniform(0.8, 1.0)
         feasibility = agent.profile.analytical_depth * random.uniform(0.8, 1.0)
         impact = agent.profile.risk_tolerance * random.uniform(0.7, 1.0)
-        
+
         # Generate idea content based on archetype
         archetype_prompts = {
             PsychologicalArchetype.VISIONARY: f"Envision the ultimate future of {topic}",
@@ -622,19 +622,19 @@ class PsychologicalCouncilOrchestrator:
             PsychologicalArchetype.INNOVATOR: f"Innovate a completely new approach to {topic}",
             PsychologicalArchetype.INTEGRATOR: f"Synthesize diverse perspectives on {topic}"
         }
-        
+
         prompt = archetype_prompts.get(
-            agent.profile.archetype, 
+            agent.profile.archetype,
             f"Consider {topic}"
         )
-        
+
         content = f"[{agent.name}] ({agent.profile.archetype.name}): {prompt}"
-        
+
         if builds_on:
             content += f" [Building on previous idea]"
         if challenges:
             content += f" [Challenging previous idea]"
-        
+
         idea = IdeaContribution(
             id=str(uuid.uuid4()),
             agent_id=agent.id,
@@ -647,15 +647,15 @@ class PsychologicalCouncilOrchestrator:
             builds_on=builds_on,
             challenges=challenges
         )
-        
+
         agent.ideas_generated.append(idea.id)
         agent.contribution_count += 1
         self.session_ideas.append(idea)
-        
+
         return idea
-    
+
     async def run_session(
-        self, 
+        self,
         topic: str,
         agents: Optional[List[MicroAgent]] = None,
         dynamic: GroupDynamic = GroupDynamic.BRAINSTORM,
@@ -664,22 +664,22 @@ class PsychologicalCouncilOrchestrator:
         """Run a full council session on a topic"""
         if agents is None:
             agents = await self.spawn_diverse_council()
-        
+
         self.current_dynamic = dynamic
         self.session_ideas = []
-        
+
         # Phase 1: Initial ideation
         for agent in agents:
             self.tuner.tune_for_task(agent, "creative")
             idea = await self.generate_idea(agent, topic)
-        
+
         # Phase 2: Build and challenge
         for round_num in range(rounds):
             for agent in agents:
                 # Randomly build on or challenge previous ideas
                 if self.session_ideas:
                     prev_idea = random.choice(self.session_ideas)
-                    
+
                     if agent.profile.archetype == PsychologicalArchetype.CHALLENGER:
                         await self.generate_idea(
                             agent, topic, challenges=prev_idea.id
@@ -688,33 +688,33 @@ class PsychologicalCouncilOrchestrator:
                         await self.generate_idea(
                             agent, topic, builds_on=prev_idea.id
                         )
-        
+
         # Phase 3: Create tension for breakthroughs
         tension_pairs = self.tension_manager.create_tension(agents, topic)
-        
+
         # Phase 4: Trigger breakthroughs
         breakthroughs = await self.breakthrough_trigger.scan_for_breakthroughs(
             self.session_ideas
         )
-        
+
         triggered = await self.breakthrough_trigger.trigger_intentional_breakthrough(
             agents, topic
         )
         if triggered:
             breakthroughs.append(triggered)
-        
+
         # Phase 5: Build consensus
         decision = await self.consensus_builder.build_consensus(
             agents, self.session_ideas, topic
         )
         decision.breakthroughs = breakthroughs
-        
+
         self.session_decisions.append(decision)
-        
+
         return decision
-    
+
     async def continuous_improvement_loop(
-        self, 
+        self,
         topic: str,
         target_consensus: float = 0.9,
         max_iterations: int = 10
@@ -724,28 +724,28 @@ class PsychologicalCouncilOrchestrator:
         """
         best_decision = None
         agents = await self.spawn_diverse_council()
-        
+
         for iteration in range(max_iterations):
             decision = await self.run_session(
                 f"{topic} (iteration {iteration + 1})",
                 agents=agents
             )
-            
+
             if best_decision is None or decision.consensus_level > best_decision.consensus_level:
                 best_decision = decision
-            
+
             if decision.consensus_level >= target_consensus:
                 break
-            
+
             # Apply motivational layers to underperforming agents
             for agent in agents:
                 if agent.contribution_count < len(self.session_ideas) / len(agents):
                     self.tuner.apply_motivational_layer(
                         agent, MotivationalLayer.COMPETITION
                     )
-        
+
         return best_decision
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get orchestrator statistics"""
         return {
@@ -758,14 +758,14 @@ class PsychologicalCouncilOrchestrator:
             "agents_by_archetype": self._count_by_archetype(),
             "average_consensus": self._average_consensus()
         }
-    
+
     def _count_by_archetype(self) -> Dict[str, int]:
         counts = {}
         for agent in self.agents.values():
             arch = agent.profile.archetype.name
             counts[arch] = counts.get(arch, 0) + 1
         return counts
-    
+
     def _average_consensus(self) -> float:
         if not self.session_decisions:
             return 0.0
