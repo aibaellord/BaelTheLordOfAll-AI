@@ -9,15 +9,21 @@ from external applications, web interfaces, and other services.
 import asyncio
 import json
 import logging
+
 # Import BAEL components
 import sys
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import (BackgroundTasks, FastAPI, HTTPException, WebSocket,
-                     WebSocketDisconnect)
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -25,10 +31,21 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.brain.brain import BaelBrain
-from core.orchestrator.orchestrator import (AgentConfig, AgentOrchestrator,
-                                            WorkflowPattern)
+from core.orchestrator.orchestrator import (
+    AgentConfig,
+    AgentOrchestrator,
+    WorkflowPattern,
+)
+
+# EnhancedBaelBrain -- preferred over BaelBrain when available
+try:
+    from core.brain.enhanced_brain import get_enhanced_brain as _get_enhanced
+    _ENHANCED_AVAILABLE = True
+except ImportError:
+    _ENHANCED_AVAILABLE = False
 
 logger = logging.getLogger("BAEL.API")
+
 
 
 # =============================================================================
@@ -95,54 +112,84 @@ class HealthResponse(BaseModel):
 # APP SETUP
 # =============================================================================
 
-# Global instances
+# Global instances -- enhanced brain is T1, brain is T2 fallback
 brain: Optional[BaelBrain] = None
+enhanced_brain = None
 orchestrator: Optional[AgentOrchestrator] = None
 start_time: Optional[datetime] = None
 
 
+async def _think(query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Route a query through EnhancedBaelBrain (T1) or BaelBrain (T2)."""
+    if enhanced_brain is not None:
+        return await enhanced_brain.think(query, context or {})
+    if brain is not None:
+        return await brain.think(query, context or {})
+    raise RuntimeError("No brain initialized")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan handler."""
-    global brain, orchestrator, start_time
+    """Application lifespan handler -- initializes enhanced brain (T1) + fallback brain (T2)."""
+    global brain, enhanced_brain, orchestrator, start_time
 
-    logger.info("🚀 Starting BAEL API Server...")
+    logger.info("Starting BAEL API Server...")
     start_time = datetime.now()
 
-    # Initialize brain
+    # Tier 1: EnhancedBaelBrain (28 subsystems, 12-stage pipeline)
+    if _ENHANCED_AVAILABLE:
+        try:
+            enhanced_brain = _get_enhanced()
+            await enhanced_brain.initialize()
+            logger.info("EnhancedBaelBrain T1 active -- 28 subsystems, 12 stages")
+        except Exception as exc:
+            logger.warning(f"EnhancedBaelBrain init failed: {exc}")
+            enhanced_brain = None
+
+    # Tier 2: BaelBrain baseline fallback
     brain = BaelBrain()
     await brain.initialize()
+    logger.info("BaelBrain T2 initialized")
 
-    # Initialize orchestrator
     orchestrator = AgentOrchestrator(brain)
 
-    # Set brain reference in chat API
+    # Bootstrap: auto-discover all capabilities, agents, plugins, workflows
+    try:
+        from core.bootstrap.startup import initialize as bael_bootstrap
+        bootstrap_result = await bael_bootstrap(fail_fast=False)
+        logger.info(
+            f"✅ BAEL Bootstrap complete — {bootstrap_result.capabilities_loaded} capabilities, "
+            f"{bootstrap_result.agents_registered} agents, {bootstrap_result.plugins_loaded} plugins"
+        )
+    except Exception as exc:
+        logger.warning(f"⚠️ BAEL Bootstrap warning (non-fatal): {exc}")
+
+    # Propagate the best brain to sub-routers
+    _active = enhanced_brain or brain
     try:
         from api.chat_api import set_brain
-        set_brain(brain)
-        logger.info("✅ Brain connected to Chat API")
+        set_brain(_active)
+        logger.info("Brain connected to Chat API")
     except ImportError:
         pass
 
-    # Set brain reference in council API
     try:
         from api.council_api import set_brain as set_council_brain
-        set_council_brain(brain)
-        logger.info("✅ Brain connected to Council API")
+        set_council_brain(_active)
+        logger.info("Brain connected to Council API")
     except ImportError:
         pass
 
-    logger.info("✅ BAEL API Server ready")
-
+    logger.info("BAEL API Server ready")
     yield
 
     # Shutdown
-    logger.info("🛑 Shutting down BAEL API Server...")
+    logger.info("Shutting down BAEL API Server...")
     if orchestrator:
         await orchestrator.terminate_all()
     if brain:
         await brain.shutdown()
-    logger.info("✅ BAEL API Server shutdown complete")
+    logger.info("BAEL API Server shutdown complete")
 
 
 app = FastAPI(
@@ -202,6 +249,14 @@ try:
     logger.info("✅ Council API router loaded")
 except ImportError as e:
     logger.warning(f"⚠️ Council API not available: {e}")
+
+# Include the Registry API router (MasterRegistry + bootstrap status)
+try:
+    from api.registry_api import router as registry_router
+    app.include_router(registry_router, prefix="/api")
+    logger.info("✅ Registry API router loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Registry API not available: {e}")
 
 
 # =============================================================================
@@ -821,12 +876,11 @@ async def api_council_members():
 @app.post("/api/v1/council/deliberate")
 async def api_council_deliberate(request: CouncilDeliberateRequest):
     """Start a council deliberation."""
-    if not brain:
+    if not brain and not enhanced_brain:
         raise HTTPException(status_code=503, detail="BAEL not initialized")
 
-    # Trigger council deliberation through brain
     try:
-        result = await brain.think(
+        await _think(
             f"[COUNCIL DELIBERATION] Topic: {request.topic}",
             {"mode": "council", "members": request.members}
         )
@@ -835,8 +889,8 @@ async def api_council_deliberate(request: CouncilDeliberateRequest):
             "topic": request.topic,
             "status": "started"
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 # Code execution
@@ -985,8 +1039,7 @@ async def api_stream_chat(request: StreamChatRequest):
 async def api_stream_council(request: StreamCouncilRequest):
     """Stream council deliberation with SSE."""
     try:
-        from api.streaming import (create_streaming_response,
-                                   get_streaming_council)
+        from api.streaming import create_streaming_response, get_streaming_council
 
         streaming = get_streaming_council()
         generator = streaming.stream_deliberation(
@@ -1003,8 +1056,7 @@ async def api_stream_council(request: StreamCouncilRequest):
 async def api_stream_execute(request: StreamExecuteRequest):
     """Stream task execution with SSE."""
     try:
-        from api.streaming import (create_streaming_response,
-                                   get_streaming_tasks)
+        from api.streaming import create_streaming_response, get_streaming_tasks
 
         streaming = get_streaming_tasks()
         generator = streaming.stream_execution(
@@ -1081,8 +1133,7 @@ async def api_list_workflows():
 async def api_create_workflow(request: WorkflowCreateRequest):
     """Create a new workflow."""
     try:
-        from core.workflows.execution_engine import (Workflow,
-                                                     get_workflow_storage)
+        from core.workflows.execution_engine import Workflow, get_workflow_storage
 
         workflow = Workflow.from_dict({
             "name": request.name,
@@ -1186,9 +1237,11 @@ async def api_list_agents():
 async def api_spawn_agent(request: AgentSpawnV1Request):
     """Spawn a new agent."""
     try:
-        from core.agents.execution_backend import (AgentCapability,
-                                                   AgentPersona,
-                                                   get_agent_backend)
+        from core.agents.execution_backend import (
+            AgentCapability,
+            AgentPersona,
+            get_agent_backend,
+        )
 
         backend = get_agent_backend()
 
@@ -1262,8 +1315,7 @@ async def api_list_tasks():
 async def api_submit_task(request: TaskSubmitRequest):
     """Submit a new task."""
     try:
-        from core.agents.execution_backend import (TaskPriority,
-                                                   get_agent_backend)
+        from core.agents.execution_backend import TaskPriority, get_agent_backend
 
         backend = get_agent_backend()
 
@@ -1452,9 +1504,11 @@ async def websocket_v2(websocket: WebSocket):
     client_id = None
 
     try:
-        from core.realtime.websocket_manager import (MessageType,
-                                                     WebSocketMessage,
-                                                     get_ws_manager)
+        from core.realtime.websocket_manager import (
+            MessageType,  # noqa: F401 — imported for ws_manager use
+            WebSocketMessage,  # noqa: F401
+            get_ws_manager,
+        )
 
         ws_manager = get_ws_manager()
         client_id = await ws_manager.register(websocket)
@@ -1468,7 +1522,7 @@ async def websocket_v2(websocket: WebSocket):
             try:
                 from core.realtime.websocket_manager import get_ws_manager
                 await get_ws_manager().unregister(client_id)
-            except:
+            except Exception:
                 pass
     except ImportError:
         # Fall back to simple WebSocket
@@ -2092,6 +2146,36 @@ async def list_mcp_tools():
         "total": len(all_tools),
         "tools": all_tools
     }
+
+
+# =============================================================================
+# STATIC FILE SERVING (React UI)
+# =============================================================================
+
+_UI_DIST = Path(__file__).parent.parent / "ui" / "web" / "dist"
+
+if _UI_DIST.exists():
+    from fastapi.responses import FileResponse
+    from starlette.staticfiles import StaticFiles
+
+    # Mount assets directory
+    _assets_dir = _UI_DIST / "assets"
+    if _assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(_assets_dir)), name="assets")
+
+    @app.get("/app", response_class=FileResponse, include_in_schema=False)
+    @app.get("/app/{full_path:path}", response_class=FileResponse, include_in_schema=False)
+    async def serve_react_app(full_path: str = ""):
+        """Serve the React SPA for any /app/* route."""
+        # Check for a real file first
+        target = _UI_DIST / full_path if full_path else _UI_DIST / "index.html"
+        if target.is_file():
+            return FileResponse(str(target))
+        return FileResponse(str(_UI_DIST / "index.html"))
+
+    logger.info(f"✅ React UI served from {_UI_DIST} at /app")
+else:
+    logger.warning(f"⚠️ React UI dist not found at {_UI_DIST} — run 'make ui-build' to build")
 
 
 # =============================================================================

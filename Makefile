@@ -72,6 +72,15 @@ ui: ## Start the React UI development server
 	@echo "$(PURPLE)🔥 Starting BAEL UI...$(NC)"
 	@cd ui/web && npm install && npm run dev
 
+ui-build: ## Build the React UI for production (served at /app by API)
+	@echo "$(PURPLE)🏗️  Building React UI for production...$(NC)"
+	@cd ui/web && npm install && npm run build
+	@echo "$(GREEN)✅ React UI built → ui/web/dist/ (served at /app)$(NC)"
+
+ui-preview: ## Preview the production React UI
+	@echo "$(CYAN)Previewing production build...$(NC)"
+	@cd ui/web && npm run preview
+
 dev: ## Start API and show instructions for UI
 	@echo "$(PURPLE)🔥 Starting BAEL Development Mode...$(NC)"
 	@echo "$(CYAN)Starting API server on port 8000...$(NC)"
@@ -484,3 +493,105 @@ ultimate-down: ## Stop ultimate mode
 	@lsof -ti:5173 | xargs kill -9 2>/dev/null || true
 	@$(MAKE) mcp-ultimate-down
 	@echo "$(GREEN)✓ BAEL Ultimate Mode stopped$(NC)"
+
+# =============================================================================
+# 🚀 BOOTSTRAP & HEALTH
+# =============================================================================
+
+bootstrap: ## 🚀 One-click BAEL bootstrap: check deps, load capabilities, verify system
+	@echo "$(CYAN)⚡ Running BAEL Bootstrap...$(NC)"
+	$(PYTHON) scripts/bootstrap.py
+
+bootstrap-docs: ## 🚀 Bootstrap + generate full documentation
+	@echo "$(CYAN)⚡ Running BAEL Bootstrap with docs...$(NC)"
+	$(PYTHON) scripts/bootstrap.py --docs
+
+health: ## 🏥 Run system health check
+	@echo "$(CYAN)🏥 BAEL Health Check...$(NC)"
+	$(PYTHON) scripts/health_check.py
+
+health-api: ## 🏥 Quick API health check via curl
+	@curl -s http://localhost:8000/health 2>/dev/null | python3 -m json.tool || echo "API not running. Use: make run"
+
+# =============================================================================
+# 📚 DOCUMENTATION
+# =============================================================================
+
+docs-generate: ## 📚 Generate full API and capability documentation
+	@echo "$(CYAN)📚 Generating BAEL documentation...$(NC)"
+	$(PYTHON) scripts/generate_docs.py
+	@echo "$(GREEN)✓ Docs written to docs/generated/$(NC)"
+
+docs-open: docs-generate ## 📚 Generate docs and open in browser
+	@open docs/generated/summary.md 2>/dev/null || xdg-open docs/generated/summary.md 2>/dev/null || \
+	  echo "Docs at: docs/generated/summary.md"
+
+# =============================================================================
+# 🔭 REGISTRY & CAPABILITIES
+# =============================================================================
+
+capability-report: ## 📊 Print capability count report
+	@echo "$(CYAN)📊 BAEL Capability Report$(NC)"
+	@$(PYTHON) -c "\
+import sys; sys.path.insert(0,'.');\
+from pathlib import Path;\
+core = Path('core');\
+modules = [d.name for d in core.iterdir() if d.is_dir() and not d.name.startswith('__')] if core.exists() else [];\
+plugins = [d.name for d in Path('plugins').iterdir() if d.is_dir()] if Path('plugins').exists() else [];\
+workflows = list(Path('workflows').rglob('*.yaml')) if Path('workflows').exists() else [];\
+print(f'Core modules:  {len(modules)}');\
+print(f'Plugins:       {len(plugins)}');\
+print(f'Workflows:     {len(workflows)}');\
+print(f'Total Python:  {len(list(Path(\".\").rglob(\"*.py\")))}');\
+"
+
+registry-dump: ## 🗄️  Dump MasterRegistry contents to JSON
+	@echo "$(CYAN)🗄️  Dumping registry...$(NC)"
+	$(PYTHON) -c "\
+import asyncio, sys, json; sys.path.insert(0,'.');\
+async def run():\
+    from core.bootstrap.startup import initialize;\
+    await initialize(fail_fast=False);\
+    from core.bootstrap.registry import get_registry;\
+    r = get_registry();\
+    print(json.dumps(r.to_dict(), indent=2, default=str));\
+asyncio.run(run())"
+
+agents-list: ## 🤖 List all registered agents
+	@$(PYTHON) -c "\
+import asyncio, sys; sys.path.insert(0,'.');\
+async def run():\
+    from core.bootstrap.startup import initialize;\
+    await initialize(fail_fast=False);\
+    from core.bootstrap.registry import get_registry;\
+    r = get_registry();\
+    agents = r.list_by_type('agent');\
+    [print(f'  {a.name} ({a.source})') for a in agents] if agents else print('  No agents registered yet');\
+asyncio.run(run())"
+
+plugins-list: ## 🔌 List all loaded plugins
+	@$(PYTHON) -c "\
+import asyncio, sys; sys.path.insert(0,'.');\
+async def run():\
+    from core.bootstrap.startup import initialize;\
+    await initialize(fail_fast=False);\
+    from core.bootstrap.registry import get_registry;\
+    r = get_registry();\
+    plugins = r.list_by_type('plugin');\
+    [print(f'  {p.name} ({p.source})') for p in plugins] if plugins else print('  No plugins registered yet');\
+asyncio.run(run())"
+
+# =============================================================================
+# 🔒 SECURITY
+# =============================================================================
+
+security-scan: ## 🔒 Run local security scan (bandit)
+	@echo "$(CYAN)🔒 Running security scan...$(NC)"
+	@$(PYTHON) -m bandit -r core/ api/ sdk/ --exclude ".venv,__pycache__,tests" -ll --skip B101,B601 2>/dev/null || \
+	  echo "Install bandit: pip install bandit"
+
+security-deps: ## 🔒 Check dependencies for vulnerabilities (safety)
+	@echo "$(CYAN)🔒 Checking dependency vulnerabilities...$(NC)"
+	@$(PYTHON) -m safety check -r requirements.txt 2>/dev/null || \
+	  echo "Install safety: pip install safety"
+

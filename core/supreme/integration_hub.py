@@ -25,7 +25,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar
 from uuid import uuid4
 
 logger = logging.getLogger("BAEL.IntegrationHub")
