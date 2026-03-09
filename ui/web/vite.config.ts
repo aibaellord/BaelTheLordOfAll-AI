@@ -32,5 +32,19 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: true,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-query": ["@tanstack/react-query"],
+          "vendor-charts": ["recharts"],
+          "vendor-motion": ["framer-motion"],
+          "vendor-icons": ["lucide-react"],
+          "vendor-syntax": ["react-syntax-highlighter", "react-markdown"],
+          "vendor-terminal": ["xterm", "xterm-addon-fit", "xterm-addon-web-links", "@xterm/addon-attach"],
+        },
+      },
+    },
   },
 });
