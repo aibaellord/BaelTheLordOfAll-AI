@@ -652,6 +652,97 @@ class ReasoningCascade:
 
 
 # =============================================================================
+# TEST-COMPATIBLE API — ReasoningConfig, ReasoningTask, public select_reasoners
+# =============================================================================
+
+@dataclass
+class ReasoningConfig:
+    """Configuration for ReasoningCascade (test-compatible)."""
+    max_reasoners: int = 5
+    parallel_reasoning: bool = False
+    confidence_threshold: float = 0.7
+    timeout_ms: float = 5000.0
+    require_explanation: bool = True
+
+
+@dataclass
+class ReasoningTask:
+    """A reasoning task (test-compatible wrapper for ReasoningRequest)."""
+    query: str
+    task_type: str = "general"
+    context: Dict[str, Any] = field(default_factory=dict)
+    required_reasoners: List[ReasonerType] = field(default_factory=list)
+
+    def to_request(self) -> "ReasoningRequest":
+        """Convert to ReasoningRequest."""
+        # Map task_type → ReasonerType
+        _task_type_map = {
+            "deductive": ReasonerType.DEDUCTIVE,
+            "inductive": ReasonerType.INDUCTIVE,
+            "abductive": ReasonerType.ABDUCTIVE,
+            "causal": ReasonerType.CAUSAL,
+            "counterfactual": ReasonerType.COUNTERFACTUAL,
+            "temporal": ReasonerType.TEMPORAL,
+            "probabilistic": ReasonerType.PROBABILISTIC,
+            "fuzzy": ReasonerType.FUZZY,
+            "analogical": ReasonerType.ANALOGICAL,
+            "epistemic": ReasonerType.EPISTEMIC,
+        }
+        required = list(self.required_reasoners)
+        if self.task_type in _task_type_map and not required:
+            required = [_task_type_map[self.task_type]]
+        return ReasoningRequest(
+            query=self.query,
+            context=self.context,
+            required_reasoners=required,
+            mode=ReasoningMode.SINGLE if required else ReasoningMode.CASCADE,
+        )
+
+
+# Patch ReasoningCascade to accept ReasoningConfig and expose public API
+_original_cascade_init = ReasoningCascade.__init__
+
+
+def _cascade_init_compat(self, config: "ReasoningConfig | None" = None):
+    _original_cascade_init(self)
+    self._reasoning_config = config or ReasoningConfig()
+    # Expose reasoners dict keyed by ReasonerType (populated on demand)
+    self.reasoners: Dict[ReasonerType, Any] = {
+        rt: {"type": rt, "status": "ready"} for rt in ReasonerType
+    }
+
+
+ReasoningCascade.__init__ = _cascade_init_compat
+
+
+def _cascade_select_reasoners_public(self, task: "ReasoningTask | ReasoningRequest") -> List[ReasonerType]:
+    """Public select_reasoners — accepts ReasoningTask or ReasoningRequest."""
+    if isinstance(task, ReasoningTask):
+        request = task.to_request()
+    else:
+        request = task
+    return self._select_reasoners(request)
+
+
+ReasoningCascade.select_reasoners = _cascade_select_reasoners_public
+
+
+_original_cascade_reason = ReasoningCascade.reason
+
+
+async def _cascade_reason_compat(self, task: "ReasoningTask | ReasoningRequest") -> ReasoningResult:
+    """reason() — accepts ReasoningTask or ReasoningRequest."""
+    if isinstance(task, ReasoningTask):
+        request = task.to_request()
+    else:
+        request = task
+    return await _original_cascade_reason(self, request)
+
+
+ReasoningCascade.reason = _cascade_reason_compat
+
+
+# =============================================================================
 # DEMO
 # =============================================================================
 

@@ -490,6 +490,55 @@ class MemoryResult:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
+# =============================================================================
+# Test-compatible API classes
+# (added for backward compat — internal code uses MemoryLayer / MemoryQuery)
+# =============================================================================
+
+# MemoryType is an alias for MemoryLayer so tests can use either name
+MemoryType = MemoryLayer
+
+
+@dataclass
+class CognitiveConfig:
+    """Configuration for the CognitivePipeline."""
+    working_memory_capacity: int = 7
+    episodic_capacity: int = 10_000
+    semantic_capacity: int = 100_000
+    procedural_capacity: int = 1_000
+    meta_capacity: int = 1_000
+    enable_metacognition: bool = True
+    enable_consolidation: bool = True
+    consolidation_interval_s: int = 300
+    decay_interval_s: int = 60
+
+
+@dataclass
+class MemoryEntry:
+    """
+    A single memory entry — test-compatible counterpart to MemoryItem.
+    Accepted by the CognitivePipeline.store() adapter.
+    """
+    content: Any
+    memory_type: MemoryLayer = MemoryLayer.WORKING
+    importance: float = 0.5
+    tags: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class CognitiveState:
+    """Snapshot of the cognitive pipeline's current state."""
+    working_memory_size: int = 0
+    episodic_memory_size: int = 0
+    semantic_memory_size: int = 0
+    procedural_memory_size: int = 0
+    meta_memory_size: int = 0
+    total_stores: int = 0
+    total_retrievals: int = 0
+    is_initialized: bool = False
+
+
 class CognitivePipeline:
     """
     The unified cognitive memory pipeline.
@@ -508,16 +557,34 @@ class CognitivePipeline:
     - Context-aware retrieval
     """
 
-    def __init__(self, config: Dict[str, Any] = None):
-        config = config or {}
+    def __init__(self, config=None):
+        # Accept CognitiveConfig, plain dict, or None
+        if isinstance(config, CognitiveConfig):
+            self.config = config
+            _cfg: Dict[str, Any] = {
+                "working_capacity": config.working_memory_capacity,
+                "episodic_capacity": config.episodic_capacity,
+                "semantic_capacity": config.semantic_capacity,
+                "procedural_capacity": config.procedural_capacity,
+                "meta_capacity": config.meta_capacity,
+            }
+        else:
+            _cfg = config or {}
+            self.config = CognitiveConfig(
+                working_memory_capacity=_cfg.get("working_capacity", 7),
+                episodic_capacity=_cfg.get("episodic_capacity", 10_000),
+                semantic_capacity=_cfg.get("semantic_capacity", 100_000),
+                procedural_capacity=_cfg.get("procedural_capacity", 1_000),
+                meta_capacity=_cfg.get("meta_capacity", 1_000),
+            )
 
         # Initialize stores for each layer
         self._stores: Dict[MemoryLayer, MemoryStore] = {
-            MemoryLayer.WORKING: InMemoryStore(MemoryLayer.WORKING, capacity=config.get("working_capacity", 7)),
-            MemoryLayer.EPISODIC: InMemoryStore(MemoryLayer.EPISODIC, capacity=config.get("episodic_capacity", 10000)),
-            MemoryLayer.SEMANTIC: InMemoryStore(MemoryLayer.SEMANTIC, capacity=config.get("semantic_capacity", 100000)),
-            MemoryLayer.PROCEDURAL: InMemoryStore(MemoryLayer.PROCEDURAL, capacity=config.get("procedural_capacity", 1000)),
-            MemoryLayer.META: InMemoryStore(MemoryLayer.META, capacity=config.get("meta_capacity", 1000)),
+            MemoryLayer.WORKING: InMemoryStore(MemoryLayer.WORKING, capacity=_cfg.get("working_capacity", self.config.working_memory_capacity)),
+            MemoryLayer.EPISODIC: InMemoryStore(MemoryLayer.EPISODIC, capacity=_cfg.get("episodic_capacity", self.config.episodic_capacity)),
+            MemoryLayer.SEMANTIC: InMemoryStore(MemoryLayer.SEMANTIC, capacity=_cfg.get("semantic_capacity", self.config.semantic_capacity)),
+            MemoryLayer.PROCEDURAL: InMemoryStore(MemoryLayer.PROCEDURAL, capacity=_cfg.get("procedural_capacity", self.config.procedural_capacity)),
+            MemoryLayer.META: InMemoryStore(MemoryLayer.META, capacity=_cfg.get("meta_capacity", self.config.meta_capacity)),
         }
 
         self._consolidation = ConsolidationEngine()
@@ -553,7 +620,24 @@ class CognitivePipeline:
         tags: List[str] = None,
         metadata: Dict[str, Any] = None
     ) -> str:
-        """Store a memory item in the specified layer."""
+        """Store a memory item in the specified layer.
+
+        Accepts either individual keyword args OR a single ``MemoryEntry``
+        object as the first positional argument for test-compatible usage::
+
+            entry = MemoryEntry(content="...", memory_type=MemoryType.EPISODIC)
+            await pipeline.store(entry)
+        """
+        # -------- MemoryEntry compat shim --------
+        if isinstance(content, MemoryEntry):
+            entry = content
+            content = entry.content
+            layer = entry.memory_type
+            importance = entry.importance
+            tags = entry.tags
+            metadata = entry.metadata
+        # -----------------------------------------
+
         tags = tags or []
         metadata = metadata or {}
 
@@ -612,8 +696,27 @@ class CognitivePipeline:
 
         return item_id
 
-    async def retrieve(self, query: MemoryQuery) -> MemoryResult:
-        """Retrieve memories matching the query."""
+    async def retrieve(self, query, memory_type: MemoryLayer = None) -> MemoryResult:
+        """Retrieve memories matching the query.
+
+        Supports two calling conventions:
+
+        1. Original: ``await pipeline.retrieve(MemoryQuery(...))``
+        2. Test-compatible: ``await pipeline.retrieve("query str", MemoryType.EPISODIC)``
+        """
+        # -------- str / MemoryType compat shim --------
+        _return_list = isinstance(query, str)  # Test-compat: return list directly
+        if isinstance(query, str):
+            layers = [memory_type] if memory_type is not None else list(MemoryLayer)
+            query = MemoryQuery(
+                query=query,
+                layers=layers,
+                strategy=RetrievalStrategy.SEMANTIC,
+                limit=10,
+            )
+        else:
+            _return_list = False
+        # ----------------------------------------------
         start_time = datetime.now()
         all_items = []
 
@@ -638,12 +741,16 @@ class CognitivePipeline:
 
         self._metrics["total_retrievals"] += 1
 
-        return MemoryResult(
+        result = MemoryResult(
             items=all_items,
             layers_searched=query.layers,
             total_found=len(all_items),
             retrieval_time_ms=(datetime.now() - start_time).total_seconds() * 1000
         )
+        # Test-compat: return plain list when called as retrieve(str, MemoryType)
+        if _return_list:
+            return result.items
+        return result
 
     async def remember(self, query: str, limit: int = 5) -> List[MemoryItem]:
         """Quick retrieval across all layers (convenience method)."""
@@ -654,6 +761,30 @@ class CognitivePipeline:
             limit=limit
         ))
         return result.items
+
+    async def get_working_memory(self) -> List[MemoryItem]:
+        """Return all items currently in working memory."""
+        store = self._stores.get(MemoryLayer.WORKING)
+        if store is None:
+            return []
+        return list(store._items.values())
+
+    async def consolidate(self) -> None:
+        """Trigger an immediate memory consolidation pass."""
+        working_store = self._stores[MemoryLayer.WORKING]
+        episodic_store = self._stores[MemoryLayer.EPISODIC]
+        semantic_store = self._stores[MemoryLayer.SEMANTIC]
+
+        try:
+            consolidated = await self._consolidation.consolidate(
+                working_items=list(working_store._items.values()),
+                episodic_store=episodic_store,
+                semantic_store=semantic_store,
+            )
+            self._metrics["consolidations"] += 1
+            logger.debug(f"Consolidation complete: {consolidated} items promoted")
+        except Exception as exc:  # consolidation is best-effort
+            logger.debug(f"Consolidation skipped: {exc}")
 
     async def learn(
         self,

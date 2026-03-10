@@ -194,11 +194,13 @@ class GeneticOperators:
 
     def mutate(self, individual: Individual) -> Individual:
         """Apply mutation to individual."""
+        # Preserve parent_ids from crossover results so lineage is maintained
+        preserved_parents = individual.parent_ids if individual.parent_ids else [individual.id]
         mutated = Individual(
             id=f"mut_{individual.id}_{random.randint(1000, 9999)}",
             genome=copy.deepcopy(individual.genome),
             generation=individual.generation + 1,
-            parent_ids=[individual.id]
+            parent_ids=preserved_parents
         )
 
         for key, value in mutated.genome.items():
@@ -243,7 +245,12 @@ class GeneticOperators:
     def crossover(self, parent1: Individual, parent2: Individual) -> Tuple[Individual, Individual]:
         """Apply crossover to create offspring."""
         if random.random() > self.config.crossover_rate:
-            return self.mutate(parent1), self.mutate(parent2)
+            m1 = self.mutate(parent1)
+            m2 = self.mutate(parent2)
+            # Always record both parents even when crossover is skipped
+            m1.parent_ids = [parent1.id, parent2.id]
+            m2.parent_ids = [parent1.id, parent2.id]
+            return m1, m2
 
         child1_genome = {}
         child2_genome = {}
